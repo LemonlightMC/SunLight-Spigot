@@ -37,14 +37,10 @@ public class Playtime2Settings extends AbstractConfig {
 
     private final ConfigProperty<Long> tickInterval = this.addProperty(ConfigTypes.LONG,
             "Playtime.Tracking.tick-interval",
-            20L,
-            "Sets how often (in game ticks) playtime is accumulated. [1 second = 20 ticks]");
-
-    private final ConfigProperty<String> timezone = this.addProperty(ConfigTypes.STRING,
-            "Playtime.Tracking.timezone",
-            "system",
-            "Sets the timezone used for day/week/month boundaries and the calendar.",
-            "Use 'system' to follow the server timezone, or any IANA id, e.g. 'Europe/Berlin', 'America/New_York'.");
+            1200L,
+            "Sets how often (in game ticks) playtime is accumulated. [1 second = 20 ticks]",
+            "Playtime is displayed in hours and minutes, so a longer interval is indistinguishable",
+            "in game while costing proportionally less: 1200 ticks = 1 minute.");
 
     private final ConfigProperty<Long> retentionDays = this.addProperty(ConfigTypes.LONG,
             "Playtime.Tracking.retention-days",
@@ -166,17 +162,6 @@ public class Playtime2Settings extends AbstractConfig {
 
     public long getTickInterval() {
         return Math.max(1L, this.tickInterval.get());
-    }
-
-    public ZoneId getZoneId() {
-        final String value = this.timezone.get();
-        if (value == null || value.isBlank() || value.equalsIgnoreCase("system"))
-            return ZoneId.systemDefault();
-        try {
-            return ZoneId.of(value);
-        } catch (final Exception exception) {
-            return ZoneId.systemDefault();
-        }
     }
 
     /** Days of history kept per player. {@code 0} keeps everything forever. */

@@ -121,7 +121,8 @@ public class Playtime2MilestoneHandler {
                     module.sendPrefixed(Playtime2Lang.MILESTONE_REWARD, player, b -> b
                             .with(SLPlaceholders.GENERIC_NAME, milestone::name));
                     module.dispatchRewardCommands(player, milestone.rewards());
-                    module.plugin().getPluginManager().callEvent(new PlaytimeMilestoneEvent(player, milestone, reached));
+                    module.plugin().getPluginManager()
+                            .callEvent(new PlaytimeMilestoneEvent(player, milestone, reached));
                 }
             } else if (!progress.containsKey(milestone.id())
                     && (updated == null || !updated.containsKey(milestone.id()))) {
@@ -234,6 +235,7 @@ public class Playtime2MilestoneHandler {
         module.sendPrefixed(Playtime2Lang.REWARD_GOAL, player, b -> b
                 .with(SLPlaceholders.GENERIC_NAME, () -> goalName));
         module.dispatchRewardCommands(player, commands);
-        module.plugin().getPluginManager().callEvent(new PlaytimeGoalReachedEvent(player, goalName, playtime, commands));
+        module.plugin().getPluginManager()
+                .callEvent(new PlaytimeGoalReachedEvent(player, goalName, playtime, commands));
     }
 }

@@ -42,7 +42,7 @@ public class PlaytimeSettings extends AbstractConfig {
             "Playtime.Tracking.timezone",
             "system",
             "Sets the timezone used for day/week/month rollovers.",
-            "Use 'system' to follow the server timezone, or any IANA id, e.g. 'Europe/Berlin', 'America/New_York'.");
+            "Use 'system' to follow the global 'General.Time_Zone' setting, or any IANA id, e.g. 'Europe/Berlin', 'America/New_York'.");
 
     private final ConfigProperty<Long> topRefreshInterval = this.addProperty(ConfigTypes.LONG,
             "Playtime.Top.refresh-Interval",
@@ -118,14 +118,8 @@ public class PlaytimeSettings extends AbstractConfig {
     }
 
     public ZoneId getZoneId() {
-        final String value = this.timezone.get();
-        if (value == null || value.isBlank() || value.equalsIgnoreCase("system"))
-            return ZoneId.systemDefault();
-        try {
-            return ZoneId.of(value);
-        } catch (final Exception exception) {
-            return ZoneId.systemDefault();
-        }
+        // 'system' means "follow the global General.Time_Zone", not the JVM zone.
+        return TimeUtil.resolveZoneId(this.timezone.get(), TimeUtil.getZoneId());
     }
 
     public long getTopRefreshInterval() {

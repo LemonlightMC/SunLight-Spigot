@@ -23,7 +23,6 @@ import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.api.event.PlaytimeAdjustedEvent;
-import su.nightexpress.sunlight.api.provider.PlaytimeProvider;
 import su.nightexpress.sunlight.hook.placeholder.PlaceholderRegistry;
 import su.nightexpress.sunlight.module.Module;
 import su.nightexpress.sunlight.module.ModuleDefinition;
@@ -38,6 +37,7 @@ import su.nightexpress.sunlight.moduleImpl.playtime2.menu.Playtime2StatsMenu;
 import su.nightexpress.sunlight.moduleImpl.playtime2.menu.Playtime2TopMenu;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.user.property.UserPropertyRegistry;
+import su.nightexpress.sunlight.utils.TimeUtil;
 import su.nightexpress.sunlight.utils.Utils;
 
 /**
@@ -49,7 +49,7 @@ import su.nightexpress.sunlight.utils.Utils;
  * of it, so reads stay cheap and the leaderboard can rank offline players
  * without loading their rows.
  */
-public class Playtime2Module extends Module implements PlaytimeProvider {
+public class Playtime2Module extends Module {
 
     public static final int TOP_PAGE_SIZE = 10;
     public static final int TOP_CACHE_LIMIT = 100;
@@ -59,10 +59,10 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
     private final Playtime2Placeholders placeholders;
     private final Playtime2TopHandler topHandler;
     private final Playtime2MilestoneHandler milestoneHandler;
+    private PlaytimeProviderImpl playtimeProvider;
 
     private final Map<UUID, Playtime2History> histories = new ConcurrentHashMap<>();
 
-    private volatile ZoneId zoneId;
     private volatile PeriodKeys keysCache;
     private volatile long keysCacheTime;
 
@@ -78,7 +78,6 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
     @Override
     protected void loadModule(final FileConfig config) {
         this.settings.load(config);
-        this.zoneId = this.settings.getZoneId();
         this.milestoneHandler.loadMilestones(config);
         config.saveChanges();
         this.plugin.injectLang(Playtime2Lang.class);
@@ -145,7 +144,6 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
     public void reloadModule() {
         final FileConfig config = this.getConfig();
         this.settings.load(config);
-        this.zoneId = this.settings.getZoneId();
         this.keysCache = null;
         this.milestoneHandler.loadMilestones(config);
         config.saveChanges();
@@ -157,18 +155,15 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
         this.placeholders.registerPlaceholders(registry);
     }
 
-    @Override
-    public String getPermissionNamespace() {
-        // The module id changed, the permission nodes did not.
-        return "playtime";
-    }
-
     public Playtime2Settings getSettings() {
         return this.settings;
     }
 
-    public Playtime2DayDataManager dataManager() {
-        return this.dataManager;
+    public PlaytimeProviderImpl provider() {
+        if (playtimeProvider == null) {
+            playtimeProvider = new PlaytimeProviderImpl(this);
+        }
+        return playtimeProvider;
     }
 
     public Playtime2TopHandler topHandler() {
@@ -177,11 +172,6 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
 
     public Playtime2MilestoneHandler milestoneHandler() {
         return this.milestoneHandler;
-    }
-
-    public ZoneId zone() {
-        ZoneId zone = this.zoneId;
-        return zone == null ? ZoneId.systemDefault() : zone;
     }
 
     // --- History lifecycle ---
@@ -209,6 +199,7 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
             history.setArchivedTotal(user.getPropertyOrDefault(Playtime2Properties.ARCHIVED_TOTAL));
         }
         this.prune(history, user);
+        history.markAccrual(System.currentTimeMillis());
 
         final Playtime2History raced = this.histories.putIfAbsent(playerId, history);
         return raced == null ? history : raced;
@@ -220,8 +211,47 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
         if (history == null) {
             return;
         }
+        this.accrueRemainder(playerId, history);
         this.flush(history);
         this.histories.remove(playerId, history);
+    }
+
+    /**
+     * Credits the part of the current tick interval the player was still online
+     * for. Without this a short session would be rounded down to nothing, which
+     * matters because the interval is a minute rather than a second.
+     */
+    private void accrueRemainder(final UUID playerId, final Playtime2History history) {
+        final long now = System.currentTimeMillis();
+        synchronized (history) {
+            final long last = history.getLastAccrualAt();
+            if (last <= 0L) {
+                history.markAccrual(now);
+                return;
+            }
+            final long elapsed = now - last;
+            final long interval = this.settings.getTickInterval() * 50L;
+            final long remainder = Math.min(elapsed, interval);
+            history.markAccrual(now);
+            if (remainder <= 0L) {
+                return;
+            }
+
+            final Player player = Bukkit.getPlayer(playerId);
+            final boolean excludeAfk = this.settings.isExcludeAfkEnabled();
+            final var afkProvider = this.plugin.afkProvider();
+            if (player != null && excludeAfk && afkProvider.isPresent() && afkProvider.get().isAfk(player)) {
+                return;
+            }
+
+            history.add(this.currentKeys().day(), remainder);
+            final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
+            if (user != null) {
+                user.setProperty(Playtime2Properties.SESSION,
+                        user.getPropertyOrDefault(Playtime2Properties.SESSION) + remainder);
+                this.writeCaches(user, history);
+            }
+        }
     }
 
     public Playtime2History history(final UUID playerId) {
@@ -250,6 +280,7 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
         if (raced != null) {
             return raced;
         }
+        history.markAccrual(System.currentTimeMillis());
         // Nobody else holds it, so this caller is responsible for dropping it
         // again once the player is confirmed offline.
         if (Bukkit.getPlayer(playerId) == null) {
@@ -343,6 +374,7 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
 
                 synchronized (history) {
                     history.add(keys.day(), deltaMs);
+                    history.markAccrual(now);
                     user.setProperty(Playtime2Properties.SESSION,
                             user.getPropertyOrDefault(Playtime2Properties.SESSION) + deltaMs);
                     this.writeCaches(user, history, keys);
@@ -416,8 +448,7 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
         if (cached != null && now - this.keysCacheTime < 1000L) {
             return cached;
         }
-        final ZoneId zone = this.zone();
-        final ZonedDateTime dateTime = ZonedDateTime.now(zone);
+        final ZonedDateTime dateTime = ZonedDateTime.now(TimeUtil.getZoneId());
         final PeriodKeys keys = new PeriodKeys(
                 dateTime.toLocalDate().toEpochDay(),
                 dateTime.toLocalDate().with(DayOfWeek.MONDAY).toEpochDay(),
@@ -439,11 +470,10 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
     }
 
     private void writeCaches(final SunUser user, final Playtime2History history, final PeriodKeys keys) {
-        final ZoneId zone = this.zone();
         user.setProperty(Playtime2Properties.TOTAL, history.total());
         user.setProperty(Playtime2Properties.ARCHIVED_TOTAL, history.getArchivedTotal());
-        user.setProperty(Playtime2Properties.YEAR, history.year(keys.day(), zone));
-        user.setProperty(Playtime2Properties.MONTH, history.month(keys.day(), zone));
+        user.setProperty(Playtime2Properties.YEAR, history.year(keys.day()));
+        user.setProperty(Playtime2Properties.MONTH, history.month(keys.day()));
         user.setProperty(Playtime2Properties.WEEK, history.week(keys.day()));
         user.setProperty(Playtime2Properties.DAY, history.getMillis(keys.day()));
 
@@ -453,7 +483,7 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
         user.setProperty(Playtime2Properties.YEAR_KEY, keys.year());
 
         user.setProperty(Playtime2Properties.DAILY_STREAK, history.dailyStreak(keys.day()));
-        user.setProperty(Playtime2Properties.WEEKLY_STREAK, history.weeklyStreak(keys.week()));
+        user.setProperty(Playtime2Properties.WEEKLY_STREAK, history.weeklyStreak(keys.day()));
         user.setProperty(Playtime2Properties.DAYS_PLAYED, history.daysPlayed());
 
         final Long first = history.firstDay();
@@ -481,11 +511,10 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
 
     private long readHistory(final Playtime2History history, final PlaytimePeriod period) {
         final PeriodKeys keys = this.currentKeys();
-        final ZoneId zone = this.zone();
         return switch (period == null ? PlaytimePeriod.ALLTIME : period) {
             case ALLTIME -> history.total();
-            case YEAR -> history.year(keys.day(), zone);
-            case MONTH -> history.month(keys.day(), zone);
+            case YEAR -> history.year(keys.day());
+            case MONTH -> history.month(keys.day());
             case WEEK -> history.week(keys.day());
             case DAY -> history.getMillis(keys.day());
             case SESSION -> 0L;
@@ -520,7 +549,9 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
         return user == null ? 0L : this.getEffectivePlaytime(user, period);
     }
 
-    /** Playtime between two epoch days, inclusive. Loads the history when needed. */
+    /**
+     * Playtime between two epoch days, inclusive. Loads the history when needed.
+     */
     public long getPlaytime(final UUID playerId, final long fromDay, final long toDay) {
         final Playtime2History history = this.historyOrLoad(playerId);
         synchronized (history) {
@@ -539,7 +570,7 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
     public int getWeeklyStreak(final SunUser user) {
         final Playtime2History history = this.histories.get(user.getId());
         if (history != null) {
-            return history.weeklyStreak(this.currentKeys().week());
+            return history.weeklyStreak(this.currentKeys().day());
         }
         return Math.max(0, user.getPropertyOrDefault(Playtime2Properties.WEEKLY_STREAK));
     }
@@ -810,55 +841,6 @@ public class Playtime2Module extends Module implements PlaytimeProvider {
 
     public boolean openCalendarMenu(final Player viewer, final SunUser target, final YearMonth month) {
         return new Playtime2CalendarMenu(this, target.getId(), month).show(this.plugin, viewer);
-    }
-
-    // --- PlaytimeProvider ---
-
-    @Override
-    public long getPlaytimeMs(final UUID playerId, final String period) {
-        final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
-        return user == null ? 0L : this.getEffectivePlaytime(user, PlaytimePeriod.fromString(period));
-    }
-
-    @Override
-    public long getTotalPlaytimeMs(final UUID playerId) {
-        return this.getPlaytimeMs(playerId, PlaytimePeriod.ALLTIME.getConfigName());
-    }
-
-    @Override
-    public long getSessionPlaytimeMs(final UUID playerId) {
-        final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
-        return user == null ? 0L : Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.SESSION));
-    }
-
-    @Override
-    public int getDailyStreak(final UUID playerId) {
-        final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
-        return user == null ? 0 : this.getDailyStreak(user);
-    }
-
-    @Override
-    public int getWeeklyStreak(final UUID playerId) {
-        final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
-        return user == null ? 0 : this.getWeeklyStreak(user);
-    }
-
-    @Override
-    public long getGoalMs(final UUID playerId, final String scope) {
-        return this.settings.getGoalMs(PlaytimePeriod.fromString(scope));
-    }
-
-    @Override
-    public List<PlaytimeProvider.TopEntry> getTop(final String period, final int limit) {
-        final List<Playtime2TopHandler.TopEntry> board = this.topHandler
-                .getTop(PlaytimePeriod.fromString(period));
-        final int size = Math.max(0, Math.min(limit, board.size()));
-        final List<PlaytimeProvider.TopEntry> result = new ArrayList<>(size);
-        for (int index = 0; index < size; index++) {
-            final Playtime2TopHandler.TopEntry entry = board.get(index);
-            result.add(new PlaytimeProvider.TopEntry(entry.id(), entry.name(), entry.value()));
-        }
-        return result;
     }
 
     /** Days the player has a recorded row for. Retained rows only. */

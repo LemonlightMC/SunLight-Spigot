@@ -28,6 +28,7 @@ import su.nightexpress.sunlight.moduleImpl.playtime.menu.PlaytimeTopMenu;
 import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.user.property.UserPropertyRegistry;
+import su.nightexpress.sunlight.utils.TimeUtil;
 import su.nightexpress.sunlight.utils.Utils;
 
 public class PlaytimeModule extends Module {
@@ -190,7 +191,7 @@ public class PlaytimeModule extends Module {
         }
         ZoneId zone = this.zoneId;
         if (zone == null) {
-            zone = ZoneId.systemDefault();
+            zone = TimeUtil.getZoneId();
             this.zoneId = zone;
         }
         final ZonedDateTime dateTime = ZonedDateTime.now(zone);

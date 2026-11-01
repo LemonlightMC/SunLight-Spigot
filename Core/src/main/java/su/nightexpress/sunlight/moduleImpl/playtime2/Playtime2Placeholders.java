@@ -1,7 +1,6 @@
 package su.nightexpress.sunlight.moduleImpl.playtime2;
 
 import java.time.DayOfWeek;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -282,17 +281,19 @@ public class Playtime2Placeholders {
             raw = raw.substring(0, raw.length() - "_formatted".length());
 
         final String period = raw.isBlank() ? "day" : raw;
-        final ZoneId zone = module.zone();
 
         ZonedDateTime now;
         ZonedDateTime next;
         try {
-            now = ZonedDateTime.now(zone);
+            now = ZonedDateTime.now(TimeUtil.getZoneId());
             next = switch (period) {
-                case "day", "daily" -> now.toLocalDate().plusDays(1).atStartOfDay(zone);
-                case "week", "weekly" -> now.toLocalDate().with(DayOfWeek.MONDAY).plusWeeks(1).atStartOfDay(zone);
-                case "month", "monthly" -> now.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay(zone);
-                case "year", "yearly" -> now.toLocalDate().withDayOfYear(1).plusYears(1).atStartOfDay(zone);
+                case "day", "daily" -> now.toLocalDate().plusDays(1).atStartOfDay(TimeUtil.getZoneId());
+                case "week", "weekly" -> now.toLocalDate().with(DayOfWeek.MONDAY).plusWeeks(1).atStartOfDay(
+                        TimeUtil.getZoneId());
+                case "month", "monthly" -> now.toLocalDate().withDayOfMonth(1).plusMonths(1).atStartOfDay(
+                        TimeUtil.getZoneId());
+                case "year", "yearly" -> now.toLocalDate().withDayOfYear(1).plusYears(1).atStartOfDay(
+                        TimeUtil.getZoneId());
                 default -> null;
             };
         } catch (final Exception exception) {

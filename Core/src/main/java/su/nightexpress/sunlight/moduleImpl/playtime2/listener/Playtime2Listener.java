@@ -30,7 +30,8 @@ public class Playtime2Listener extends AbstractListener<SunLightPlugin> {
             try {
                 this.module.loadHistory(player.getUniqueId());
             } catch (final Exception exception) {
-                this.module.debug("Playtime history load failed for " + player.getName() + ": " + exception.getMessage());
+                this.module
+                        .debug("Playtime history load failed for " + player.getName() + ": " + exception.getMessage());
                 return;
             }
             this.plugin.runTask(() -> this.startSession(player));

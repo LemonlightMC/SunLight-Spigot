@@ -75,7 +75,8 @@ public class Playtime2CommandProvider extends CommandProvider<Playtime2Module> {
                 .withFullDescription(Playtime2Lang.COMMAND_CALENDAR_DESC.text())
                 .withPermission(Playtime2Perms.COMMAND_CALENDAR)
                 .withOptionalArguments(
-                        CommandArgumentConstants.targetArgument().withPermission(Playtime2Perms.COMMAND_CALENDAR_OTHERS))
+                        CommandArgumentConstants.targetArgument()
+                                .withPermission(Playtime2Perms.COMMAND_CALENDAR_OTHERS))
                 .executes(this::showCalendar))
                 .under("playtime");
 
@@ -145,7 +146,8 @@ public class Playtime2CommandProvider extends CommandProvider<Playtime2Module> {
 
             this.module.sendPrefixed(Playtime2Lang.STATS_TOTAL, sender, b -> b
                     .with(SLPlaceholders.GENERIC_TIME,
-                            () -> TimeUtil.formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
+                            () -> TimeUtil
+                                    .formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
 
             this.sendPeriodLine(sender, "Year", this.module.getEffectivePlaytime(user, PlaytimePeriod.YEAR));
             this.sendPeriodLine(sender, "Month", this.module.getEffectivePlaytime(user, PlaytimePeriod.MONTH));
@@ -163,7 +165,8 @@ public class Playtime2CommandProvider extends CommandProvider<Playtime2Module> {
         });
     }
 
-    private void sendPlayedLine(final CommandSender sender, final su.nightexpress.nightcore.locale.entry.MessageLocale locale,
+    private void sendPlayedLine(final CommandSender sender,
+            final su.nightexpress.nightcore.locale.entry.MessageLocale locale,
             final long epochDay) {
         if (epochDay <= 0L) {
             return;
@@ -193,7 +196,8 @@ public class Playtime2CommandProvider extends CommandProvider<Playtime2Module> {
             if (period == PlaytimePeriod.ALLTIME) {
                 this.module.sendPrefixed(Playtime2Lang.STATS_TOTAL, sender, b -> b
                         .with(SLPlaceholders.GENERIC_TIME,
-                                () -> TimeUtil.formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
+                                () -> TimeUtil
+                                        .formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
                 return;
             }
 
@@ -258,9 +262,8 @@ public class Playtime2CommandProvider extends CommandProvider<Playtime2Module> {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return 0;
         }
-        final java.time.YearMonth month = java.time.YearMonth.now(this.module.zone());
         return target.runAs(this.module, sender, Playtime2Perms.COMMAND_CALENDAR_OTHERS, (user, targetPlayer) -> {
-            this.module.openCalendarMenu(player, user, month);
+            this.module.openCalendarMenu(player, user, null);
         });
     }
 

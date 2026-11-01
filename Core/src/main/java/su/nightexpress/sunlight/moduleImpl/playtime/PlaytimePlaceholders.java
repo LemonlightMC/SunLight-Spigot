@@ -257,7 +257,7 @@ public class PlaytimePlaceholders {
     final String period = raw.isBlank() ? "day" : raw;
     ZoneId zone = module.zoneId;
     if (zone == null)
-      zone = ZoneId.systemDefault();
+      zone = TimeUtil.getZoneId();
 
     ZonedDateTime now;
     ZonedDateTime next;
