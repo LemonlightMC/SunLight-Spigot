@@ -19,7 +19,6 @@ import su.nightexpress.nightcore.util.Lists;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 import su.nightexpress.nightcore.util.profile.PlayerProfiles;
-import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.reports.ReportsModule;
 import su.nightexpress.sunlight.moduleImpl.reports.config.ReportsLang;
@@ -27,6 +26,7 @@ import su.nightexpress.sunlight.moduleImpl.reports.config.ReportsPerms;
 import su.nightexpress.sunlight.moduleImpl.reports.model.Report;
 import su.nightexpress.sunlight.moduleImpl.reports.model.CaseStatus;
 import su.nightexpress.sunlight.moduleImpl.reports.model.ReportCase;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -104,9 +104,9 @@ public class CaseViewMenu extends AbstractObjectMenu<ReportCase> {
                                     .with(SLPlaceholders.GENERIC_TOTAL,
                                             () -> String.valueOf(reportCase.getReportCount()))
                                     .with(REPORT_DATE,
-                                            () -> TimeFormats.formatDateTime(reportCase.getCreateDate()))
+                                            () -> TimeUtil.formatDateTime(reportCase.getCreateDate()))
                                     .with(SLPlaceholders.GENERIC_TIME,
-                                            () -> TimeFormats.formatDateTime(reportCase.getUpdateDate())));
+                                            () -> TimeUtil.formatDateTime(reportCase.getUpdateDate())));
                             item.setMaterial(this.iconMaterial(context));
                         })
                         .build())

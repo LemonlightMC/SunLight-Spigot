@@ -1,8 +1,8 @@
 package su.nightexpress.sunlight.moduleImpl.chat.spy;
 
 import su.nightexpress.nightcore.util.text.night.NightMessage;
-import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.SunLightPlugin;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -59,7 +59,7 @@ public class SpyLogger {
             while (this.running && !this.queue.isEmpty()) {
                 LogEntry result = this.queue.poll(500, TimeUnit.MILLISECONDS);
                 if (result != null) {
-                    String date = TimeFormats.formatDateTime(result.timestamp());
+                    String date = TimeUtil.formatDateTime(result.timestamp());
                     this.writer.append("[").append(date).append("] ").append(result.log());
                     this.writer.newLine();
                     this.writer.flush();

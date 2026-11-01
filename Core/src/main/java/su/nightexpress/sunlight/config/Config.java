@@ -3,10 +3,18 @@ package su.nightexpress.sunlight.config;
 import su.nightexpress.nightcore.config.ConfigValue;
 import su.nightexpress.nightcore.configuration.AbstractConfig;
 import su.nightexpress.sunlight.SLUtils;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 public class Config extends AbstractConfig {
 
     public static final String DIR_MENU = "/menu/";
+
+    public static final ConfigValue<String> GENERAL_TIME_ZONE = ConfigValue.create("General.Time_Zone",
+            "system",
+            "Sets the global timezone used for dates, times and day/week/month rollovers.",
+            "Use 'system' to follow the server timezone, or any IANA id, e.g. 'Europe/Berlin', 'America/New_York'.",
+            "This takes precedence over NightCore's 'Time.TimeZone' setting from engine.yml.")
+            .whenRead(TimeUtil::setZoneId);
 
     public static final ConfigValue<String> GENERAL_DATE_FORMAT = ConfigValue.create("General.Date_Format",
             "dd/MM/yyyy HH:mm:ss",

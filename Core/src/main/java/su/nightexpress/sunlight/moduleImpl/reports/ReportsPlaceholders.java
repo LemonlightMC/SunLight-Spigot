@@ -6,6 +6,7 @@ import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.reports.config.ReportsLang;
 import su.nightexpress.sunlight.moduleImpl.reports.model.Report;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 public class ReportsPlaceholders extends SLPlaceholders {
 
@@ -32,7 +33,7 @@ public class ReportsPlaceholders extends SLPlaceholders {
     public static final TypedPlaceholder<Report> REPORT = TypedPlaceholder
             .builder(Report.class)
             .with(REPORT_ID, report -> report.getId().toString())
-            .with(REPORT_DATE, report -> TimeFormats.formatDateTime(report.getCreateDate()))
+            .with(REPORT_DATE, report -> TimeUtil.formatDateTime(report.getCreateDate()))
             .with(REPORT_STATUS, report -> ReportsLang.STATUS.getLocalized(report.getStatus()))
             .with(REPORT_CATEGORY, Report::getCategoryDisplay)
             .with(REPORT_REASON, Report::getDetails)
@@ -41,8 +42,8 @@ public class ReportsPlaceholders extends SLPlaceholders {
             .with(REPORT_TARGET, Report::getTargetName)
             .with(REPORT_TARGET_UUID, report -> report.getTargetId() == null ? ""
                     : report.getTargetId().toString())
-            .with(REPORT_DATE_CREATED, report -> TimeFormats.formatDateTime(report.getCreateDate()))
-            .with(REPORT_DATE_UPDATED, report -> TimeFormats.formatDateTime(report.getUpdateDate()))
+            .with(REPORT_DATE_CREATED, report -> TimeUtil.formatDateTime(report.getCreateDate()))
+            .with(REPORT_DATE_UPDATED, report -> TimeUtil.formatDateTime(report.getUpdateDate()))
             .with(REPORT_AGE, report -> TimeFormats.formatSince(report.getCreateDate(), TimeFormatType.LITERAL))
             .with(REPORT_STAFF, report -> report.getStaffName() == null ? "" : report.getStaffName())
             .with(REPORT_REWARDED, report -> report.isRewarded() ? ReportsLang.STATE_REWARDED.text()

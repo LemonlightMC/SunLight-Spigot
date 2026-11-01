@@ -7,6 +7,7 @@ import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.voting.config.VotingLang;
 import su.nightexpress.sunlight.moduleImpl.voting.model.Vote;
 import su.nightexpress.sunlight.moduleImpl.voting.model.VoteOption;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GOLD;
 
@@ -73,9 +74,9 @@ public class VotingPlaceholders extends SLPlaceholders {
             .with(VOTE_DESC, Vote::getDescription)
             .with(VOTE_STATUS, vote -> VotingLang.STATUS.getLocalized(vote.getStatus()))
             .with(VOTE_CREATOR, vote -> vote.getCreatorName() == null ? "" : vote.getCreatorName())
-            .with(VOTE_DATE, vote -> TimeFormats.formatDateTime(vote.getCreateDate()))
-            .with(VOTE_TIME_START, vote -> TimeFormats.formatDateTime(vote.getStartDate()))
-            .with(VOTE_TIME_END, vote -> TimeFormats.formatDateTime(vote.getEndDate()))
+            .with(VOTE_DATE, vote -> TimeUtil.formatDateTime(vote.getCreateDate()))
+            .with(VOTE_TIME_START, vote -> TimeUtil.formatDateTime(vote.getStartDate()))
+            .with(VOTE_TIME_END, vote -> TimeUtil.formatDateTime(vote.getEndDate()))
             .with(VOTE_TIME_LEFT,
                     vote -> TimeFormats.formatDuration(vote.getEndDate(), TimeFormatType.LITERAL))
             .with(VOTE_TIME_TO_START,

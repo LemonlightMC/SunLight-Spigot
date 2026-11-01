@@ -6,6 +6,7 @@ import su.nightexpress.nightcore.util.time.TimeFormatType;
 import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
 import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendsRepository;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +44,7 @@ public class FriendsPlaceholders {
             .with(FRIEND_OWNER, record -> record.getOwner().name())
             .with(FRIEND_OWNER_UUID, record -> record.getOwnerId().toString())
             .with(FRIEND_ONLINE, record -> CoreLang.STATE_YES_NO.get(FriendsRepository.isOnline(record.getFriendId())))
-            .with(FRIEND_CREATE_DATE, record -> TimeFormats.formatDateTime(record.getCreateDate()))
+            .with(FRIEND_CREATE_DATE, record -> TimeUtil.formatDateTime(record.getCreateDate()))
             .with(FRIEND_AGE, record -> formatAge(record.getCreateDate()))
             .with(FRIEND_FAVORITE, record -> CoreLang.STATE_YES_NO.get(record.isFavorite()))
             .with(FRIEND_STATUS, record -> FriendsRepository.isOnline(record.getFriendId()) ? "Online" : "Offline")

@@ -300,7 +300,6 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
         manager.register("warps", "Warps", WarpsModule::new);
     }
 
-
     public DataHandler dataHandler() {
         return this.dataHandler;
     }
@@ -410,7 +409,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
         return this.moduleManager.getByType(KitsModule.class);
     }
 
-@Override
+    @Override
     public Optional<? extends su.nightexpress.sunlight.api.provider.BansProvider> bansProvider() {
         return this.moduleManager.getByType(BansModule.class);
     }
@@ -477,7 +476,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
 
     @Override
     public Optional<? extends PlaytimeProvider> playtimeProvider() {
-        return this.moduleManager.getByType(Playtime2Module.class);
+        return this.moduleManager.getByType(Playtime2Module.class).map(m -> m.provider());
     }
 
 }

@@ -64,6 +64,7 @@ import su.nightexpress.sunlight.moduleImpl.voting.model.VoteTally;
 import su.nightexpress.sunlight.moduleImpl.voting.model.VoteTemplate;
 import su.nightexpress.sunlight.moduleImpl.voting.model.WeightCombine;
 import su.nightexpress.sunlight.utils.EconomyUtils;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 public class VotingModule extends Module {
 
@@ -352,7 +353,7 @@ public class VotingModule extends Module {
         registry.register("voting_time_left", (player, payload) -> this.field(payload,
                 vote -> TimeFormats.formatDuration(vote.getEndDate(), TimeFormatType.LITERAL)));
         registry.register("voting_time_end", (player, payload) -> this.field(payload,
-                vote -> TimeFormats.formatDateTime(vote.getEndDate())));
+                vote -> TimeUtil.formatDateTime(vote.getEndDate())));
         registry.register("voting_time_to_start", (player, payload) -> this.field(payload,
                 vote -> vote.isScheduled()
                         ? TimeFormats.formatDuration(vote.getStartDate(), TimeFormatType.LITERAL)
@@ -2226,7 +2227,7 @@ public class VotingModule extends Module {
             return Integer.MAX_VALUE;
         }
         final long millis = this.plugin.playtimeProvider()
-                .map(provider -> provider.getTotalPlaytimeMs(player.getUniqueId()))
+                .map(provider -> provider.getTotalPlaytime(player.getUniqueId()))
                 .orElse(0L);
         return TimeUnit.MILLISECONDS.toHours(millis);
     }

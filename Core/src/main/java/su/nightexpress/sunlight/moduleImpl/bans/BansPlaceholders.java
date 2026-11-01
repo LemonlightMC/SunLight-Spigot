@@ -9,6 +9,7 @@ import su.nightexpress.sunlight.SLUtils;
 import su.nightexpress.sunlight.moduleImpl.bans.punishment.AbstractPunishment;
 import su.nightexpress.sunlight.moduleImpl.bans.punishment.InetPunishment;
 import su.nightexpress.sunlight.moduleImpl.bans.punishment.PlayerPunishment;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 public class BansPlaceholders extends SLPlaceholders {
 
@@ -37,10 +38,10 @@ public class BansPlaceholders extends SLPlaceholders {
                                                                         TimeFormatType.LITERAL)
                                                         : CoreLang.OTHER_NEVER.text())
                         .with(PUNISHMENT_CREATION_DATE,
-                                        punishment -> TimeFormats.formatDateTime(punishment.getCreationDate()))
+                                        punishment -> TimeUtil.formatDateTime(punishment.getCreationDate()))
                         .with(PUNISHMENT_EXPIRATION_DATE,
                                         punishment -> !punishment.isPermanent()
-                                                        ? TimeFormats.formatDateTime(punishment.getExpirationDate())
+                                                        ? TimeUtil.formatDateTime(punishment.getExpirationDate())
                                                         : CoreLang.OTHER_NEVER.text())
                         .build();
 

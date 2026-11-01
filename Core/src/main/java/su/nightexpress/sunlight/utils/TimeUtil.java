@@ -7,15 +7,62 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.TimeZone;
 
+import org.bukkit.Bukkit;
+
 import su.nightexpress.nightcore.util.time.TimeFormatType;
 import su.nightexpress.nightcore.util.time.TimeFormats;
 
 public class TimeUtil {
 
-  private static TimeZone timeZone = TimeZone.getDefault();
+  /**
+   * The zone every date, time and rollover in SunLight is computed in. It is set
+   * from the global 'General.Time_Zone' setting and defaults to the server zone,
+   * so a plugin that never touches the setting behaves exactly like before.
+   */
+  private static volatile ZoneId zoneId = ZoneId.systemDefault();
+
+  /**
+   * Applies the global zone. Accepts 'system' (or an empty value) for the server
+   * zone and any id {@link ZoneId#of(String)} understands. An unparseable id is
+   * rejected with a warning instead of silently becoming GMT, which is what
+   * {@link TimeZone#getTimeZone(String)} would do.
+   */
+  public static void setZoneId(String name) {
+    if (name == null || name.isBlank() || name.equalsIgnoreCase("system")) {
+      zoneId = ZoneId.systemDefault();
+      return;
+    }
+
+    try {
+      zoneId = ZoneId.of(name.trim());
+    } catch (Exception exception) {
+      zoneId = ZoneId.systemDefault();
+      Bukkit.getLogger().warning("[SunLight] Unknown timezone '" + name
+          + "' in General.Time_Zone, falling back to the server timezone (" + zoneId + ").");
+    }
+  }
+
+  /**
+   * Resolves a module-level zone name against the global zone, so a module left
+   * on 'system' follows the global setting rather than the JVM default.
+   *
+   * @param name     the configured id, may be null, blank or 'system'
+   * @param fallback the zone to use when {@code name} is absent or invalid
+   */
+  public static ZoneId resolveZoneId(String name, ZoneId fallback) {
+    if (name == null || name.isBlank() || name.equalsIgnoreCase("system")) {
+      return fallback;
+    }
+
+    try {
+      return ZoneId.of(name.trim());
+    } catch (Exception exception) {
+      return fallback;
+    }
+  }
 
   public static ZoneId getZoneId() {
-    return timeZone.toZoneId();
+    return zoneId;
   }
 
   public static boolean isPassed(long timestamp) {
@@ -27,23 +74,32 @@ public class TimeUtil {
   }
 
   public static LocalDateTime getCurrentDateTime() {
-    return LocalDateTime.now(timeZone.toZoneId());
+    return LocalDateTime.now(zoneId);
   }
 
   public static LocalDate getCurrentDate() {
-    return LocalDate.now(timeZone.toZoneId());
+    return LocalDate.now(zoneId);
   }
 
   public static LocalTime getCurrentTime() {
-    return LocalTime.now(timeZone.toZoneId());
+    return LocalTime.now(zoneId);
   }
 
   public static LocalDateTime getLocalDateTimeOf(long ms) {
-    return LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), timeZone.toZoneId());
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(ms), zoneId);
   }
 
   public static long toEpochMillis(LocalDateTime dateTime) {
-    return dateTime.atZone(getZoneId()).toInstant().toEpochMilli();
+    return dateTime.atZone(zoneId).toInstant().toEpochMilli();
+  }
+
+  /**
+   * Formats a timestamp with NightCore's configured date-time pattern, but in
+   * SunLight's global zone. NightCore's own {@code TimeFormats#formatDateTime}
+   * converts with its engine-level zone, which would ignore this setting.
+   */
+  public static String formatDateTime(long ms) {
+    return TimeFormats.formatDateTime(getLocalDateTimeOf(ms));
   }
 
   public static String formatMillis(final long ms) {

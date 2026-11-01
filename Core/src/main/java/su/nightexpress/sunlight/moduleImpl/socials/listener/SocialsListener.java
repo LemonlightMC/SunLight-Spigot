@@ -10,11 +10,11 @@ import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import su.nightexpress.nightcore.manager.AbstractListener;
-import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.api.event.PlayerReportEvent;
 import su.nightexpress.sunlight.moduleImpl.reports.model.Report;
 import su.nightexpress.sunlight.moduleImpl.socials.SocialsModule;
+import su.nightexpress.sunlight.utils.TimeUtil;
 
 public class SocialsListener extends AbstractListener<SunLightPlugin> {
 
@@ -68,7 +68,7 @@ public class SocialsListener extends AbstractListener<SunLightPlugin> {
             report.getTargetName(),
             report.getCategoryDisplay(),
             report.getDetails(),
-            TimeFormats.formatDateTime(report.getCreateDate())
+            TimeUtil.formatDateTime(report.getCreateDate())
         );
     }
 }
