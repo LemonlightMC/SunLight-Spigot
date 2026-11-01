@@ -117,7 +117,7 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
     private Argument<String> resetScopeArgument() {
         return CommandArgumentConstants.string(
                 "scope",
-                info -> List.of("all", "alltime", "year", "month", "week", "day", "session", "streaks", "goals",
+                info -> List.of("all", "alltime", "year", "month", "week", "day", "session", "streaks",
                         "milestones"));
     }
 
@@ -287,14 +287,14 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
                 showGoals(sender, user);
                 return 0;
             }
-            this.setGoalProperty(user, period, 0L);
+            this.module.getSettings().setGoalMinutes(period, 0L);
             module.sendPrefixed(PlaytimeLang.GOAL_RESET, sender, b -> b
                     .with(SLPlaceholders.GENERIC_NAME, () -> period.name()));
             return 1;
         }
 
-        final int min = this.module.getSettings().getGoalMinMinutes();
-        final int max = this.module.getSettings().getGoalMaxMinutes();
+        final long min = this.module.getSettings().getGoalMinMinutes();
+        final long max = this.module.getSettings().getGoalMaxMinutes();
         final boolean belowMin = min > 0 && minutes < min;
         final boolean aboveMax = max > 0 && minutes > max;
         if (belowMin || aboveMax) {
@@ -304,15 +304,14 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             return 0;
         }
 
-        final long ms = (long) minutes * 60_000L;
-        if (!this.isGoalPeriod(period) || !this.setGoalProperty(user, period, ms)) {
+        if (!this.isGoalPeriod(period) || !this.module.getSettings().setGoalMinutes(period, minutes)) {
             showGoals(sender, user);
             return 0;
         }
 
         this.module.sendPrefixed(PlaytimeLang.GOAL_SET, sender, b -> b
                 .with(SLPlaceholders.GENERIC_NAME, () -> period.name())
-                .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(ms)));
+                .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(minutes * 60_000L)));
         return 1;
     }
 
@@ -320,11 +319,11 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
         module.ensureRollover(user);
         module.sendPrefixed(PlaytimeLang.GOAL_HEADER, viewer);
         this.sendGoalLine(viewer, user, "Daily", module.getEffectivePlaytime(user, PlaytimePeriod.DAY),
-                module.milestoneHandler.getEffectiveGoalMs(user, true, false, false));
+                module.getSettings().getGoalMs(PlaytimePeriod.DAY));
         this.sendGoalLine(viewer, user, "Weekly", module.getEffectivePlaytime(user, PlaytimePeriod.WEEK),
-                module.milestoneHandler.getEffectiveGoalMs(user, false, true, false));
+                module.getSettings().getGoalMs(PlaytimePeriod.WEEK));
         this.sendGoalLine(viewer, user, "Monthly", module.getEffectivePlaytime(user, PlaytimePeriod.MONTH),
-                module.milestoneHandler.getEffectiveGoalMs(user, false, false, true));
+                module.getSettings().getGoalMs(PlaytimePeriod.MONTH));
     }
 
     private void sendGoalLine(final CommandSender viewer, final SunUser user, final String name, final long current,
@@ -344,18 +343,6 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
 
     private boolean isGoalPeriod(final PlaytimePeriod period) {
         return period == PlaytimePeriod.DAY || period == PlaytimePeriod.WEEK || period == PlaytimePeriod.MONTH;
-    }
-
-    private boolean setGoalProperty(final SunUser user, final PlaytimePeriod period, final long ms) {
-        switch (period) {
-            case DAY -> user.setProperty(PlaytimeProperties.GOAL_DAY, ms);
-            case WEEK -> user.setProperty(PlaytimeProperties.GOAL_WEEK, ms);
-            case MONTH -> user.setProperty(PlaytimeProperties.GOAL_MONTH, ms);
-            default -> {
-                return false;
-            }
-        }
-        return true;
     }
 
     private int addPlaytime(final CommandSender sender, final CommandArguments arguments) {

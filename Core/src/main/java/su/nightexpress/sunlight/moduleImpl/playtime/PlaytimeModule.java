@@ -73,11 +73,6 @@ public class PlaytimeModule extends Module {
         UserPropertyRegistry.register(PlaytimeProperties.LAST_SEEN);
         UserPropertyRegistry.register(PlaytimeProperties.DAILY_STREAK);
         UserPropertyRegistry.register(PlaytimeProperties.WEEKLY_STREAK);
-        UserPropertyRegistry.register(PlaytimeProperties.GOAL_DAY);
-        UserPropertyRegistry.register(PlaytimeProperties.GOAL_WEEK);
-        UserPropertyRegistry.register(PlaytimeProperties.GOAL_MONTH);
-        UserPropertyRegistry.register(PlaytimeProperties.GOAL_YEAR);
-        UserPropertyRegistry.register(PlaytimeProperties.GOAL_ALLTIME);
         UserPropertyRegistry.register(PlaytimeProperties.REWARDED_DAY_KEY);
         UserPropertyRegistry.register(PlaytimeProperties.REWARDED_WEEK_KEY);
         UserPropertyRegistry.register(PlaytimeProperties.REWARDED_MONTH_KEY);
@@ -434,8 +429,7 @@ public class PlaytimeModule extends Module {
 
         // Only scopes that actually zero a playtime counter can be reported as a period
         // change;
-        // "session", "streaks", "goals" and "milestones" clear unrelated bookkeeping
-        // instead.
+        // "session", "streaks" and "milestones" clear unrelated bookkeeping instead.
         final PlaytimePeriod period = switch (normalized) {
             case "all", "alltime", "total" -> PlaytimePeriod.ALLTIME;
             case "year" -> PlaytimePeriod.YEAR;
@@ -461,9 +455,6 @@ public class PlaytimeModule extends Module {
                 user.setProperty(PlaytimeProperties.SESSION, 0L);
                 user.setProperty(PlaytimeProperties.DAILY_STREAK, 0);
                 user.setProperty(PlaytimeProperties.WEEKLY_STREAK, 0);
-                user.setProperty(PlaytimeProperties.GOAL_DAY, 0L);
-                user.setProperty(PlaytimeProperties.GOAL_WEEK, 0L);
-                user.setProperty(PlaytimeProperties.GOAL_MONTH, 0L);
                 user.setProperty(PlaytimeProperties.REWARDED_DAY_KEY, 0L);
                 user.setProperty(PlaytimeProperties.REWARDED_WEEK_KEY, 0L);
                 user.setProperty(PlaytimeProperties.REWARDED_MONTH_KEY, 0L);
@@ -502,11 +493,6 @@ public class PlaytimeModule extends Module {
             case "streaks", "streak" -> {
                 user.setProperty(PlaytimeProperties.DAILY_STREAK, 0);
                 user.setProperty(PlaytimeProperties.WEEKLY_STREAK, 0);
-            }
-            case "goals", "goal" -> {
-                user.setProperty(PlaytimeProperties.GOAL_DAY, 0L);
-                user.setProperty(PlaytimeProperties.GOAL_WEEK, 0L);
-                user.setProperty(PlaytimeProperties.GOAL_MONTH, 0L);
             }
             case "milestones", "milestone" ->
                 user.setProperty(PlaytimeProperties.MILESTONE_PROGRESS, new HashMap<String, Integer>());

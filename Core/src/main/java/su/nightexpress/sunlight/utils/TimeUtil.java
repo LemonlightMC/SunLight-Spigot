@@ -52,6 +52,14 @@ public class TimeUtil {
     return TimeFormats.formatAmount(ms, TimeFormatType.LITERAL);
   }
 
+  public static long parseDurationMillis(final String duration) {
+    if (duration == null) {
+      return 0L;
+    }
+    final long seconds = TimeUtil.parseDurationSeconds(duration);
+    return seconds <= 0L ? 0L : seconds * 1000L;
+  }
+
   /**
    * Parses a duration typed by a player into seconds.
    * <p>

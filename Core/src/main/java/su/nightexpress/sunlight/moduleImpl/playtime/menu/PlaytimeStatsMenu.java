@@ -122,11 +122,11 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                 list.add(this.milestoneItem(user, 31));
 
                 list.add(this.goalItem(32, "Daily", this.module.getEffectivePlaytime(user, PlaytimePeriod.DAY),
-                                this.module.milestoneHandler.getEffectiveGoalMs(user, true, false, false)));
+                                this.module.getSettings().getGoalMs(PlaytimePeriod.DAY)));
                 list.add(this.goalItem(33, "Weekly", this.module.getEffectivePlaytime(user, PlaytimePeriod.WEEK),
-                                this.module.milestoneHandler.getEffectiveGoalMs(user, false, true, false)));
+                                this.module.getSettings().getGoalMs(PlaytimePeriod.WEEK)));
                 list.add(this.goalItem(34, "Monthly", this.module.getEffectivePlaytime(user, PlaytimePeriod.MONTH),
-                                this.module.milestoneHandler.getEffectiveGoalMs(user, false, false, true)));
+                                this.module.getSettings().getGoalMs(PlaytimePeriod.MONTH)));
 
                 list.add(MenuItem.button()
                                 .defaultState(NightItem.fromType(Material.GOLD_INGOT)
