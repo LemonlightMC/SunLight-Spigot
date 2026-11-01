@@ -135,8 +135,8 @@ public class PlaytimePlaceholders {
     if (user == null)
       return "0";
 
-    final long goal = module.milestoneHandler.getEffectiveGoalMs(user, day, week, month);
     final PlaytimePeriod period = day ? PlaytimePeriod.DAY : week ? PlaytimePeriod.WEEK : PlaytimePeriod.MONTH;
+    final long goal = module.getSettings().getGoalMs(period);
     final long current = module.getEffectivePlaytime(user, period);
 
     return switch (metric == null ? "" : metric) {

@@ -15,8 +15,11 @@ import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.api.event.PlaytimeGoalReachedEvent;
 import su.nightexpress.sunlight.api.event.PlaytimeMilestoneEvent;
 import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimeLang;
+import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimeGoal;
 import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimeMilestone;
+import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.user.SunUser;
+import su.nightexpress.sunlight.user.property.UserProperty;
 import su.nightexpress.sunlight.utils.TimeUtil;
 import su.nightexpress.sunlight.utils.Utils;
 
@@ -174,89 +177,55 @@ public class PlaytimeMilestoneHandler {
     return null;
   }
 
-  public long getEffectiveGoalMs(final SunUser user, final boolean day, final boolean week, final boolean month) {
-    if (day) {
-      final long override = Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.GOAL_DAY));
-      return override > 0L ? override : Math.max(0L, module.getSettings().getDailyGoalMs());
-    }
-    if (week) {
-      final long override = Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.GOAL_WEEK));
-      return override > 0L ? override : Math.max(0L, module.getSettings().getWeeklyGoalMs());
-    }
-    final long override = Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.GOAL_MONTH));
-    return override > 0L ? override : Math.max(0L, module.getSettings().getMonthlyGoalMs());
-  }
-
   public void checkGoals(final Player player, final SunUser user) {
-    final long day = Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.DAY));
-    final long week = Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.WEEK));
-    final long month = Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.MONTH));
+    this.checkGoal(player, user, PlaytimePeriod.DAY, "Daily",
+        PlaytimeProperties.DAY, PlaytimeProperties.DAY_KEY,
+        PlaytimeProperties.REWARDED_DAY_KEY, PlaytimeProperties.REMINDED_DAY_KEY);
+    this.checkGoal(player, user, PlaytimePeriod.WEEK, "Weekly",
+        PlaytimeProperties.WEEK, PlaytimeProperties.WEEK_KEY,
+        PlaytimeProperties.REWARDED_WEEK_KEY, PlaytimeProperties.REMINDED_WEEK_KEY);
+    this.checkGoal(player, user, PlaytimePeriod.MONTH, "Monthly",
+        PlaytimeProperties.MONTH, PlaytimeProperties.MONTH_KEY,
+        PlaytimeProperties.REWARDED_MONTH_KEY, PlaytimeProperties.REMINDED_MONTH_KEY);
+  }
 
-    final long dayKey = user.getPropertyOrDefault(PlaytimeProperties.DAY_KEY);
-    final long weekKey = user.getPropertyOrDefault(PlaytimeProperties.WEEK_KEY);
-    final long monthKey = user.getPropertyOrDefault(PlaytimeProperties.MONTH_KEY);
-
-    final long dayGoal = this.getEffectiveGoalMs(user, true, false, false);
-    final long weekGoal = this.getEffectiveGoalMs(user, false, true, false);
-    final long monthGoal = this.getEffectiveGoalMs(user, false, false, true);
-
-    if (dayGoal > 0L) {
-      if (day >= dayGoal) {
-        if (user.getPropertyOrDefault(PlaytimeProperties.REWARDED_DAY_KEY) != dayKey) {
-          user.setProperty(PlaytimeProperties.REWARDED_DAY_KEY, dayKey);
-          this.giveGoalReward(player, module.getSettings().getDailyRewards(), "Daily", day);
-        }
-      } else if (module.getSettings().isRemindersEnabled()) {
-        final long remaining = dayGoal - day;
-        if (remaining > 0L && remaining <= module.getSettings().getDayReminderWindowMs()
-            && user.getPropertyOrDefault(PlaytimeProperties.REMINDED_DAY_KEY) != dayKey) {
-          user.setProperty(PlaytimeProperties.REMINDED_DAY_KEY, dayKey);
-          module.sendPrefixed(PlaytimeLang.REMINDER_GOAL, player, b -> b
-              .with(SLPlaceholders.GENERIC_NAME, () -> "Daily")
-              .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(remaining)));
-        }
-      }
+  private void checkGoal(final Player player, final SunUser user, final PlaytimePeriod period,
+      final String goalName, final UserProperty<Long> counter, final UserProperty<Long> periodKey,
+      final UserProperty<Long> rewardedKey, final UserProperty<Long> remindedKey) {
+    final PlaytimeGoal goal = module.getSettings().getGoal(period);
+    if (goal == null) {
+      return;
+    }
+    final long goalMs = goal.duration();
+    if (goalMs <= 0L) {
+      return;
     }
 
-    if (weekGoal > 0L) {
-      if (week >= weekGoal) {
-        if (user.getPropertyOrDefault(PlaytimeProperties.REWARDED_WEEK_KEY) != weekKey) {
-          user.setProperty(PlaytimeProperties.REWARDED_WEEK_KEY, weekKey);
-          this.giveGoalReward(player, module.getSettings().getWeeklyRewards(), "Weekly", week);
-        }
-      } else if (module.getSettings().isRemindersEnabled()) {
-        final long remaining = weekGoal - week;
-        if (remaining > 0L && remaining <= module.getSettings().getWeekReminderWindowMs()
-            && user.getPropertyOrDefault(PlaytimeProperties.REMINDED_WEEK_KEY) != weekKey) {
-          user.setProperty(PlaytimeProperties.REMINDED_WEEK_KEY, weekKey);
-          module.sendPrefixed(PlaytimeLang.REMINDER_GOAL, player, b -> b
-              .with(SLPlaceholders.GENERIC_NAME, () -> "Weekly")
-              .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(remaining)));
-        }
-      }
-    }
+    final long playtime = Math.max(0L, user.getPropertyOrDefault(counter));
+    final long key = user.getPropertyOrDefault(periodKey);
 
-    if (monthGoal > 0L) {
-      if (month >= monthGoal) {
-        if (user.getPropertyOrDefault(PlaytimeProperties.REWARDED_MONTH_KEY) != monthKey) {
-          user.setProperty(PlaytimeProperties.REWARDED_MONTH_KEY, monthKey);
-          this.giveGoalReward(player, module.getSettings().getMonthlyRewards(), "Monthly", month);
-        }
-      } else if (module.getSettings().isRemindersEnabled()) {
-        final long remaining = monthGoal - month;
-        if (remaining > 0L && remaining <= module.getSettings().getMonthReminderWindowMs()
-            && user.getPropertyOrDefault(PlaytimeProperties.REMINDED_MONTH_KEY) != monthKey) {
-          user.setProperty(PlaytimeProperties.REMINDED_MONTH_KEY, monthKey);
-          module.sendPrefixed(PlaytimeLang.REMINDER_GOAL, player, b -> b
-              .with(SLPlaceholders.GENERIC_NAME, () -> "Monthly")
-              .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(remaining)));
-        }
+    if (playtime >= goalMs) {
+      if (user.getPropertyOrDefault(rewardedKey) != key) {
+        user.setProperty(rewardedKey, key);
+        this.giveGoalReward(player, goalName, playtime, goal.rewards());
+      }
+    } else if (module.getSettings().isRemindersEnabled()) {
+      if (goalMs - playtime <= goal.remainderWindow()
+          && user.getPropertyOrDefault(remindedKey) != key) {
+        user.setProperty(remindedKey, key);
+        sendRemainder(player, goalName, goalMs - playtime);
       }
     }
   }
 
-  private void giveGoalReward(final Player player, final List<String> commands, final String goalName,
-      final long playtime) {
+  private void sendRemainder(final Player player, final String goalName, final long remaining) {
+    module.sendPrefixed(PlaytimeLang.REMINDER_GOAL, player, b -> b
+        .with(SLPlaceholders.GENERIC_NAME, () -> goalName)
+        .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(remaining)));
+  }
+
+  private void giveGoalReward(final Player player, final String goalName, final long playtime,
+      final List<String> commands) {
     module.sendPrefixed(PlaytimeLang.REWARD_GOAL, player, b -> b
         .with(SLPlaceholders.GENERIC_NAME, () -> goalName));
     module.dispatchRewardCommands(player, commands);

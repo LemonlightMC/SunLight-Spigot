@@ -19,7 +19,6 @@ public final class SunNMSFactory {
 
     private static final String NMS_1_21_11 = "su.nightexpress.sunlight.nms.mc_1_21_11.MC_1_21_11";
     private static final String NMS_26_1     = "su.nightexpress.sunlight.nms.v26p1.NMSv26p1";
-    private static final String NMS_26_2     = "su.nightexpress.sunlight.nms.v26p2.NMSv26p2";
 
     /**
      * Version implementations to load. A version that is absent falls back to the
@@ -27,14 +26,10 @@ public final class SunNMSFactory {
      * until an explicit mapping is added.
      */
     private static final Map<Version, String> IMPLEMENTATIONS = Map.of(
-        Version.MC_1_21_11, NMS_1_21_11,
-        Version.MC_26_1, NMS_26_1,
-        Version.MC_26_1_1, NMS_26_1,
-        Version.MC_26_1_2, NMS_26_1,
-        Version.MC_26_2, NMS_26_2
+        Version.MC_1_21_11, NMS_1_21_11
     );
 
-    private static final String FALLBACK = "su.nightexpress.sunlight.nms.v26p3.NMSv26p3";
+    private static final String FALLBACK = NMS_26_1;
 
     private SunNMSFactory() {
     }

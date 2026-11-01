@@ -76,12 +76,12 @@ public class PlaytimeLang implements LangContainer {
 
     public static final MessageLocale GOAL_RESET = LangEntry.builder("Playtime.Goal.Reset")
         .chatMessage(
-            GREEN.wrap(GENERIC_NAME) + GREEN.wrap(" goal reset to the server default."));
+            GREEN.wrap(GENERIC_NAME) + GREEN.wrap(" goal is disabled."));
 
     public static final MessageLocale GOAL_ERROR_RANGE = LangEntry.builder("Playtime.Goal.Error.Range")
         .chatMessage(
             SOFT_RED.wrap("Allowed minutes range: ") + WHITE.wrap(GENERIC_MIN) + SOFT_RED.wrap(" – ")
-                + WHITE.wrap(GENERIC_MAX) + SOFT_RED.wrap(". Use 0 to reset."));
+                + WHITE.wrap(GENERIC_MAX) + SOFT_RED.wrap(". Use 0 to disable the goal."));
 
     public static final MessageLocale REWARD_GOAL = LangEntry.builder("Playtime.Goal.Reward")
         .chatMessage(

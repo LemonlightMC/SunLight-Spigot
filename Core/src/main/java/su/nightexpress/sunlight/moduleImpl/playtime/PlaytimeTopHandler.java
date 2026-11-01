@@ -47,7 +47,7 @@ public class PlaytimeTopHandler {
     this.topRequested = true;
     period = period == null ? PlaytimePeriod.ALLTIME : period;
     final List<TopEntry> cached = this.topCache.getOrDefault(period, List.of());
-    if (System.currentTimeMillis() - this.topCacheTimestamp > module.getSettings().getWeekReminderWindowMs()) {
+    if (System.currentTimeMillis() - this.topCacheTimestamp > module.getSettings().getTopRefreshInterval()) {
       this.refreshTopCacheAsync();
     }
     return cached;

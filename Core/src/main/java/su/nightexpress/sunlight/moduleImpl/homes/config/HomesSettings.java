@@ -9,9 +9,8 @@ import su.nightexpress.nightcore.configuration.AbstractConfig;
 import su.nightexpress.nightcore.configuration.ConfigProperty;
 import su.nightexpress.nightcore.configuration.ConfigType;
 import su.nightexpress.nightcore.configuration.ConfigTypes;
-import su.nightexpress.nightcore.configuration.codec.ConfigCodecs;
-import su.nightexpress.nightcore.integration.item.ItemBridge;
-import su.nightexpress.nightcore.integration.item.codec.AdaptedItemCodec;
+import su.nightexpress.nightcore.integration.item.impl.AdaptedItemStack;
+import su.nightexpress.nightcore.integration.item.impl.AdaptedVanillaStack;
 import su.nightexpress.nightcore.integration.permission.PermissionPlugins;
 import su.nightexpress.nightcore.util.BukkitThing;
 import su.nightexpress.nightcore.util.LowerCase;
@@ -26,8 +25,8 @@ import java.util.Set;
 public class HomesSettings extends AbstractConfig {
 
         private static final ConfigType<AdaptedItem> ADAPTED_ITEM_CONFIG_TYPE = ConfigType.of(
-                        AdaptedItemCodec::read,
-                        AdaptedItemCodec::write);
+                        AdaptedItemStack::read,
+                        FileConfig::set);
 
         private static final ConfigType<RankTable> RANK_TABLE_CONFIG_TYPE = ConfigType.of(
                         RankTable::read,
@@ -59,7 +58,7 @@ public class HomesSettings extends AbstractConfig {
                         "");
 
         private final ConfigProperty<Map<String, AdaptedItem>> iconPresets = this.addProperty(
-                        ConfigCodecs.forMapWithLowerKeys(ADAPTED_ITEM_CONFIG_TYPE),
+                        ConfigTypes.forMapWithLowerKeys(ADAPTED_ITEM_CONFIG_TYPE),
                         "Home.Icon.Presets",
                         HomeDefaults.getDefaultIconPresets(),
                         "");
@@ -122,7 +121,7 @@ public class HomesSettings extends AbstractConfig {
         public AdaptedItem getIconOrDefault(String iconId) {
                 return Optional.ofNullable(this.getIconPreset(iconId))
                                 .or(() -> Optional.ofNullable(this.getIconPreset(this.getDefaultIconId())))
-                                .orElse(ItemBridge.get().adaptOrDummy(new ItemStack(Material.RED_BED)));
+                                .orElse(AdaptedVanillaStack.of(new ItemStack(Material.RED_BED)));
         }
 
         public String getDefaultIconId() {
