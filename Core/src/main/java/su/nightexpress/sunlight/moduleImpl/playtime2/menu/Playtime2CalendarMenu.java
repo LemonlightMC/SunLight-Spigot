@@ -1,0 +1,218 @@
+package su.nightexpress.sunlight.moduleImpl.playtime2.menu;
+
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GOLD;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GREEN;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.RED;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.UNDERLINED;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.WHITE;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.IntStream;
+
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.MenuType;
+
+import su.nightexpress.nightcore.config.FileConfig;
+import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
+import su.nightexpress.nightcore.ui.inventory.menu.AbstractMenu;
+import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
+import su.nightexpress.nightcore.util.bukkit.NightItem;
+import su.nightexpress.sunlight.moduleImpl.playtime2.Playtime2Module;
+import su.nightexpress.sunlight.moduleImpl.playtime2.config.Playtime2Lang;
+import su.nightexpress.sunlight.user.SunUser;
+import su.nightexpress.sunlight.utils.TimeUtil;
+
+/**
+ * One month of a player's daily history. Weeks start on Monday, matching the
+ * weekly streak, and each day is coloured by how much was played that day.
+ * Previous and next months open a fresh menu, so the viewed month never has
+ * to be shared state.
+ */
+public class Playtime2CalendarMenu extends AbstractMenu {
+
+    private static final DateTimeFormatter MONTH = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy", Locale.ENGLISH);
+
+    /** First slot of the day grid: row 1, column 0 of a 9-wide inventory. */
+    private static final int GRID_ORIGIN = 9;
+
+    private final Playtime2Module module;
+    private final UUID targetId;
+    private final YearMonth month;
+
+    public Playtime2CalendarMenu(Playtime2Module module, UUID targetId, YearMonth month) {
+        super(MenuType.GENERIC_9X6, Playtime2Lang.MENU_TITLE_CALENDAR.text());
+        this.module = module;
+        this.targetId = targetId;
+        this.month = month;
+    }
+
+    @Override
+    public void registerActions() {
+    }
+
+    @Override
+    public void registerConditions() {
+    }
+
+    @Override
+    public void defineDefaultLayout() {
+        this.addBackgroundItem(Material.BLACK_STAINED_GLASS_PANE, IntStream.range(0, 9).toArray());
+        this.addBackgroundItem(Material.BLACK_STAINED_GLASS_PANE, IntStream.range(45, 54).toArray());
+    }
+
+    @Override
+    protected void onLoad(FileConfig config) {
+    }
+
+    @Override
+    protected void onClick(ViewerContext context, InventoryClickEvent event) {
+    }
+
+    @Override
+    protected void onDrag(ViewerContext context, InventoryDragEvent event) {
+    }
+
+    @Override
+    protected void onClose(ViewerContext context, InventoryCloseEvent event) {
+    }
+
+    @Override
+    public void onPrepare(ViewerContext context, InventoryView view, Inventory inventory, List<MenuItem> list) {
+        SunUser user = this.module.userManager().getOrFetch(this.targetId).orElse(null);
+        if (user == null) {
+            list.add(MenuItem.button()
+                    .defaultState(NightItem.fromType(Material.BARRIER)
+                            .setDisplayName(RED.wrap("Data unavailable"))
+                            .setLore(List.of(GRAY.wrap("This player has no stored data.")))
+                            .hideAllComponents())
+                    .slots(22)
+                    .build());
+            return;
+        }
+
+        this.addWeekdayHeaders(list);
+        this.addDays(list, user);
+        this.addNavigation(list, context.getPlayer(), user);
+    }
+
+    private void addWeekdayHeaders(List<MenuItem> list) {
+        for (int column = 0; column < 7; column++) {
+            DayOfWeek weekday = DayOfWeek.MONDAY.plus(column);
+            list.add(MenuItem.button()
+                    .defaultState(NightItem.fromType(Material.WHITE_STAINED_GLASS_PANE)
+                            .setDisplayName(GRAY.wrap(weekday.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)))
+                            .hideAllComponents())
+                    .slots(column + 1)
+                    .build());
+        }
+    }
+
+    private void addDays(List<MenuItem> list, SunUser user) {
+        Map<Long, Long> grid = this.module.monthGrid(user.getId(), this.month);
+        LocalDate first = this.month.atDay(1);
+        // Monday is column 0, so the offset is the weekday's ordinal.
+        int offset = first.getDayOfWeek().getValue() - 1;
+        long today = this.module.currentKeys().day();
+
+        for (int day = 1; day <= this.month.lengthOfMonth(); day++) {
+            LocalDate date = this.month.atDay(day);
+            long epochDay = date.toEpochDay();
+            long millis = grid.getOrDefault(epochDay, 0L);
+            int slot = GRID_ORIGIN + offset + day - 1;
+
+            List<String> lore = new ArrayList<>();
+            lore.add(millis > 0L ? WHITE.wrap(TimeUtil.formatMillis(millis)) : GRAY.wrap("Not played"));
+            if (epochDay == today) {
+                lore.add("");
+                lore.add(GREEN.wrap("Today"));
+            }
+
+            list.add(MenuItem.button()
+                    .defaultState(NightItem.fromType(this.module.getSettings().calendarMaterial(millis))
+                            .setDisplayName(GOLD.wrap(date.format(DAY)))
+                            .setLore(lore)
+                            .setAmount(day)
+                            .hideAllComponents())
+                    .slots(slot)
+                    .build());
+        }
+    }
+
+    private void addNavigation(List<MenuItem> list, Player viewer, SunUser user) {
+        YearMonth current = YearMonth.now(this.module.zone());
+
+        list.add(MenuItem.button()
+                .defaultState(NightItem.fromType(Material.ARROW)
+                        .setDisplayName(GOLD.wrap(Playtime2Lang.MENU_BUTTON_PREVIOUS.text()))
+                        .hideAllComponents(),
+                        actionContext -> this.open(user, this.month.minusMonths(1), actionContext.getPlayer()))
+                .slots(45)
+                .build());
+
+        list.add(MenuItem.button()
+                .defaultState(NightItem.fromType(Material.BOOK)
+                        .setDisplayName(GOLD.wrap(this.month.format(MONTH)))
+                        .setLore(List.of(GRAY.wrap("Viewing: ") + WHITE.wrap(user.getName())))
+                        .hideAllComponents())
+                .slots(49)
+                .build());
+
+        // There is nothing to show past the current month.
+        if (this.month.isBefore(current)) {
+            list.add(MenuItem.button()
+                    .defaultState(NightItem.fromType(Material.ARROW)
+                            .setDisplayName(GOLD.wrap(Playtime2Lang.MENU_BUTTON_NEXT.text()))
+                            .hideAllComponents(),
+                            actionContext -> this.open(user, this.month.plusMonths(1), actionContext.getPlayer()))
+                    .slots(53)
+                    .build());
+        }
+
+        list.add(MenuItem.button()
+                .defaultState(NightItem.fromType(Material.BOOK)
+                        .setDisplayName(GOLD.wrap(Playtime2Lang.MENU_BUTTON_BACK.text()))
+                        .setLore(List.of(GRAY.wrap("Back to the statistics."), "",
+                                GOLD.wrap("→ " + UNDERLINED.wrap("Click to open."))))
+                        .hideAllComponents(),
+                        actionContext -> this.module.openStatsMenu(actionContext.getPlayer(), user))
+                .slots(48)
+                .build());
+
+        list.add(MenuItem.button()
+                .defaultState(NightItem.fromType(Material.BARRIER)
+                        .setDisplayName(GRAY.wrap(Playtime2Lang.MENU_BUTTON_CLOSE.text()))
+                        .hideAllComponents(),
+                        actionContext -> actionContext.getViewer().closeMenu())
+                .slots(50)
+                .build());
+    }
+
+    private void open(SunUser user, YearMonth month, Player viewer) {
+        new Playtime2CalendarMenu(this.module, user.getId(), month).show(this.module.plugin(), viewer);
+    }
+
+    @Override
+    public void onReady(ViewerContext context, InventoryView view, Inventory inventory) {
+    }
+
+    @Override
+    public void onRender(ViewerContext context, InventoryView view, Inventory inventory) {
+    }
+}

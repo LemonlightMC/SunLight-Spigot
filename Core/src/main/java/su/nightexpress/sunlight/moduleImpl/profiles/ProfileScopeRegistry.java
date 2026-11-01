@@ -91,11 +91,11 @@ public class ProfileScopeRegistry {
         this.setPropertyDefault("reportsrewarddaykey", ProfileScope.GLOBAL);
         this.setPropertyDefault("reportsrewarddaycount", ProfileScope.GLOBAL);
         this.setPropertyDefault("reportsrewardlastpaid", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_total", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_year", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_month", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_week", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_day", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_v2_total", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_v2_year", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_v2_month", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_v2_week", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_v2_day", ProfileScope.GLOBAL);
         this.setPropertyDefault("profile_active", ProfileScope.GLOBAL);
     }
 
