@@ -17,28 +17,31 @@ import static su.nightexpress.sunlight.moduleImpl.friends.data.FriendsColumns.*;
 public class FriendsQueries {
 
     /**
-     * Rows are read defensively: a row whose uuids do not parse is dropped rather than aborting
-     * the load, because one unreadable row must not cost a player every other friendship they have.
+     * Rows are read defensively: a row whose uuids do not parse is dropped rather
+     * than aborting
+     * the load, because one unreadable row must not cost a player every other
+     * friendship they have.
      */
     public static final RowMapper<FriendRecord> FRIEND_LOADER = resultSet -> {
         try {
-            UUID ownerId = readUuid(resultSet, OWNER_ID.getName());
-            UUID friendId = readUuid(resultSet, FRIEND_ID.getName());
-            String ownerName = resultSet.getString(OWNER_NAME.getName());
-            String friendName = resultSet.getString(FRIEND_NAME.getName());
+            final UUID ownerId = readUuid(resultSet, OWNER_ID.getName());
+            final UUID friendId = readUuid(resultSet, FRIEND_ID.getName());
+            final String ownerName = resultSet.getString(OWNER_NAME.getName());
+            final String friendName = resultSet.getString(FRIEND_NAME.getName());
 
             if (ownerId == null || friendId == null || ownerName == null || friendName == null) {
                 return null;
             }
             if (ownerId.equals(friendId)) {
-                // A self-friendship is meaningless and would inflate every count that reads this row.
+                // A self-friendship is meaningless and would inflate every count that reads
+                // this row.
                 return null;
             }
 
             return new FriendRecord(new UserInfo(ownerId, ownerName), new UserInfo(friendId, friendName),
                     resultSet.getLong(CREATE_DATE.getName()),
                     resultSet.getBoolean(FAVORITE.getName()));
-        } catch (SQLException exception) {
+        } catch (final SQLException exception) {
             exception.printStackTrace();
             return null;
         }
@@ -46,10 +49,10 @@ public class FriendsQueries {
 
     public static final RowMapper<BlockRecord> BLOCK_LOADER = resultSet -> {
         try {
-            UUID blockerId = readUuid(resultSet, BLOCKER_ID.getName());
-            UUID blockedId = readUuid(resultSet, BLOCKED_ID.getName());
-            String blockerName = resultSet.getString(BLOCKER_NAME.getName());
-            String blockedName = resultSet.getString(BLOCKED_NAME.getName());
+            final UUID blockerId = readUuid(resultSet, BLOCKER_ID.getName());
+            final UUID blockedId = readUuid(resultSet, BLOCKED_ID.getName());
+            final String blockerName = resultSet.getString(BLOCKER_NAME.getName());
+            final String blockedName = resultSet.getString(BLOCKED_NAME.getName());
 
             if (blockerId == null || blockedId == null || blockerName == null || blockedName == null) {
                 return null;
@@ -60,7 +63,7 @@ public class FriendsQueries {
 
             return new BlockRecord(new UserInfo(blockerId, blockerName), new UserInfo(blockedId, blockedName),
                     resultSet.getLong(BLOCK_CREATE_DATE.getName()));
-        } catch (SQLException exception) {
+        } catch (final SQLException exception) {
             exception.printStackTrace();
             return null;
         }
@@ -102,17 +105,18 @@ public class FriendsQueries {
             .build();
 
     /**
-     * Reads a uuid column that may be null, which is what the nullable-column reads look like
+     * Reads a uuid column that may be null, which is what the nullable-column reads
+     * look like
      * across SQLite and MySQL alike.
      */
-    private static UUID readUuid(ResultSet resultSet, String column) throws SQLException {
-        String raw = resultSet.getString(column);
+    private static UUID readUuid(final ResultSet resultSet, final String column) throws SQLException {
+        final String raw = resultSet.getString(column);
         if (raw == null || raw.isBlank()) {
             return null;
         }
         try {
             return UUID.fromString(raw.trim());
-        } catch (IllegalArgumentException exception) {
+        } catch (final IllegalArgumentException exception) {
             return null;
         }
     }

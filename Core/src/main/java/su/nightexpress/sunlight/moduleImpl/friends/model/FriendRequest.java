@@ -9,8 +9,10 @@ import java.util.UUID;
 /**
  * A pending friend request.
  * <p>
- * Lives in memory only, like the PTP request queue: a request nobody answered before the timeout
- * is not worth a database row, and writing one per attempt would hand the database exactly the
+ * Lives in memory only, like the PTP request queue: a request nobody answered
+ * before the timeout
+ * is not worth a database row, and writing one per attempt would hand the
+ * database exactly the
  * flooding problem the request limits exist to prevent.
  */
 public class FriendRequest {
@@ -19,13 +21,13 @@ public class FriendRequest {
     private final UserInfo target;
     private final long expireDate;
 
-    public FriendRequest(UserInfo sender, UserInfo target, long expireDate) {
+    public FriendRequest(final UserInfo sender, final UserInfo target, final long expireDate) {
         this.sender = sender;
         this.target = target;
         this.expireDate = expireDate;
     }
 
-    public static FriendRequest create(UserInfo sender, UserInfo target, int timeoutSeconds) {
+    public static FriendRequest create(final UserInfo sender, final UserInfo target, final int timeoutSeconds) {
         return new FriendRequest(sender, target, TimeUtil.createFutureTimestamp(timeoutSeconds));
     }
 
@@ -62,33 +64,33 @@ public class FriendRequest {
     }
 
     /** Whether this request runs from that sender to that target. */
-    public boolean isFrom(UUID senderId, UUID targetId) {
+    public boolean isFrom(final UUID senderId, final UUID targetId) {
         return this.getSenderId().equals(senderId) && this.getTargetId().equals(targetId);
     }
 
     /** Whether that player is the one who sent it. */
-    public boolean isSentBy(UUID playerId) {
+    public boolean isSentBy(final UUID playerId) {
         return this.getSenderId().equals(playerId);
     }
 
     /** Whether that player is the one who receives it. */
-    public boolean isSentTo(UUID playerId) {
+    public boolean isSentTo(final UUID playerId) {
         return this.getTargetId().equals(playerId);
     }
 
     /** Whether this request is the same pair as that one, ignoring direction. */
-    public boolean isBetween(UUID playerId, UUID otherId) {
+    public boolean isBetween(final UUID playerId, final UUID otherId) {
         return (this.getSenderId().equals(playerId) && this.getTargetId().equals(otherId))
                 || (this.getSenderId().equals(otherId) && this.getTargetId().equals(playerId));
     }
 
     /** Whether that name matches the sender. */
-    public boolean isSender(String name) {
+    public boolean isSender(final String name) {
         return name != null && this.sender.isUser(name);
     }
 
     /** Whether that name matches the receiver. */
-    public boolean isTarget(String name) {
+    public boolean isTarget(final String name) {
         return name != null && this.target.isUser(name);
     }
 

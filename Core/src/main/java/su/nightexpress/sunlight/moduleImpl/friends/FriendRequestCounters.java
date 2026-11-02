@@ -12,8 +12,10 @@ import java.util.UUID;
 /**
  * Reads and advances the daily request counters stored on a {@link SunUser}.
  * <p>
- * Kept out of the module so the rollover rule lives in exactly one place: a stored count from an
- * earlier day reads as zero rather than silently carrying yesterday's total into today.
+ * Kept out of the module so the rollover rule lives in exactly one place: a
+ * stored count from an
+ * earlier day reads as zero rather than silently carrying yesterday's total
+ * into today.
  */
 public final class FriendRequestCounters {
 
@@ -21,7 +23,7 @@ public final class FriendRequestCounters {
     }
 
     /** How many requests that player has sent today, server-wide. */
-    public static int getTotal(@NotNull SunUser user) {
+    public static int getTotal(@NotNull final SunUser user) {
         if (!today().equals(user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_KEY))) {
             return 0;
         }
@@ -29,7 +31,7 @@ public final class FriendRequestCounters {
     }
 
     /** How many requests that player has sent today to one specific target. */
-    public static int getForTarget(@NotNull SunUser user, @NotNull UUID targetId) {
+    public static int getForTarget(@NotNull final SunUser user, @NotNull final UUID targetId) {
         if (!today().equals(user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_KEY))) {
             return 0;
         }
@@ -37,17 +39,19 @@ public final class FriendRequestCounters {
     }
 
     /**
-     * Counts one request from that player to that target, rolling the day over when needed.
+     * Counts one request from that player to that target, rolling the day over when
+     * needed.
      * <p>
-     * Both counters advance together so the per-target read cannot disagree with the total.
+     * Both counters advance together so the per-target read cannot disagree with
+     * the total.
      */
-    public static void increment(@NotNull SunUser user, @NotNull UUID targetId) {
-        String today = today();
-        boolean sameDay = today.equals(user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_KEY));
+    public static void increment(@NotNull final SunUser user, @NotNull final UUID targetId) {
+        final String today = today();
+        final boolean sameDay = today.equals(user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_KEY));
 
-        int total = sameDay ? user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_COUNT) : 0;
+        final int total = sameDay ? user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_COUNT) : 0;
 
-        Map<String, Integer> targets = sameDay
+        final Map<String, Integer> targets = sameDay
                 ? new HashMap<>(targetCounts(user))
                 : new HashMap<>();
         targets.merge(targetId.toString(), 1, Integer::sum);
@@ -58,8 +62,8 @@ public final class FriendRequestCounters {
         user.markDirty();
     }
 
-    private static Map<String, Integer> targetCounts(@NotNull SunUser user) {
-        Map<String, Integer> map = user.getPropertyOrDefault(FriendsProperties.REQUEST_TARGET_DAY_COUNTS);
+    private static Map<String, Integer> targetCounts(@NotNull final SunUser user) {
+        final Map<String, Integer> map = user.getPropertyOrDefault(FriendsProperties.REQUEST_TARGET_DAY_COUNTS);
         return map == null ? Map.of() : map;
     }
 

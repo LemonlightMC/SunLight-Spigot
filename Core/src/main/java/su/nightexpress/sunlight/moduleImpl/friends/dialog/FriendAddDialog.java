@@ -22,7 +22,8 @@ import su.nightexpress.sunlight.utils.Utils;
 /**
  * Asks for a name, then queues a request for it.
  * <p>
- * The name is resolved through the user manager, so it works for an offline player as well, and
+ * The name is resolved through the user manager, so it works for an offline
+ * player as well, and
  * the request goes through the same path the command uses.
  */
 public class FriendAddDialog extends Dialog<String> {
@@ -42,12 +43,12 @@ public class FriendAddDialog extends Dialog<String> {
 
     private final FriendsModule module;
 
-    public FriendAddDialog(FriendsModule module) {
+    public FriendAddDialog(final FriendsModule module) {
         this.module = module;
     }
 
     @Override
-    public WrappedDialog create(Player player, String unused) {
+    public WrappedDialog create(final Player player, final String unused) {
         return Dialogs.builder()
                 .base(DialogBases.builder(TITLE)
                         .body(DialogBodies.plainMessage(BODY))
@@ -59,13 +60,13 @@ public class FriendAddDialog extends Dialog<String> {
                         return;
                     }
 
-                    String name = nbtHolder.getText(JSON_NAME, "");
+                    final String name = nbtHolder.getText(JSON_NAME, "");
                     if (name.isBlank()) {
                         return;
                     }
 
                     this.module.userManager().loadTargetProfile(name).thenAcceptAsync(profile -> {
-                        Player target = profile == null ? null : Utils.getPlayer(profile.id());
+                        final Player target = profile == null ? null : Utils.getPlayer(profile.id());
                         if (target == null) {
                             // Requests are a conversation between two online players, so an offline
                             // one has nothing to receive the request.

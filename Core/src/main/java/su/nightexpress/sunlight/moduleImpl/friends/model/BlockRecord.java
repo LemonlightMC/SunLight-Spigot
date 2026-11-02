@@ -7,15 +7,16 @@ import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 
 import su.nightexpress.nightcore.user.UserInfo;
-import su.nightexpress.sunlight.user.SunUser;
 
 import java.util.UUID;
 
 /**
  * A friendship that a player has blocked one side of.
  * <p>
- * Deliberately not merged into the friendship table: a block must survive the friendship being
- * deleted, and it has no favourite flag, create date per side, or symmetry to model.
+ * Deliberately not merged into the friendship table: a block must survive the
+ * friendship being
+ * deleted, and it has no favourite flag, create date per side, or symmetry to
+ * model.
  */
 @NullMarked
 public class BlockRecord {
@@ -24,13 +25,13 @@ public class BlockRecord {
     private final UserInfo blocked;
     private final long createDate;
 
-    public BlockRecord(UserInfo blocker, UserInfo blocked, long createDate) {
+    public BlockRecord(final UserInfo blocker, final UserInfo blocked, final long createDate) {
         this.blocker = blocker;
         this.blocked = blocked;
         this.createDate = createDate;
     }
 
-    public static BlockRecord create(UserInfo blocker, UserInfo blocked) {
+    public static BlockRecord create(final UserInfo blocker, final UserInfo blocked) {
         return new BlockRecord(blocker, blocked, System.currentTimeMillis());
     }
 
@@ -55,19 +56,21 @@ public class BlockRecord {
     }
 
     /**
-     * Whether this block stands between those two players in either direction. Blocking is not
-     * symmetric in storage but it is in effect: if either has blocked the other, neither may send
+     * Whether this block stands between those two players in either direction.
+     * Blocking is not
+     * symmetric in storage but it is in effect: if either has blocked the other,
+     * neither may send
      * a request.
      */
-    public boolean isBetween(@NotNull UUID playerId, @NotNull UUID otherId) {
+    public boolean isBetween(@NotNull final UUID playerId, @NotNull final UUID otherId) {
         return this.involves(playerId) && this.involves(otherId);
     }
 
-    public boolean involves(@NotNull UUID playerId) {
+    public boolean involves(@NotNull final UUID playerId) {
         return this.blocker.id().equals(playerId) || this.blocked.id().equals(playerId);
     }
 
-    public boolean isBlocking(@NotNull UUID playerId) {
+    public boolean isBlocking(@NotNull final UUID playerId) {
         return this.blocker.id().equals(playerId);
     }
 

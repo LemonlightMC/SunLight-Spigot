@@ -20,7 +20,8 @@ import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.utils.Utils;
 
 /**
- * Confirms a friend removal. Removal takes the friendship out from both sides, so it asks first.
+ * Confirms a friend removal. Removal takes the friendship out from both sides,
+ * so it asks first.
  */
 public class FriendRemoveDialog extends Dialog<String> {
 
@@ -34,12 +35,12 @@ public class FriendRemoveDialog extends Dialog<String> {
 
     private final FriendsModule module;
 
-    public FriendRemoveDialog(FriendsModule module) {
+    public FriendRemoveDialog(final FriendsModule module) {
         this.module = module;
     }
 
     @Override
-    public WrappedDialog create(Player player, String friendName) {
+    public WrappedDialog create(final Player player, final String friendName) {
         return Dialogs.builder()
                 .base(DialogBases.builder(TITLE)
                         .body(DialogBodies.plainMessage(BODY.replace(PlaceholderContext.builder()
@@ -48,7 +49,7 @@ public class FriendRemoveDialog extends Dialog<String> {
                         .build())
                 .type(DialogTypes.multiAction(DialogButtons.confirm()).exitAction(DialogButtons.cancel()).build())
                 .handleResponse(DialogActions.CONFIRM, (viewer, identifier, nbtHolder) -> {
-                    Player friend = Utils.getPlayer(friendName);
+                    final Player friend = Utils.getPlayer(friendName);
                     if (friend == null) {
                         viewer.callback();
                         return;

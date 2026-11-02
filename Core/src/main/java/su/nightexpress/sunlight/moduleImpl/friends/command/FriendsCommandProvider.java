@@ -29,31 +29,32 @@ import su.nightexpress.sunlight.utils.Utils;
 /**
  * {@code /friend} and everything under it.
  * <p>
- * The root takes no argument and opens the menu when that is enabled, so the menu is the default
+ * The root takes no argument and opens the menu when that is enabled, so the
+ * menu is the default
  * surface and every action still has a command form for players who prefer one.
  */
 public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
 
     private static final String COMMAND_ROOT = "friend";
 
-    private static final String COMMAND_ADD     = "add";
-    private static final String COMMAND_REMOVE  = "remove";
-    private static final String COMMAND_ACCEPT  = "accept";
+    private static final String COMMAND_ADD = "add";
+    private static final String COMMAND_REMOVE = "remove";
+    private static final String COMMAND_ACCEPT = "accept";
     private static final String COMMAND_DECLINE = "decline";
-    private static final String COMMAND_CANCEL  = "cancel";
-    private static final String COMMAND_LIST    = "list";
+    private static final String COMMAND_CANCEL = "cancel";
+    private static final String COMMAND_LIST = "list";
     private static final String COMMAND_PENDING = "pending";
     private static final String COMMAND_BLOCKED = "blocked";
-    private static final String COMMAND_BLOCK   = "block";
+    private static final String COMMAND_BLOCK = "block";
     private static final String COMMAND_UNBLOCK = "unblock";
-    private static final String COMMAND_TOGGLE  = "toggle";
-    private static final String COMMAND_ON      = "on";
-    private static final String COMMAND_OFF     = "off";
-    private static final String COMMAND_JUMP    = "jump";
+    private static final String COMMAND_TOGGLE = "toggle";
+    private static final String COMMAND_ON = "on";
+    private static final String COMMAND_OFF = "off";
+    private static final String COMMAND_JUMP = "jump";
     private static final String COMMAND_MESSAGE = "message";
     private static final String COMMAND_FAVORITE = "favorite";
 
-    public FriendsCommandProvider(FriendsModule module) {
+    public FriendsCommandProvider(final FriendsModule module) {
         super(module, "friends");
     }
 
@@ -66,7 +67,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.friendSuggestions(info.sender())))
                 .executes(this::addFriend))
-            .under(COMMAND_ROOT);
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_REMOVE, command -> command
                 .withFullDescription(FriendsLang.COMMAND_REMOVE_DESC.text())
@@ -75,8 +76,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.friendSuggestions(info.sender())))
                 .executes(this::removeFriend))
-            .aliases("delete", "rm")
-            .under(COMMAND_ROOT);
+                .aliases("delete", "rm")
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_ACCEPT, command -> command
                 .withFullDescription(FriendsLang.COMMAND_ACCEPT_DESC.text())
@@ -85,8 +86,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withOptionalArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.incomingSuggestions(info.sender())))
                 .executes(this::acceptRequest))
-            .aliases("yes")
-            .under(COMMAND_ROOT);
+                .aliases("yes")
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_DECLINE, command -> command
                 .withFullDescription(FriendsLang.COMMAND_DECLINE_DESC.text())
@@ -95,8 +96,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withOptionalArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.incomingSuggestions(info.sender())))
                 .executes(this::declineRequest))
-            .aliases("no", "deny")
-            .under(COMMAND_ROOT);
+                .aliases("no", "deny")
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_CANCEL, command -> command
                 .withFullDescription(FriendsLang.COMMAND_CANCEL_DESC.text())
@@ -105,7 +106,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withOptionalArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.outgoingSuggestions(info.sender())))
                 .executes(this::cancelRequest))
-            .under(COMMAND_ROOT);
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_LIST, command -> command
                 .withFullDescription(FriendsLang.COMMAND_LIST_DESC.text())
@@ -113,7 +114,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withRequirement(sender -> sender instanceof Player)
                 .withOptionalArguments(CommandArgumentConstants.targetArgument())
                 .executes(this::listFriends))
-            .under(COMMAND_ROOT);
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_PENDING, command -> command
                 .withFullDescription(FriendsLang.COMMAND_PENDING_DESC.text())
@@ -123,8 +124,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                     this.module.openPending((Player) sender);
                     return 1;
                 }))
-            .aliases("requests")
-            .under(COMMAND_ROOT);
+                .aliases("requests")
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_BLOCKED, command -> command
                 .withFullDescription(FriendsLang.COMMAND_BLOCKED_DESC.text())
@@ -134,7 +135,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                     this.module.openBlocked((Player) sender);
                     return 1;
                 }))
-            .under(COMMAND_ROOT);
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_BLOCK, command -> command
                 .withFullDescription(FriendsLang.COMMAND_BLOCK_DESC.text())
@@ -143,7 +144,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.friendSuggestions(info.sender())))
                 .executes(this::blockPlayer))
-            .under(COMMAND_ROOT);
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_UNBLOCK, command -> command
                 .withFullDescription(FriendsLang.COMMAND_UNBLOCK_DESC.text())
@@ -152,7 +153,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.blockedSuggestions(info.sender())))
                 .executes(this::unblockPlayer))
-            .under(COMMAND_ROOT);
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_FAVORITE, command -> command
                 .withFullDescription(FriendsLang.COMMAND_FAVORITE_DESC.text())
@@ -161,8 +162,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.friendSuggestions(info.sender())))
                 .executes(this::toggleFavorite))
-            .aliases("favourite", "pin")
-            .under(COMMAND_ROOT);
+                .aliases("favourite", "pin")
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_TOGGLE, command -> this.buildToggle(command, ToggleMode.TOGGLE,
                 FriendsLang.COMMAND_TOGGLE_DESC)).under(COMMAND_ROOT);
@@ -178,19 +179,19 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
                         info -> this.onlineFriendSuggestions(info.sender())))
                 .executes(this::jumpToFriend))
-            .aliases("tp", "warp")
-            .under(COMMAND_ROOT);
+                .aliases("tp", "warp")
+                .under(COMMAND_ROOT);
 
         this.register(COMMAND_MESSAGE, command -> command
                 .withFullDescription(FriendsLang.COMMAND_MESSAGE_DESC.text())
                 .withPermission(FriendsPerms.COMMAND_FRIENDS_MESSAGE)
                 .withRequirement(sender -> sender instanceof Player)
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
-                                info -> this.onlineFriendSuggestions(info.sender())),
+                        info -> this.onlineFriendSuggestions(info.sender())),
                         CommandArgumentConstants.greedy(CommandArgumentConstants.TEXT, info -> List.of()))
                 .executes(this::messageFriend))
-            .aliases("msg", "tell", "whisper", "w")
-            .under(COMMAND_ROOT);
+                .aliases("msg", "tell", "whisper", "w")
+                .under(COMMAND_ROOT);
 
         this.registerRoot(COMMAND_ROOT, command -> command
                 .withFullDescription(FriendsLang.COMMAND_ROOT_DESC.text())
@@ -207,48 +208,48 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                     this.module.openFriends(player);
                     return 1;
                 }))
-            .aliases("friends", "f", "buddy", "bff");
+                .aliases("friends", "f", "buddy", "bff");
     }
 
-    private void buildToggle(CommandAPICommand command, ToggleMode mode, TextLocale description) {
+    private void buildToggle(final CommandAPICommand command, final ToggleMode mode, final TextLocale description) {
         command.withFullDescription(description.text())
                 .withPermission(FriendsPerms.COMMAND_FRIENDS_TOGGLE)
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.NAME,
-                                info -> FriendToggle.ids()),
+                        info -> FriendToggle.ids()),
                         CommandArgumentConstants.targetArgument())
                 .executes((sender, arguments) -> {
                     return this.toggle(sender, arguments, mode);
                 });
     }
 
-    private int toggle(CommandSender sender, CommandArguments arguments, ToggleMode mode) {
-        Object nameObj = arguments.get(CommandArgumentConstants.NAME);
-        String name = nameObj instanceof final String value ? value : null;
+    private int toggle(final CommandSender sender, final CommandArguments arguments, final ToggleMode mode) {
+        final Object nameObj = arguments.get(CommandArgumentConstants.NAME);
+        final String name = nameObj instanceof final String value ? value : null;
 
-        FriendToggle toggle = FriendToggle.byId(name);
+        final FriendToggle toggle = FriendToggle.byId(name);
         if (toggle == null) {
             this.module.sendPrefixed(FriendsLang.TOGGLE_ERROR_UNKNOWN, sender, builder -> builder
                     .with(su.nightexpress.nightcore.util.placeholder.CommonPlaceholders.GENERIC_INPUT, () -> String
-                    .valueOf(name))
+                            .valueOf(name))
                     .with(SLPlaceholders.GENERIC_LIST, () -> String.join(", ", FriendToggle.ids())));
             return 0;
         }
 
-        CommandArgumentConstants.Target target = CommandArgumentConstants.target(arguments);
+        final CommandArgumentConstants.Target target = CommandArgumentConstants.target(arguments);
         if (target == null) {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return 0;
         }
 
         return target.runAs(this.module, sender, FriendsPerms.COMMAND_FRIENDS_TOGGLE_OTHERS, (user, targetPlayer) -> {
-            boolean state = mode.apply(toggle.get(user));
+            final boolean state = mode.apply(toggle.get(user));
 
             this.module.applyToggle(user, toggle, state);
 
             if (sender != targetPlayer) {
                 this.module.sendPrefixed(FriendsLang.TOGGLE_FEEDBACK, sender, builder -> builder
                         .with(CommonPlaceholders.PLAYER.resolver(targetPlayer))
-                        .with(SLPlaceholders.GENERIC_NAME, toggle::getDisplay)
+                        .with(SLPlaceholders.GENERIC_NAME, toggle::displayName)
                         .with(SLPlaceholders.GENERIC_STATE, () -> CoreLang.STATE_ENABLED_DISALBED.get(state)));
             }
 
@@ -256,7 +257,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         });
     }
 
-    private int addFriend(CommandSender sender, CommandArguments arguments) {
+    private int addFriend(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -272,7 +273,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.sendRequest(player, target) ? 1 : 0;
     }
 
-    private int removeFriend(CommandSender sender, CommandArguments arguments) {
+    private int removeFriend(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -288,7 +289,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.removeFriendCommand(player, target) ? 1 : 0;
     }
 
-    private int acceptRequest(CommandSender sender, CommandArguments arguments) {
+    private int acceptRequest(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -296,7 +297,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.acceptIncoming(player, this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
     }
 
-    private int declineRequest(CommandSender sender, CommandArguments arguments) {
+    private int declineRequest(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -304,7 +305,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.declineIncoming(player, this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
     }
 
-    private int cancelRequest(CommandSender sender, CommandArguments arguments) {
+    private int cancelRequest(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -312,13 +313,13 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.cancelRequest(player, this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
     }
 
-    private int listFriends(CommandSender sender, CommandArguments arguments) {
+    private int listFriends(final CommandSender sender, final CommandArguments arguments) {
         if (!(sender instanceof final Player player)) {
             this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
             return 0;
         }
 
-        CommandArgumentConstants.Target target = CommandArgumentConstants.target(arguments);
+        final CommandArgumentConstants.Target target = CommandArgumentConstants.target(arguments);
         if (target == null) {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return 0;
@@ -328,7 +329,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 (user, targetPlayer) -> this.module.openFriends(player, targetPlayer.getUniqueId()));
     }
 
-    private int blockPlayer(CommandSender sender, CommandArguments arguments) {
+    private int blockPlayer(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -344,7 +345,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.blockCommand(player, target) ? 1 : 0;
     }
 
-    private int unblockPlayer(CommandSender sender, CommandArguments arguments) {
+    private int unblockPlayer(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -359,7 +360,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.unblockCommand(player, name) ? 1 : 0;
     }
 
-    private int toggleFavorite(CommandSender sender, CommandArguments arguments) {
+    private int toggleFavorite(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -375,7 +376,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.toggleFavorite(player, target.getUniqueId()) ? 1 : 0;
     }
 
-    private int jumpToFriend(CommandSender sender, CommandArguments arguments) {
+    private int jumpToFriend(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -390,7 +391,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return this.module.jumpToFriend(player, name) ? 1 : 0;
     }
 
-    private int messageFriend(CommandSender sender, CommandArguments arguments) {
+    private int messageFriend(final CommandSender sender, final CommandArguments arguments) {
         final Player player = this.requirePlayer(sender);
         if (player == null) {
             return 0;
@@ -408,7 +409,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
 
     // Helpers
 
-    private Player requirePlayer(CommandSender sender) {
+    private Player requirePlayer(final CommandSender sender) {
         if (sender instanceof final Player player) {
             return player;
         }
@@ -416,12 +417,12 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         return null;
     }
 
-    private String string(CommandArguments arguments, String key) {
-        Object raw = arguments.get(key);
+    private String string(final CommandArguments arguments, final String key) {
+        final Object raw = arguments.get(key);
         return raw instanceof final String value ? value.trim() : null;
     }
 
-    private Collection<String> friendSuggestions(CommandSender sender) {
+    private Collection<String> friendSuggestions(final CommandSender sender) {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
@@ -430,7 +431,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .toList();
     }
 
-    private Collection<String> onlineFriendSuggestions(CommandSender sender) {
+    private Collection<String> onlineFriendSuggestions(final CommandSender sender) {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
@@ -439,7 +440,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .toList();
     }
 
-    private Collection<String> incomingSuggestions(CommandSender sender) {
+    private Collection<String> incomingSuggestions(final CommandSender sender) {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
@@ -448,7 +449,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .toList();
     }
 
-    private Collection<String> outgoingSuggestions(CommandSender sender) {
+    private Collection<String> outgoingSuggestions(final CommandSender sender) {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
@@ -457,7 +458,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .toList();
     }
 
-    private Collection<String> blockedSuggestions(CommandSender sender) {
+    private Collection<String> blockedSuggestions(final CommandSender sender) {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }

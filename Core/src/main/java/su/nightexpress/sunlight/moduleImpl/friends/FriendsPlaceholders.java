@@ -20,21 +20,22 @@ import java.util.stream.Collectors;
  */
 public class FriendsPlaceholders {
 
-    public static final String FRIEND_NAME        = "%friend_name%";
-    public static final String FRIEND_UUID        = "%friend_uuid%";
-    public static final String FRIEND_OWNER       = "%friend_owner%";
-    public static final String FRIEND_OWNER_UUID  = "%friend_owner_uuid%";
-    public static final String FRIEND_ONLINE      = "%friend_online%";
+    public static final String FRIEND_NAME = "%friend_name%";
+    public static final String FRIEND_UUID = "%friend_uuid%";
+    public static final String FRIEND_OWNER = "%friend_owner%";
+    public static final String FRIEND_OWNER_UUID = "%friend_owner_uuid%";
+    public static final String FRIEND_ONLINE = "%friend_online%";
     public static final String FRIEND_CREATE_DATE = "%friend_create_date%";
-    public static final String FRIEND_AGE         = "%friend_age%";
-    public static final String FRIEND_FAVORITE    = "%friend_favorite%";
-    public static final String FRIEND_STATUS      = "%friend_status%";
+    public static final String FRIEND_AGE = "%friend_age%";
+    public static final String FRIEND_FAVORITE = "%friend_favorite%";
+    public static final String FRIEND_STATUS = "%friend_status%";
 
     /**
-     * Resolved per viewer rather than per record, so it has no entry in {@link #FRIEND}: the menus
+     * Resolved per viewer rather than per record, so it has no entry in
+     * {@link #FRIEND}: the menus
      * and the admin message supply it themselves.
      */
-    public static final String FRIEND_LIST      = "%friend_list%";
+    public static final String FRIEND_LIST = "%friend_list%";
     public static final String FRIEND_LAST_SEEN = "%friend_last_seen%";
 
     public static final TypedPlaceholder<FriendRecord> FRIEND = TypedPlaceholder
@@ -54,25 +55,30 @@ public class FriendsPlaceholders {
     }
 
     /**
-     * Shared formatting so a menu icon and a chat message never disagree on how an age reads.
-     * A zero or negative stamp means "never", which is what a never-seen friend has.
+     * Shared formatting so a menu icon and a chat message never disagree on how an
+     * age reads.
+     * A zero or negative stamp means "never", which is what a never-seen friend
+     * has.
      */
-    public static String formatAge(long sinceMillis) {
+    public static String formatAge(final long sinceMillis) {
         if (sinceMillis <= 0L) {
             return CoreLang.OTHER_NEVER.text();
         }
         return TimeFormats.formatSince(sinceMillis, TimeFormatType.LITERAL);
     }
 
-    public static String formatLastSeen(long lastSeenMillis) {
+    public static String formatLastSeen(final long lastSeenMillis) {
         if (lastSeenMillis <= 0L) {
             return CoreLang.OTHER_NEVER.text();
         }
         return TimeFormats.formatSince(lastSeenMillis, TimeFormatType.LITERAL) + " ago";
     }
 
-    /** Comma-separated names, or "None" when the list is empty, for a scoreboard line. */
-    public static String names(List<FriendRecord> records) {
+    /**
+     * Comma-separated names, or "None" when the list is empty, for a scoreboard
+     * line.
+     */
+    public static String names(final List<FriendRecord> records) {
         if (records.isEmpty()) {
             return CoreLang.OTHER_NONE.text();
         }

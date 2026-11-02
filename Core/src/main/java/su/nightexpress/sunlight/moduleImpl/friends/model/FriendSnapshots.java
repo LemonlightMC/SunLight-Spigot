@@ -11,7 +11,8 @@ import java.util.UUID;
 /**
  * Builds the immutable API snapshot of a {@link FriendRecord}.
  * <p>
- * The last-seen stamp comes from the caller, not from the friendship row, so it stays correct
+ * The last-seen stamp comes from the caller, not from the friendship row, so it
+ * stays correct
  * while a player is online and survives a rename.
  */
 public final class FriendSnapshots {
@@ -19,7 +20,7 @@ public final class FriendSnapshots {
     private FriendSnapshots() {
     }
 
-    public static FriendHandle of(FriendRecord record, long lastSeen) {
+    public static FriendHandle of(final FriendRecord record, final long lastSeen) {
         return new FriendHandle(
                 record.getOwnerId(),
                 record.getOwner().name(),
@@ -28,11 +29,10 @@ public final class FriendSnapshots {
                 record.getCreateDate(),
                 record.isFavorite(),
                 Bukkit.getPlayer(record.getFriendId()) != null,
-                normalize(lastSeen)
-        );
+                normalize(lastSeen));
     }
 
-    public static FriendHandle ofBlocked(BlockRecord block, long lastSeen) {
+    public static FriendHandle ofBlocked(final BlockRecord block, final long lastSeen) {
         return new FriendHandle(
                 block.getBlockerId(),
                 block.getBlocker().name(),
@@ -41,18 +41,19 @@ public final class FriendSnapshots {
                 block.getCreateDate(),
                 false,
                 Bukkit.getPlayer(block.getBlockedId()) != null,
-                normalize(lastSeen)
-        );
+                normalize(lastSeen));
     }
 
-    /** Zero means "never seen", which the API contract allows as a null-ish value. */
-    private static Long normalize(long lastSeen) {
+    /**
+     * Zero means "never seen", which the API contract allows as a null-ish value.
+     */
+    private static Long normalize(final long lastSeen) {
         return lastSeen <= 0L ? null : lastSeen;
     }
 
     /** The side of the friendship that belongs to that player. */
     @NotNull
-    public static UserInfo viewOf(@NotNull FriendRecord record, @NotNull UUID playerId) {
+    public static UserInfo viewOf(@NotNull final FriendRecord record, @NotNull final UUID playerId) {
         return record.getOwner().id().equals(playerId) ? record.getOwner() : record.getFriend();
     }
 }

@@ -15,12 +15,12 @@ import su.nightexpress.nightcore.ui.dialog.build.DialogTypes;
 import su.nightexpress.nightcore.ui.dialog.wrap.Dialog;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
-import su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.utils.Utils;
 
 /**
- * Confirms a block. Blocking also removes the friendship, so the body says so rather than leaving
+ * Confirms a block. Blocking also removes the friendship, so the body says so
+ * rather than leaving
  * the player to discover it afterwards.
  */
 public class FriendBlockDialog extends Dialog<String> {
@@ -37,12 +37,12 @@ public class FriendBlockDialog extends Dialog<String> {
 
     private final FriendsModule module;
 
-    public FriendBlockDialog(FriendsModule module) {
+    public FriendBlockDialog(final FriendsModule module) {
         this.module = module;
     }
 
     @Override
-    public WrappedDialog create(Player player, String friendName) {
+    public WrappedDialog create(final Player player, final String friendName) {
         return Dialogs.builder()
                 .base(DialogBases.builder(TITLE)
                         .body(DialogBodies.plainMessage(BODY.replace(PlaceholderContext.builder()
@@ -51,7 +51,7 @@ public class FriendBlockDialog extends Dialog<String> {
                         .build())
                 .type(DialogTypes.multiAction(DialogButtons.confirm()).exitAction(DialogButtons.cancel()).build())
                 .handleResponse(DialogActions.CONFIRM, (viewer, identifier, nbtHolder) -> {
-                    Player friend = Utils.getPlayer(friendName);
+                    final Player friend = Utils.getPlayer(friendName);
                     if (friend == null) {
                         viewer.callback();
                         return;

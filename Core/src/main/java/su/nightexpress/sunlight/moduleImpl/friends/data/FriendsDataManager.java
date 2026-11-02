@@ -25,12 +25,12 @@ public class FriendsDataManager {
     private Table tableFriends;
     private Table tableBlocks;
 
-    public FriendsDataManager(DataHandler dataHandler, FriendsModule module) {
+    public FriendsDataManager(final DataHandler dataHandler, final FriendsModule module) {
         this.dataHandler = dataHandler;
         this.module = module;
     }
 
-    public void init(String tablePrefix) {
+    public void init(final String tablePrefix) {
         this.tableFriends = Table.builder(tablePrefix + "_relations")
                 .withColumn(ID, OWNER_ID, OWNER_NAME, FRIEND_ID, FRIEND_NAME, CREATE_DATE, FAVORITE)
                 .build();
@@ -46,26 +46,26 @@ public class FriendsDataManager {
         this.dataHandler.addTableSync(this.tableBlocks, this::syncBlock);
     }
 
-    private void syncFriend(ResultSet resultSet) {
+    private void syncFriend(final ResultSet resultSet) {
         try {
-            FriendRecord record = FriendsQueries.FRIEND_LOADER.map(resultSet);
+            final FriendRecord record = FriendsQueries.FRIEND_LOADER.map(resultSet);
             if (record == null) {
                 return;
             }
             this.module.getRepository().upsert(record);
-        } catch (SQLException exception) {
+        } catch (final SQLException exception) {
             exception.printStackTrace();
         }
     }
 
-    private void syncBlock(ResultSet resultSet) {
+    private void syncBlock(final ResultSet resultSet) {
         try {
-            BlockRecord block = FriendsQueries.BLOCK_LOADER.map(resultSet);
+            final BlockRecord block = FriendsQueries.BLOCK_LOADER.map(resultSet);
             if (block == null) {
                 return;
             }
             this.module.getRepository().upsertBlock(block);
-        } catch (SQLException exception) {
+        } catch (final SQLException exception) {
             exception.printStackTrace();
         }
     }
@@ -76,7 +76,7 @@ public class FriendsDataManager {
         return this.dataHandler.selectAny(this.tableFriends, FriendsQueries.SELECT_FRIEND);
     }
 
-    public List<FriendRecord> getFriends(UUID ownerId) {
+    public List<FriendRecord> getFriends(final UUID ownerId) {
         return this.dataHandler.selectWhere(this.tableFriends, FriendsQueries.SELECT_FRIEND,
                 Wheres.whereUUID(OWNER_ID, o -> ownerId));
     }
@@ -84,36 +84,39 @@ public class FriendsDataManager {
     /**
      * Re-reads one row and reports whether it is still there.
      * <p>
-     * This is the cross-server half of the friendship guard: another server in the same sync window
-     * may already have made them friends, in which case this server's own row would be a duplicate.
+     * This is the cross-server half of the friendship guard: another server in the
+     * same sync window
+     * may already have made them friends, in which case this server's own row would
+     * be a duplicate.
      */
-    public boolean existsInDatabase(UUID ownerId, UUID friendId) {
+    public boolean existsInDatabase(final UUID ownerId, final UUID friendId) {
         return this.dataHandler.selectFirst(this.tableFriends, FriendsQueries.SELECT_FRIEND,
                 Wheres.whereUUID(OWNER_ID, o -> ownerId)
-                        .and(FRIEND_ID, Operator.EQUALS, o -> friendId.toString())).isPresent();
+                        .and(FRIEND_ID, Operator.EQUALS, o -> friendId.toString()))
+                .isPresent();
     }
 
-    public void insertFriend(FriendRecord record) {
+    public void insertFriend(final FriendRecord record) {
         this.dataHandler.insert(this.tableFriends, FriendsQueries.INSERT_FRIEND, record);
     }
 
-    public void updateFriend(FriendRecord friend) {
+    public void updateFriend(final FriendRecord friend) {
         this.dataHandler.update(this.tableFriends, FriendsQueries.UPDATE_FRIEND, friend,
                 Wheres.whereUUID(OWNER_ID, FriendRecord::getOwnerId)
                         .and(FRIEND_ID, Operator.EQUALS, record -> friend.getFriendId().toString()));
     }
 
-    public void deleteFriend(FriendRecord record) {
+    public void deleteFriend(final FriendRecord record) {
         this.dataHandler.delete(this.tableFriends,
                 Wheres.whereUUID(OWNER_ID, o -> record.getOwnerId())
                         .and(FRIEND_ID, Operator.EQUALS, o -> record.getFriendId().toString()));
     }
 
-    public void deleteFriends(UUID ownerId) {
+    public void deleteFriends(final UUID ownerId) {
         this.dataHandler.delete(this.tableFriends, Wheres.whereUUID(OWNER_ID, o -> ownerId));
     }
 
-    public void deleteFriends(String ownerName) {
+    public void deleteFriends(final String ownerName) {
         this.dataHandler.delete(this.tableFriends,
                 Wheres.where(OWNER_NAME, Operator.EQUALS_IGNORE_CASE, o -> ownerName));
     }
@@ -124,54 +127,58 @@ public class FriendsDataManager {
         return this.dataHandler.selectAny(this.tableBlocks, FriendsQueries.SELECT_BLOCK);
     }
 
-    public List<BlockRecord> getBlocks(UUID blockerId) {
+    public List<BlockRecord> getBlocks(final UUID blockerId) {
         return this.dataHandler.selectWhere(this.tableBlocks, FriendsQueries.SELECT_BLOCK,
                 Wheres.whereUUID(BLOCKER_ID, o -> blockerId));
     }
 
-    public boolean existsBlockInDatabase(UUID blockerId, UUID blockedId) {
+    public boolean existsBlockInDatabase(final UUID blockerId, final UUID blockedId) {
         return this.dataHandler.selectFirst(this.tableBlocks, FriendsQueries.SELECT_BLOCK,
                 Wheres.whereUUID(BLOCKER_ID, o -> blockerId)
-                        .and(BLOCKED_ID, Operator.EQUALS, o -> blockedId.toString())).isPresent();
+                        .and(BLOCKED_ID, Operator.EQUALS, o -> blockedId.toString()))
+                .isPresent();
     }
 
-    public void insertBlock(BlockRecord block) {
+    public void insertBlock(final BlockRecord block) {
         this.dataHandler.insert(this.tableBlocks, FriendsQueries.INSERT_BLOCK, block);
     }
 
-    public void deleteBlock(BlockRecord block) {
+    public void deleteBlock(final BlockRecord block) {
         this.dataHandler.delete(this.tableBlocks,
                 Wheres.whereUUID(BLOCKER_ID, o -> block.getBlockerId())
                         .and(BLOCKED_ID, Operator.EQUALS, o -> block.getBlockedId().toString()));
     }
 
-    public void deleteBlocks(UUID blockerId) {
+    public void deleteBlocks(final UUID blockerId) {
         this.dataHandler.delete(this.tableBlocks, Wheres.whereUUID(BLOCKER_ID, o -> blockerId));
     }
 
     /**
-     * Drops rows naming a player who no longer has a user record, so a deleted account does not
+     * Drops rows naming a player who no longer has a user record, so a deleted
+     * account does not
      * leave a friendship that nothing can ever resolve again.
      * <p>
-     * Off by default, because the users table is not the only record of a player: a row may name
-     * somebody whose user record is written by another server in the same sync window. Turning this
+     * Off by default, because the users table is not the only record of a player: a
+     * row may name
+     * somebody whose user record is written by another server in the same sync
+     * window. Turning this
      * on is only safe on a single-server setup.
      */
     public void purgeOrphans() {
-        for (FriendRecord record : this.getFriends()) {
+        for (final FriendRecord record : this.getFriends()) {
             if (this.isOrphan(record.getOwnerId()) || this.isOrphan(record.getFriendId())) {
                 this.deleteFriend(record);
             }
         }
 
-        for (BlockRecord block : this.getBlocks()) {
+        for (final BlockRecord block : this.getBlocks()) {
             if (this.isOrphan(block.getBlockerId()) || this.isOrphan(block.getBlockedId())) {
                 this.deleteBlock(block);
             }
         }
     }
 
-    private boolean isOrphan(@NotNull UUID playerId) {
+    private boolean isOrphan(@NotNull final UUID playerId) {
         return !this.module.userManager().getDataAccessor().isExists(playerId);
     }
 }

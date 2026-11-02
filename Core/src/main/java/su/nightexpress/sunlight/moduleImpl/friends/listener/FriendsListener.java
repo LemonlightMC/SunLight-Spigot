@@ -12,21 +12,24 @@ import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 /**
  * Login and quit handling.
  * <p>
- * Quit clears the player's request queue. That is not cosmetic: a request whose target has left
- * would otherwise still be listed for the sender, who could not act on it until they came back.
+ * Quit clears the player's request queue. That is not cosmetic: a request whose
+ * target has left
+ * would otherwise still be listed for the sender, who could not act on it until
+ * they came back.
  */
 public class FriendsListener extends AbstractListener<SunLightPlugin> {
 
     private final FriendsModule module;
 
-    public FriendsListener(SunLightPlugin plugin, FriendsModule module) {
+    public FriendsListener(final SunLightPlugin plugin, final FriendsModule module) {
         super(plugin);
         this.module = module;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onJoin(PlayerJoinEvent event) {
-        // Deferred a tick: the friends cache may still be loading, and the notification reads it.
+    public void onJoin(final PlayerJoinEvent event) {
+        // Deferred a tick: the friends cache may still be loading, and the notification
+        // reads it.
         this.plugin.runTask(task -> {
             if (event.getPlayer().isOnline()) {
                 this.module.notifyLogin(event.getPlayer());
@@ -35,7 +38,7 @@ public class FriendsListener extends AbstractListener<SunLightPlugin> {
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onQuit(PlayerQuitEvent event) {
+    public void onQuit(final PlayerQuitEvent event) {
         this.module.notifyQuit(event.getPlayer());
         this.module.clearRequests(event.getPlayer().getUniqueId());
     }
