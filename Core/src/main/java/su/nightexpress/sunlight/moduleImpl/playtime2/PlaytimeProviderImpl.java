@@ -30,7 +30,7 @@ public class PlaytimeProviderImpl implements PlaytimeProvider {
   @Override
   public long getSessionPlaytime(final UUID playerId) {
     final SunUser user = module.userManager().getOrFetch(playerId).orElse(null);
-    return user == null ? 0L : Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.SESSION));
+    return user == null ? 0L : module.getSessionPlaytime(user);
   }
 
   @Override
@@ -52,7 +52,7 @@ public class PlaytimeProviderImpl implements PlaytimeProvider {
 
   @Override
   public List<PlaytimeProvider.TopEntry> getTop(final String period, final int limit) {
-    final List<Playtime2TopHandler.TopEntry> board = this.module.topHandler()
+    final List<Playtime2TopHandler.TopEntry> board = module.topHandler()
         .getTop(PlaytimePeriod.fromString(period));
     final int size = Math.max(0, Math.min(limit, board.size()));
     final List<PlaytimeProvider.TopEntry> result = new ArrayList<>(size);
@@ -61,6 +61,24 @@ public class PlaytimeProviderImpl implements PlaytimeProvider {
       result.add(new PlaytimeProvider.TopEntry(entry.id(), entry.name(), entry.value()));
     }
     return result;
+  }
+
+  @Override
+  public int getDaysPlayed(final UUID playerId) {
+    final SunUser user = module.userManager().getOrFetch(playerId).orElse(null);
+    return user == null ? 0 : module.getDaysPlayed(user);
+  }
+
+  @Override
+  public long getFirstPlayedDay(final UUID playerId) {
+    final SunUser user = module.userManager().getOrFetch(playerId).orElse(null);
+    return user == null ? 0L : module.getFirstPlayedDay(user);
+  }
+
+  @Override
+  public long getLastPlayedDay(final UUID playerId) {
+    final SunUser user = module.userManager().getOrFetch(playerId).orElse(null);
+    return user == null ? 0L : module.getLastPlayedDay(user);
   }
 
 }

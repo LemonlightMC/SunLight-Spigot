@@ -9,8 +9,8 @@ import java.util.UUID;
 public class Playtime2Day {
 
     private final UUID playerId;
-    private final long day;
-    private final long millis;
+    public final long day;
+    public final long millis;
 
     public Playtime2Day(UUID playerId, long day, long millis) {
         this.playerId = playerId;

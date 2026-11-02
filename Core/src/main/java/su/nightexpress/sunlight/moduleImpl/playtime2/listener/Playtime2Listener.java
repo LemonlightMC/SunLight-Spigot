@@ -65,6 +65,6 @@ public class Playtime2Listener extends AbstractListener<SunLightPlugin> {
         } catch (final Exception ignored) {
         }
         // Flush and drop the cached history off the main thread.
-        this.plugin.runTaskAsync(() -> this.module.releaseHistory(player.getUniqueId()));
+        this.plugin.runTaskAsync(() -> this.module.closeSession(player.getUniqueId()));
     }
 }

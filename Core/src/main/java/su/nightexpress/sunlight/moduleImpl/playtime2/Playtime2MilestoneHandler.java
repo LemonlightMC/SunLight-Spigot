@@ -185,18 +185,15 @@ public class Playtime2MilestoneHandler {
 
     public void checkGoals(final Player player, final SunUser user) {
         this.checkGoal(player, user, PlaytimePeriod.DAY, "Daily",
-                Playtime2Properties.DAY, Playtime2Properties.DAY_KEY,
                 Playtime2Properties.REWARDED_DAY_KEY, Playtime2Properties.REMINDED_DAY_KEY);
         this.checkGoal(player, user, PlaytimePeriod.WEEK, "Weekly",
-                Playtime2Properties.WEEK, Playtime2Properties.WEEK_KEY,
                 Playtime2Properties.REWARDED_WEEK_KEY, Playtime2Properties.REMINDED_WEEK_KEY);
         this.checkGoal(player, user, PlaytimePeriod.MONTH, "Monthly",
-                Playtime2Properties.MONTH, Playtime2Properties.MONTH_KEY,
                 Playtime2Properties.REWARDED_MONTH_KEY, Playtime2Properties.REMINDED_MONTH_KEY);
     }
 
     private void checkGoal(final Player player, final SunUser user, final PlaytimePeriod period,
-            final String goalName, final UserProperty<Long> counter, final UserProperty<Long> periodKey,
+            final String goalName,
             final UserProperty<Long> rewardedKey, final UserProperty<Long> remindedKey) {
         final PlaytimeGoal goal = module.getSettings().getGoal(period);
         if (goal == null) {
@@ -207,8 +204,10 @@ public class Playtime2MilestoneHandler {
             return;
         }
 
-        final long playtime = Math.max(0L, user.getPropertyOrDefault(counter));
-        final long key = user.getPropertyOrDefault(periodKey);
+        // Read live: the totals are sums over the daily history, so there is no
+        // stored counter that could lag behind or belong to an earlier period.
+        final long playtime = module.getEffectivePlaytime(user, period);
+        final long key = module.periodId(period);
 
         if (playtime >= goalMs) {
             if (user.getPropertyOrDefault(rewardedKey) != key) {

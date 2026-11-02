@@ -49,6 +49,16 @@ public class Playtime2DayDataManager {
                 SelectStatement.builder(Playtime2DayQueries.ROW_MAPPER).build(), wheres);
     }
 
+    /**
+     * Rows of every player on or after {@code fromDay}. One query serves the
+     * whole leaderboard, which is why it is not split per player.
+     */
+    public List<Playtime2Day> loadSince(long fromDay) {
+        Wheres<Object> wheres = Wheres.where(Playtime2DayColumns.DAY, Operator.GREATER_OR_EQUAL, o -> fromDay);
+        return this.dataHandler.selectWhere(this.table,
+                SelectStatement.builder(Playtime2DayQueries.ROW_MAPPER).build(), wheres);
+    }
+
     public List<Playtime2Day> loadAll() {
         return this.dataHandler.selectAny(this.table,
                 SelectStatement.builder(Playtime2DayQueries.ROW_MAPPER).build());

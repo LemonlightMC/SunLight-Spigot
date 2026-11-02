@@ -3,7 +3,6 @@ package su.nightexpress.sunlight.moduleImpl.playtime2;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.ToLongFunction;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -87,14 +87,6 @@ public class Playtime2Module extends Module {
         // Must happen before any SunUser is deserialised.
         UserPropertyRegistry.register(Playtime2Properties.TOTAL);
         UserPropertyRegistry.register(Playtime2Properties.ARCHIVED_TOTAL);
-        UserPropertyRegistry.register(Playtime2Properties.YEAR);
-        UserPropertyRegistry.register(Playtime2Properties.MONTH);
-        UserPropertyRegistry.register(Playtime2Properties.WEEK);
-        UserPropertyRegistry.register(Playtime2Properties.DAY);
-        UserPropertyRegistry.register(Playtime2Properties.DAY_KEY);
-        UserPropertyRegistry.register(Playtime2Properties.WEEK_KEY);
-        UserPropertyRegistry.register(Playtime2Properties.MONTH_KEY);
-        UserPropertyRegistry.register(Playtime2Properties.YEAR_KEY);
         UserPropertyRegistry.register(Playtime2Properties.DAILY_STREAK);
         UserPropertyRegistry.register(Playtime2Properties.WEEKLY_STREAK);
         UserPropertyRegistry.register(Playtime2Properties.DAYS_PLAYED);
@@ -107,7 +99,6 @@ public class Playtime2Module extends Module {
         UserPropertyRegistry.register(Playtime2Properties.REMINDED_DAY_KEY);
         UserPropertyRegistry.register(Playtime2Properties.REMINDED_WEEK_KEY);
         UserPropertyRegistry.register(Playtime2Properties.REMINDED_MONTH_KEY);
-        UserPropertyRegistry.register(Playtime2Properties.SESSION);
         UserPropertyRegistry.register(Playtime2Properties.SESSION_START);
         UserPropertyRegistry.register(Playtime2Properties.MILESTONE_PROGRESS);
 
@@ -174,8 +165,6 @@ public class Playtime2Module extends Module {
         return this.milestoneHandler;
     }
 
-    // --- History lifecycle ---
-
     /**
      * Loads, prunes and caches one player's history. Runs on whatever thread
      * calls it, so the join path keeps the database work off the main thread.
@@ -186,27 +175,39 @@ public class Playtime2Module extends Module {
             return existing;
         }
 
-        final Playtime2History history = new Playtime2History(playerId);
-        for (final Playtime2Day row : this.dataManager.load(playerId)) {
-            if (row != null && row.getMillis() > 0L) {
-                history.set(row.getDay(), row.getMillis());
-            }
-        }
-        history.markClean();
-
+        final Playtime2History history = new Playtime2History(playerId, this.dataManager.load(playerId));
         final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
         if (user != null) {
             history.setArchivedTotal(user.getPropertyOrDefault(Playtime2Properties.ARCHIVED_TOTAL));
         }
         this.prune(history, user);
-        history.markAccrual(System.currentTimeMillis());
 
         final Playtime2History raced = this.histories.putIfAbsent(playerId, history);
         return raced == null ? history : raced;
     }
 
-    /** Drops the cached history of a player who just left, after flushing it. */
+    /**
+     * Drops the cached history of a player who is no longer tracked, after
+     * flushing it. Deliberately does not credit anything: this also runs for
+     * histories that were only loaded to answer a read, and an offline player
+     * must not gain playtime from being looked at.
+     */
     public void releaseHistory(final UUID playerId) {
+        final Playtime2History history = this.histories.get(playerId);
+        if (history == null) {
+            return;
+        }
+        this.flush(history);
+        this.histories.remove(playerId, history);
+    }
+
+    /**
+     * Ends a tracked session: credits the part of the current tick interval the
+     * player was still online for, then flushes and drops the history. Without
+     * the credit a short session would be rounded down to nothing, which matters
+     * because the interval is a minute rather than a second.
+     */
+    public void closeSession(final UUID playerId) {
         final Playtime2History history = this.histories.get(playerId);
         if (history == null) {
             return;
@@ -247,15 +248,9 @@ public class Playtime2Module extends Module {
             history.add(this.currentKeys().day(), remainder);
             final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
             if (user != null) {
-                user.setProperty(Playtime2Properties.SESSION,
-                        user.getPropertyOrDefault(Playtime2Properties.SESSION) + remainder);
                 this.writeCaches(user, history);
             }
         }
-    }
-
-    public Playtime2History history(final UUID playerId) {
-        return this.histories.get(playerId);
     }
 
     /**
@@ -268,22 +263,12 @@ public class Playtime2Module extends Module {
         if (cached != null) {
             return cached;
         }
-        final Playtime2History history = new Playtime2History(playerId);
-        for (final Playtime2Day row : this.dataManager.load(playerId)) {
-            if (row != null && row.getMillis() > 0L) {
-                history.set(row.getDay(), row.getMillis());
-            }
-        }
-        history.markClean();
 
-        final Playtime2History raced = this.histories.putIfAbsent(playerId, history);
-        if (raced != null) {
-            return raced;
-        }
+        final Playtime2History history = this.loadHistory(playerId);
         history.markAccrual(System.currentTimeMillis());
         // Nobody else holds it, so this caller is responsible for dropping it
         // again once the player is confirmed offline.
-        if (Bukkit.getPlayer(playerId) == null) {
+        if (this.histories.get(playerId) == history && Bukkit.getPlayer(playerId) == null) {
             this.plugin.runTaskLater(() -> this.releaseIfOffline(playerId, history), 1L);
         }
         return history;
@@ -309,7 +294,7 @@ public class Playtime2Module extends Module {
             return;
         }
         final long cutoff = this.currentKeys().day() - retention;
-        final long folded = history.prune(cutoff);
+        final long folded = history.prune(null, cutoff, true);
         if (folded <= 0L) {
             return;
         }
@@ -375,8 +360,6 @@ public class Playtime2Module extends Module {
                 synchronized (history) {
                     history.add(keys.day(), deltaMs);
                     history.markAccrual(now);
-                    user.setProperty(Playtime2Properties.SESSION,
-                            user.getPropertyOrDefault(Playtime2Properties.SESSION) + deltaMs);
                     this.writeCaches(user, history, keys);
                 }
 
@@ -462,8 +445,8 @@ public class Playtime2Module extends Module {
     // --- Reads ---
 
     /**
-     * Rewrites every cached counter from the history. Called after anything that
-     * changes the history, so the stored counters never drift from the rows.
+     * Rewrites the stored values that cannot be recomputed on demand. The period
+     * totals are not among them: they are read from the history directly.
      */
     public void writeCaches(final SunUser user, final Playtime2History history) {
         this.writeCaches(user, history, this.currentKeys());
@@ -472,15 +455,6 @@ public class Playtime2Module extends Module {
     private void writeCaches(final SunUser user, final Playtime2History history, final PeriodKeys keys) {
         user.setProperty(Playtime2Properties.TOTAL, history.total());
         user.setProperty(Playtime2Properties.ARCHIVED_TOTAL, history.getArchivedTotal());
-        user.setProperty(Playtime2Properties.YEAR, history.year(keys.day()));
-        user.setProperty(Playtime2Properties.MONTH, history.month(keys.day()));
-        user.setProperty(Playtime2Properties.WEEK, history.week(keys.day()));
-        user.setProperty(Playtime2Properties.DAY, history.getMillis(keys.day()));
-
-        user.setProperty(Playtime2Properties.DAY_KEY, keys.day());
-        user.setProperty(Playtime2Properties.WEEK_KEY, keys.week());
-        user.setProperty(Playtime2Properties.MONTH_KEY, keys.month());
-        user.setProperty(Playtime2Properties.YEAR_KEY, keys.year());
 
         user.setProperty(Playtime2Properties.DAILY_STREAK, history.dailyStreak(keys.day()));
         user.setProperty(Playtime2Properties.WEEKLY_STREAK, history.weeklyStreak(keys.day()));
@@ -493,86 +467,149 @@ public class Playtime2Module extends Module {
     }
 
     public long getEffectivePlaytime(final SunUser user, final PlaytimePeriod period) {
+        return this.getEffectivePlaytime(user, period, null);
+    }
+
+    public long getEffectivePlaytime(final SunUser user, final PlaytimePeriod period,
+            final ToLongFunction<PlaytimePeriod> scanned) {
         if (user == null) {
             return 0L;
         }
         if (period == PlaytimePeriod.SESSION) {
-            return Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.SESSION));
+            return this.getSessionPlaytime(user);
         }
+        final PlaytimePeriod resolved = period == null ? PlaytimePeriod.ALLTIME : period;
 
-        // Online players answer from the live history, so a tick that has not
-        // rewritten the caches yet is still visible.
-        final Playtime2History history = this.histories.get(user.getId());
-        if (history != null) {
-            return this.readHistory(history, period);
+        final Playtime2History cached = this.histories.get(user.getId());
+        if (cached != null) {
+            return cached.getMillis(this.currentKeys().day(), resolved);
         }
-        return this.readCached(user, period);
-    }
-
-    private long readHistory(final Playtime2History history, final PlaytimePeriod period) {
-        final PeriodKeys keys = this.currentKeys();
-        return switch (period == null ? PlaytimePeriod.ALLTIME : period) {
-            case ALLTIME -> history.total();
-            case YEAR -> history.year(keys.day());
-            case MONTH -> history.month(keys.day());
-            case WEEK -> history.week(keys.day());
-            case DAY -> history.getMillis(keys.day());
-            case SESSION -> 0L;
-        };
-    }
-
-    private long readCached(final SunUser user, final PlaytimePeriod period) {
-        final PeriodKeys keys = this.currentKeys();
-        return switch (period == null ? PlaytimePeriod.ALLTIME : period) {
-            case ALLTIME -> Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.TOTAL));
-            case YEAR -> user.getPropertyOrDefault(Playtime2Properties.YEAR_KEY) == keys.year()
-                    ? Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.YEAR))
-                    : 0L;
-            case MONTH -> user.getPropertyOrDefault(Playtime2Properties.MONTH_KEY) == keys.month()
-                    ? Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.MONTH))
-                    : 0L;
-            case WEEK -> user.getPropertyOrDefault(Playtime2Properties.WEEK_KEY) == keys.week()
-                    ? Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.WEEK))
-                    : 0L;
-            case DAY -> user.getPropertyOrDefault(Playtime2Properties.DAY_KEY) == keys.day()
-                    ? Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.DAY))
-                    : 0L;
-            case SESSION -> Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.SESSION));
-        };
-    }
-
-    public long getEffectivePlaytime(final Player player, final PlaytimePeriod period) {
-        if (player == null) {
-            return 0L;
+        if (resolved == PlaytimePeriod.ALLTIME) {
+            return Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.TOTAL));
         }
-        final SunUser user = this.userManager.getOrFetch(player);
-        return user == null ? 0L : this.getEffectivePlaytime(user, period);
+        if (scanned != null) {
+            return Math.max(0L, scanned.applyAsLong(resolved));
+        }
+        return this.historyOrLoad(user.getId()).getMillis(this.currentKeys().day(), resolved);
     }
 
     /**
-     * Playtime between two epoch days, inclusive. Loads the history when needed.
+     * Length of the current session, derived from its start rather than
+     * accumulated, so no counter can drift from the clock. A player who is not
+     * online has no running session.
      */
-    public long getPlaytime(final UUID playerId, final long fromDay, final long toDay) {
-        final Playtime2History history = this.historyOrLoad(playerId);
-        synchronized (history) {
-            return history.sum(fromDay, toDay);
+    public long getSessionPlaytime(final SunUser user) {
+        if (user == null || !this.histories.containsKey(user.getId())) {
+            return 0L;
+        }
+        final long start = user.getPropertyOrDefault(Playtime2Properties.SESSION_START);
+        if (start <= 0L) {
+            return 0L;
+        }
+        return Math.max(0L, System.currentTimeMillis() - start);
+    }
+
+    /**
+     * The period id used as the reward stamp, so a goal pays once per period.
+     * Derived from the clock: storing it separately would let it disagree with
+     * the calendar the history is summed over.
+     */
+    public long periodId(final PlaytimePeriod period) {
+        return this.periodId(period, this.currentKeys());
+    }
+
+    private long periodId(final PlaytimePeriod period, final PeriodKeys keys) {
+        return switch (period) {
+            case DAY -> keys.day();
+            case WEEK -> keys.week();
+            case MONTH -> keys.month();
+            default -> 0L;
+        };
+    }
+
+    /**
+     * Per-player period totals for every stored row the boards need, in one
+     * query. The leaderboard uses this so ranking offline players costs a single
+     * statement instead of one load per player and period.
+     * <p>
+     * The window starts at the earlier of the year and the week: in early January
+     * the current Monday-week still reaches into December, and those days belong
+     * to the week total even though they are outside the year.
+     */
+    public Map<UUID, PeriodTotals> periodTotals() {
+        final PeriodKeys keys = this.currentKeys();
+        final long monthStart = this.monthStart(keys);
+        final long yearStart = this.yearStart(keys);
+        final long fromDay = Math.min(yearStart, keys.week());
+
+        final Map<UUID, long[]> sums = new HashMap<>();
+        for (final Playtime2Day row : this.dataManager.loadSince(fromDay)) {
+            if (row == null || row.getMillis() <= 0L) {
+                continue;
+            }
+            final long[] totals = sums.computeIfAbsent(row.getPlayerId(), id -> new long[4]);
+            final long day = row.getDay();
+            final long millis = row.getMillis();
+            if (day == keys.day()) {
+                totals[0] += millis;
+            }
+            if (day >= keys.week()) {
+                totals[1] += millis;
+            }
+            if (day >= monthStart) {
+                totals[2] += millis;
+            }
+            if (day >= yearStart) {
+                totals[3] += millis;
+            }
+        }
+
+        final Map<UUID, PeriodTotals> result = new HashMap<>(sums.size());
+        sums.forEach((id, totals) -> result.put(id, new PeriodTotals(totals[0], totals[1], totals[2], totals[3])));
+        return result;
+    }
+
+    /** Day, week, month and year totals of one player. */
+    public record PeriodTotals(long day, long week, long month, long year) {
+
+        public long get(final PlaytimePeriod period) {
+            return switch (period) {
+                case DAY -> this.day;
+                case WEEK -> this.week;
+                case MONTH -> this.month;
+                case YEAR -> this.year;
+                default -> 0L;
+            };
         }
     }
 
+    /**
+     * Daily streak. A cached streak only stays valid while the run still reaches
+     * today or yesterday, so it is checked against the last played day rather
+     * than trusted: a player who stopped playing a week ago has no streak left,
+     * and returning the number from their last session would be a lie.
+     */
     public int getDailyStreak(final SunUser user) {
+        final long today = this.currentKeys().day();
         final Playtime2History history = this.histories.get(user.getId());
         if (history != null) {
-            return history.dailyStreak(this.currentKeys().day());
+            return history.dailyStreak(today);
         }
-        return Math.max(0, user.getPropertyOrDefault(Playtime2Properties.DAILY_STREAK));
+        final int cached = Math.max(0, user.getPropertyOrDefault(Playtime2Properties.DAILY_STREAK));
+        final long last = this.getLastPlayedDay(user);
+        return last >= today - 1L ? cached : 0;
     }
 
     public int getWeeklyStreak(final SunUser user) {
+        final long today = this.currentKeys().day();
         final Playtime2History history = this.histories.get(user.getId());
         if (history != null) {
-            return history.weeklyStreak(this.currentKeys().day());
+            return history.weeklyStreak(today);
         }
-        return Math.max(0, user.getPropertyOrDefault(Playtime2Properties.WEEKLY_STREAK));
+        final int cached = Math.max(0, user.getPropertyOrDefault(Playtime2Properties.WEEKLY_STREAK));
+        // Valid while the last played day is in this Monday-week or the previous one.
+        final long thisWeek = this.currentKeys().week();
+        return this.getLastPlayedDay(user) >= thisWeek - 7L ? cached : 0;
     }
 
     public int getDaysPlayed(final SunUser user) {
@@ -603,14 +640,6 @@ public class Playtime2Module extends Module {
         return Math.max(0L, user.getPropertyOrDefault(Playtime2Properties.LAST_PLAYED_DAY));
     }
 
-    /** The day grid of one month, keyed by epoch day. Empty days are absent. */
-    public Map<Long, Long> monthGrid(final UUID playerId, final YearMonth month) {
-        final Playtime2History history = this.historyOrLoad(playerId);
-        synchronized (history) {
-            return history.monthGrid(month);
-        }
-    }
-
     public void startSession(final SunUser user) {
         final Playtime2History history = this.histories.get(user.getId());
         if (history != null) {
@@ -618,7 +647,6 @@ public class Playtime2Module extends Module {
                 this.writeCaches(user, history);
             }
         }
-        user.setProperty(Playtime2Properties.SESSION, 0L);
         user.setProperty(Playtime2Properties.SESSION_START, System.currentTimeMillis());
         user.setProperty(Playtime2Properties.LAST_SEEN, System.currentTimeMillis());
     }
@@ -722,7 +750,7 @@ public class Playtime2Module extends Module {
         final Playtime2History history = this.historyOrLoad(user.getId());
         final long previous;
         synchronized (history) {
-            previous = period == null ? 0L : this.readHistory(history, period);
+            previous = period == null ? 0L : history.getMillis(currentKeys().day(), period);
         }
 
         final PlaytimeAdjustedEvent event = new PlaytimeAdjustedEvent(user, PlaytimeAdjustedEvent.Operation.RESET,
@@ -737,7 +765,6 @@ public class Playtime2Module extends Module {
             switch (normalized) {
                 case "all" -> {
                     history.clearAll();
-                    user.setProperty(Playtime2Properties.SESSION, 0L);
                     user.setProperty(Playtime2Properties.REWARDED_DAY_KEY, 0L);
                     user.setProperty(Playtime2Properties.REWARDED_WEEK_KEY, 0L);
                     user.setProperty(Playtime2Properties.REWARDED_MONTH_KEY, 0L);
@@ -770,7 +797,6 @@ public class Playtime2Module extends Module {
                     user.setProperty(Playtime2Properties.REMINDED_DAY_KEY, 0L);
                 }
                 case "session" -> {
-                    user.setProperty(Playtime2Properties.SESSION, 0L);
                     user.setProperty(Playtime2Properties.SESSION_START, System.currentTimeMillis());
                     return;
                 }
@@ -787,7 +813,7 @@ public class Playtime2Module extends Module {
     }
 
     private void clearRange(final Playtime2History history, final long fromDay, final long toDay) {
-        history.clearRange(fromDay, toDay);
+        history.prune(fromDay, toDay, false);
         this.dataManager.deleteRange(history.getPlayerId(), fromDay, toDay);
     }
 
@@ -842,40 +868,5 @@ public class Playtime2Module extends Module {
     public boolean openCalendarMenu(final Player viewer, final SunUser target, final YearMonth month) {
         return new Playtime2CalendarMenu(this, target.getId(), month).show(this.plugin, viewer);
     }
-
-    /** Days the player has a recorded row for. Retained rows only. */
-    public int getDaysPlayed(final UUID playerId) {
-        final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
-        return user == null ? 0 : this.getDaysPlayed(user);
-    }
-
-    public long getFirstPlayedDay(final UUID playerId) {
-        final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
-        return user == null ? 0L : this.getFirstPlayedDay(user);
-    }
-
-    public long getLastPlayedDay(final UUID playerId) {
-        final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
-        return user == null ? 0L : this.getLastPlayedDay(user);
-    }
-
-    /**
-     * Playtime per epoch day inside {@code [fromDay, toDay]}. Days without a row
-     * are absent rather than zero.
-     */
-    public Map<Long, Long> getHistory(final UUID playerId, final long fromDay, final long toDay) {
-        final Playtime2History history = this.historyOrLoad(playerId);
-        final Map<Long, Long> result = new HashMap<>();
-        synchronized (history) {
-            for (final Map.Entry<Long, Long> entry : history.getDays().entrySet()) {
-                if (entry.getKey() >= fromDay && entry.getKey() <= toDay) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Exposed for the leaderboard scan, which ranks every stored user. */
 
 }

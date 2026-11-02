@@ -226,11 +226,14 @@ public class Playtime2StatsMenu extends AbstractMenu {
 
         /** The last seven days, ending today, coloured by how much was played. */
         private void addRecentDays(final List<MenuItem> list, final SunUser user) {
-                final Playtime2History history = this.module.history(user.getId());
+                // The calendar menu already loads the history on demand for offline
+                // players; without the same here the strip would claim every recent
+                // day was unplayed for anyone who is not currently online.
+                final Playtime2History history = this.module.historyOrLoad(user.getId());
                 final long today = this.module.currentKeys().day();
                 for (int index = 0; index < RECENT_SLOTS.length; index++) {
                         final long day = today - (RECENT_SLOTS.length - 1 - index);
-                        final long millis = history == null ? 0L : history.getMillis(day);
+                        final long millis = history.getMillis(day);
                         final LocalDate date = LocalDate.ofEpochDay(day);
 
                         final List<String> lore = new ArrayList<>();

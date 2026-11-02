@@ -26,6 +26,12 @@ public class Playtime2TopHandler {
     private volatile long lastDbScan;
     private volatile boolean topRequested;
 
+    /**
+     * Day/week/month/year totals scanned in one query, so offline players can be
+     * ranked for every period without a load each. Empty until the first scan.
+     */
+    private volatile Map<UUID, Playtime2Module.PeriodTotals> periodTotals = Map.of();
+
     public Playtime2TopHandler(final Playtime2Module module) {
         this.module = module;
         this.topCache = new ConcurrentHashMap<>();
@@ -36,6 +42,7 @@ public class Playtime2TopHandler {
 
     public void unload() {
         this.topCache.clear();
+        this.periodTotals = Map.of();
         this.topCacheTimestamp = 0L;
         this.lastDbScan = 0L;
         this.topRequested = false;
@@ -104,6 +111,9 @@ public class Playtime2TopHandler {
                 }
                 merged.put(persisted.getId(), persisted);
             }
+            // One range query for every player's day/week/month/year totals, so
+            // offline players are ranked without a load per player.
+            this.periodTotals = module.periodTotals();
             this.lastDbScan = now;
             this.topRequested = false;
             module.debug("Top database scan: " + merged.size() + " users in "
@@ -137,12 +147,14 @@ public class Playtime2TopHandler {
         }
 
         // One pass over the users, one board per period. Online players answer
-        // from their live history, everyone else from the cached counters.
+        // from their live history, offline ones from the scanned period totals.
         final Map<PlaytimePeriod, List<TopEntry>> boards = new LinkedHashMap<>();
         for (final PlaytimePeriod period : List.of(PlaytimePeriod.ALLTIME, PlaytimePeriod.YEAR,
                 PlaytimePeriod.MONTH, PlaytimePeriod.WEEK, PlaytimePeriod.DAY)) {
             boards.put(period, new ArrayList<>());
         }
+
+        final Map<UUID, Playtime2Module.PeriodTotals> totals = this.periodTotals;
 
         for (final SunUser user : users.values()) {
             if (user == null) {
@@ -156,8 +168,14 @@ public class Playtime2TopHandler {
             if (id == null) {
                 continue;
             }
+            // A player with no rows this year has zero for every period board.
+            // The supplier must never be null here: falling back to a load would
+            // mean one database read per offline player inside this scan.
+            final Playtime2Module.PeriodTotals scanned = totals.getOrDefault(id,
+                    new Playtime2Module.PeriodTotals(0L, 0L, 0L, 0L));
             for (final Map.Entry<PlaytimePeriod, List<TopEntry>> entry : boards.entrySet()) {
-                final long value = module.getEffectivePlaytime(user, entry.getKey());
+                final PlaytimePeriod period = entry.getKey();
+                final long value = module.getEffectivePlaytime(user, period, scanned::get);
                 if (value > 0L) {
                     entry.getValue().add(new TopEntry(id, name, value));
                 }

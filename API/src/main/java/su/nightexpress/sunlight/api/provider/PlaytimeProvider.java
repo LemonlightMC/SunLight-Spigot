@@ -49,4 +49,10 @@ public interface PlaytimeProvider {
     /** A single leaderboard row. JDK types only, see {@link PlaytimeProvider}. */
     record TopEntry(UUID playerId, String playerName, long playtimeMs) {
     }
+
+    int getDaysPlayed(UUID playerId);
+
+    long getFirstPlayedDay(UUID playerId);
+
+    long getLastPlayedDay(UUID playerId);
 }

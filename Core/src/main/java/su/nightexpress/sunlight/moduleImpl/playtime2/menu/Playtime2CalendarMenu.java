@@ -33,6 +33,7 @@ import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
 import su.nightexpress.nightcore.ui.inventory.menu.AbstractMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
+import su.nightexpress.sunlight.moduleImpl.playtime2.Playtime2History;
 import su.nightexpress.sunlight.moduleImpl.playtime2.Playtime2Module;
 import su.nightexpress.sunlight.moduleImpl.playtime2.config.Playtime2Lang;
 import su.nightexpress.sunlight.user.SunUser;
@@ -126,8 +127,16 @@ public class Playtime2CalendarMenu extends AbstractMenu {
                 }
         }
 
+        /** The day grid of one month, keyed by epoch day. Empty days are absent. */
+        public Map<Long, Long> monthGrid(final UUID playerId, final YearMonth month) {
+                final Playtime2History history = this.module.historyOrLoad(playerId);
+                synchronized (history) {
+                        return history.monthGrid(month);
+                }
+        }
+
         private void addDays(final List<MenuItem> list, final SunUser user) {
-                final Map<Long, Long> grid = this.module.monthGrid(user.getId(), this.month);
+                final Map<Long, Long> grid = monthGrid(user.getId(), this.month);
                 final LocalDate first = this.month.atDay(1);
                 // Monday is column 0, so the offset is the weekday's ordinal.
                 final int offset = first.getDayOfWeek().getValue() - 1;
