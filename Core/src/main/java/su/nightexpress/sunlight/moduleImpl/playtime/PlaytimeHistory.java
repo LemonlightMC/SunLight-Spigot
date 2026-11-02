@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.playtime2;
+package su.nightexpress.sunlight.moduleImpl.playtime;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -12,7 +12,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
-import su.nightexpress.sunlight.moduleImpl.playtime2.data.Playtime2Day;
+import su.nightexpress.sunlight.moduleImpl.playtime.data.PlaytimeDay;
 
 /**
  * The in-memory daily history of one player. The day map is the source of
@@ -33,7 +33,7 @@ import su.nightexpress.sunlight.moduleImpl.playtime2.data.Playtime2Day;
  * Not thread safe on its own: every caller goes through the module's
  * per-player lock.
  */
-public class Playtime2History {
+public class PlaytimeHistory {
 
     private final UUID playerId;
     private final TreeMap<Long, Long> days;
@@ -78,7 +78,7 @@ public class Playtime2History {
      */
     private long lastAccrualAt;
 
-    public Playtime2History(final UUID playerId) {
+    public PlaytimeHistory(final UUID playerId) {
         this.playerId = playerId;
         this.days = new TreeMap<>();
         this.dirty = new HashSet<>();
@@ -89,12 +89,12 @@ public class Playtime2History {
      * responsibility for the archived total (which only it can read) and for
      * retention pruning, which folds into it.
      */
-    public Playtime2History(final UUID playerId, final List<Playtime2Day> data) {
+    public PlaytimeHistory(final UUID playerId, final List<PlaytimeDay> data) {
         this.playerId = playerId;
         this.days = new TreeMap<>();
         this.dirty = new HashSet<>();
 
-        for (final Playtime2Day row : data) {
+        for (final PlaytimeDay row : data) {
             if (row != null && row.millis > 0L) {
                 this.days.put(row.day, row.millis);
                 this.retainedTotal += row.millis;

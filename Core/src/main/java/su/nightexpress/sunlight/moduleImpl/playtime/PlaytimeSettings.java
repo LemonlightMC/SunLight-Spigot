@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Material;
+
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.configuration.AbstractConfig;
 import su.nightexpress.nightcore.configuration.ConfigProperty;
@@ -35,25 +37,34 @@ public class PlaytimeSettings extends AbstractConfig {
 
     private final ConfigProperty<Long> tickInterval = this.addProperty(ConfigTypes.LONG,
             "Playtime.Tracking.tick-interval",
-            20L,
-            "Sets how often (in game ticks) playtime is accumulated. [1 second = 20 ticks]");
+            1200L,
+            "Sets how often (in game ticks) playtime is accumulated. [1 second = 20 ticks]",
+            "Playtime is displayed in hours and minutes, so a longer interval is indistinguishable",
+            "in game while costing proportionally less: 1200 ticks = 1 minute.");
 
-    private final ConfigProperty<String> timezone = this.addProperty(ConfigTypes.STRING,
-            "Playtime.Tracking.timezone",
-            "system",
-            "Sets the timezone used for day/week/month rollovers.",
-            "Use 'system' to follow the global 'General.Time_Zone' setting, or any IANA id, e.g. 'Europe/Berlin', 'America/New_York'.");
+    private final ConfigProperty<Long> retentionDays = this.addProperty(ConfigTypes.LONG,
+            "Playtime.Tracking.retention-days",
+            0L,
+            "Sets how many days of daily history are kept per player.",
+            "0 keeps the history forever. A positive value prunes older rows when the player joins;",
+            "the pruned time is folded into the all-time total, which never shrinks.");
+
+    private final ConfigProperty<Long> saveInterval = this.addProperty(ConfigTypes.LONG,
+            "Playtime.Tracking.save-interval",
+            6000L,
+            "Sets how often (in game ticks) the accumulated daily history is written to the database.",
+            "[1 second = 20 ticks, 6000 = 5 minutes]");
 
     private final ConfigProperty<Long> topRefreshInterval = this.addProperty(ConfigTypes.LONG,
-            "Playtime.Top.refresh-Interval",
+            "Playtime.Top.refresh-interval",
             600L,
-            "Sets how often (in game ticks) the /playtop leaderboard cache is rebuilt. [1 second = 20 ticks]");
+            "Sets how often (in game ticks) the leaderboard cache is rebuilt. [1 second = 20 ticks]");
 
     private final ConfigProperty<Long> topDbScanInterval = this.addProperty(ConfigTypes.LONG,
-            "Playtime.Top.database-Scan-Interval",
+            "Playtime.Top.database-scan-interval",
             12000L,
             "Sets how often (in game ticks) the leaderboard scans the whole database.",
-            "Live players refresh every Refresh-Interval above; offline players are merged in",
+            "Live players refresh every refresh interval above; offline players are merged in",
             "at most this often, and only when the leaderboard was actually requested.",
             "[1 second = 20 ticks, 12000 = 10 minutes]");
 
@@ -89,9 +100,42 @@ public class PlaytimeSettings extends AbstractConfig {
                     "A reminder is sent as soon as the remaining time fits into the remainder-window.",
                     "This can also be changed in-game via /playtime goal; such changes are saved back here."));
 
+    private final ConfigProperty<Material> calendarEmpty = this.addProperty(ConfigTypes.MATERIAL,
+            "Playtime.Calendar.empty",
+            Material.GRAY_STAINED_GLASS_PANE,
+            "Calendar colour for a day the player did not play.");
+
+    private final ConfigProperty<Material> calendarLow = this.addProperty(ConfigTypes.MATERIAL,
+            "Playtime.Calendar.low",
+            Material.LIME_STAINED_GLASS_PANE,
+            "Calendar colour for a day below the medium threshold.");
+
+    private final ConfigProperty<Material> calendarMedium = this.addProperty(ConfigTypes.MATERIAL,
+            "Playtime.Calendar.medium",
+            Material.YELLOW_STAINED_GLASS_PANE,
+            "Calendar colour for a day between the medium and high thresholds.");
+
+    private final ConfigProperty<Material> calendarHigh = this.addProperty(ConfigTypes.MATERIAL,
+            "Playtime.Calendar.high",
+            Material.ORANGE_STAINED_GLASS_PANE,
+            "Calendar colour for a day at or above the high threshold.");
+
+    private final ConfigProperty<String> calendarMediumThreshold = this.addProperty(ConfigTypes.STRING,
+            "Playtime.Calendar.medium-threshold",
+            "1h",
+            "A day with at least this much playtime uses the medium colour.",
+            "Accepts '30s', '5m', '1h', '7d' or combinations like '1h30m'.");
+
+    private final ConfigProperty<String> calendarHighThreshold = this.addProperty(ConfigTypes.STRING,
+            "Playtime.Calendar.high-threshold",
+            "4h",
+            "A day with at least this much playtime uses the high colour.");
+
     private FileConfig fileConfig;
     private long goalMinMinutes;
     private long goalMaxMinutes;
+    private long calendarMediumMs;
+    private long calendarHighMs;
 
     public void load(final FileConfig config) {
         this.fileConfig = config;
@@ -107,6 +151,9 @@ public class PlaytimeSettings extends AbstractConfig {
             throw new IllegalArgumentException("Invalid Max Duration for Goals");
         }
         goalMaxMinutes = Math.floorDiv(goalMaxMinutes, 60);
+
+        calendarMediumMs = Math.max(0L, TimeUtil.parseDurationMillis(calendarMediumThreshold.get()));
+        calendarHighMs = Math.max(calendarMediumMs, TimeUtil.parseDurationMillis(calendarHighThreshold.get()));
     }
 
     public boolean isExcludeAfkEnabled() {
@@ -117,9 +164,13 @@ public class PlaytimeSettings extends AbstractConfig {
         return Math.max(1L, this.tickInterval.get());
     }
 
-    public ZoneId getZoneId() {
-        // 'system' means "follow the global General.Time_Zone", not the JVM zone.
-        return TimeUtil.resolveZoneId(this.timezone.get(), TimeUtil.getZoneId());
+    /** Days of history kept per player. {@code 0} keeps everything forever. */
+    public long getRetentionDays() {
+        return Math.max(0L, this.retentionDays.get());
+    }
+
+    public long getSaveInterval() {
+        return Math.max(20L, this.saveInterval.get());
     }
 
     public long getTopRefreshInterval() {
@@ -157,6 +208,44 @@ public class PlaytimeSettings extends AbstractConfig {
     public long getGoalMs(PlaytimePeriod period) {
         final PlaytimeGoal goal = this.getGoal(period);
         return goal == null ? 0L : goal.duration();
+    }
+
+    public Material getCalendarEmpty() {
+        return this.calendarEmpty.get();
+    }
+
+    public Material getCalendarLow() {
+        return this.calendarLow.get();
+    }
+
+    public Material getCalendarMedium() {
+        return this.calendarMedium.get();
+    }
+
+    public Material getCalendarHigh() {
+        return this.calendarHigh.get();
+    }
+
+    public long getCalendarMediumMs() {
+        return this.calendarMediumMs;
+    }
+
+    public long getCalendarHighMs() {
+        return this.calendarHighMs;
+    }
+
+    /** The calendar colour for a day that was played for {@code millis}. */
+    public Material calendarMaterial(long millis) {
+        if (millis <= 0L) {
+            return this.calendarEmpty.get();
+        }
+        if (millis >= this.calendarHighMs) {
+            return this.calendarHigh.get();
+        }
+        if (millis >= this.calendarMediumMs) {
+            return this.calendarMedium.get();
+        }
+        return this.calendarLow.get();
     }
 
     /**

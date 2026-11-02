@@ -30,7 +30,7 @@ import su.nightexpress.sunlight.module.ModuleDefinition;
 import su.nightexpress.sunlight.moduleImpl.bans.BansModule;
 import su.nightexpress.sunlight.moduleImpl.bans.event.PlayerPunishEvent;
 import su.nightexpress.sunlight.moduleImpl.bans.punishment.PunishmentType;
-import su.nightexpress.sunlight.moduleImpl.playtime2.Playtime2Properties;
+import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeProperties;
 import su.nightexpress.sunlight.moduleImpl.reports.command.ReportsStaffCommandProvider;
 import su.nightexpress.sunlight.moduleImpl.reports.command.ReportsSubmitCommandProvider;
 import su.nightexpress.sunlight.moduleImpl.reports.ReportsConfig;
@@ -87,7 +87,7 @@ import java.util.function.Consumer;
 public class ReportsModule extends Module implements ReportsProvider {
 
     private static final CommandKey COOLDOWN_KEY = new CommandKey("reports-submit", "submit");
-    private static final String PLAYTIME_MODULE_ID = "playtime2";
+    private static final String PLAYTIME_MODULE_ID = "playtime";
     private static final UUID NOBODY = new UUID(0L, 0L);
 
     private final ReportRepository repository = new ReportRepository();
@@ -1321,7 +1321,7 @@ public class ReportsModule extends Module implements ReportsProvider {
     @Override
     public long getTotalPlaytimeMs(@NotNull UUID playerId) {
         return this.userManager.getOrFetch(playerId)
-                .map(user -> user.getPropertyOrDefault(Playtime2Properties.TOTAL))
+                .map(user -> user.getPropertyOrDefault(PlaytimeProperties.TOTAL))
                 .orElse(0L);
     }
 

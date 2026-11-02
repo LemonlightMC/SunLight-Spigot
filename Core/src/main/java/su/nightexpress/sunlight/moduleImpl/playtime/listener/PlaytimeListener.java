@@ -24,12 +24,33 @@ public class PlaytimeListener extends AbstractListener<SunLightPlugin> {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(final PlayerJoinEvent event) {
         final Player player = event.getPlayer();
+        // The history load hits the database, so it stays off the main thread. The
+        // session only starts once the rows are cached.
+        this.plugin.runTaskAsync(() -> {
+            try {
+                this.module.loadHistory(player.getUniqueId());
+            } catch (final Exception exception) {
+                this.module
+                        .debug("Playtime history load failed for " + player.getName() + ": " + exception.getMessage());
+                return;
+            }
+            this.plugin.runTask(() -> this.startSession(player));
+        });
+    }
+
+    private void startSession(final Player player) {
+        if (!player.isOnline()) {
+            this.module.releaseHistory(player.getUniqueId());
+            return;
+        }
         try {
             final SunUser user = this.module.userManager().getOrFetch(player);
-            if (user == null)
+            if (user == null) {
                 return;
+            }
             this.module.startSession(user);
-        } catch (final Exception ignored) {
+        } catch (final Exception exception) {
+            this.module.debug("Playtime session start failed for " + player.getName() + ": " + exception.getMessage());
         }
     }
 
@@ -38,10 +59,12 @@ public class PlaytimeListener extends AbstractListener<SunLightPlugin> {
         final Player player = event.getPlayer();
         try {
             final SunUser user = this.module.userManager().getOrFetch(player);
-            if (user == null)
-                return;
-            user.setProperty(PlaytimeProperties.LAST_SEEN, System.currentTimeMillis());
+            if (user != null) {
+                user.setProperty(PlaytimeProperties.LAST_SEEN, System.currentTimeMillis());
+            }
         } catch (final Exception ignored) {
         }
+        // Flush and drop the cached history off the main thread.
+        this.plugin.runTaskAsync(() -> this.module.closeSession(player.getUniqueId()));
     }
 }

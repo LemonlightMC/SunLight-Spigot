@@ -1,5 +1,7 @@
 package su.nightexpress.sunlight.moduleImpl.playtime.command;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,17 +15,18 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
+import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeModule;
-import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeProperties;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeTopHandler.TopEntry;
 import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimeLang;
 import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimePerms;
-import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.TimeUtil;
 import su.nightexpress.sunlight.utils.Utils;
 
 public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
+
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ISO_LOCAL_DATE;
 
     public PlaytimeCommandProvider(final PlaytimeModule module) {
         super(module, "playtime");
@@ -68,12 +71,19 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
                 .aliases("gui")
                 .under("playtime");
 
+        this.register("calendar", command -> command
+                .withFullDescription(PlaytimeLang.COMMAND_CALENDAR_DESC.text())
+                .withPermission(PlaytimePerms.COMMAND_CALENDAR)
+                .withOptionalArguments(
+                        CommandArgumentConstants.targetArgument()
+                                .withPermission(PlaytimePerms.COMMAND_CALENDAR_OTHERS))
+                .executes(this::showCalendar))
+                .under("playtime");
+
         this.register("add", command -> command
                 .withFullDescription(PlaytimeLang.COMMAND_ADMIN_ADD_DESC.text())
                 .withPermission(PlaytimePerms.COMMAND_ADMIN_ADD)
-                .withArguments(
-                        CommandArgumentConstants.periodArgument(),
-                        new IntegerArgument("minutes"))
+                .withArguments(new IntegerArgument("minutes", 1))
                 .withOptionalArguments(CommandArgumentConstants.targetArgument())
                 .executes(this::addPlaytime))
                 .under("playtime");
@@ -81,9 +91,7 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
         this.register("set", command -> command
                 .withFullDescription(PlaytimeLang.COMMAND_ADMIN_SET_DESC.text())
                 .withPermission(PlaytimePerms.COMMAND_ADMIN_SET)
-                .withArguments(
-                        CommandArgumentConstants.periodArgument(),
-                        new IntegerArgument("minutes"))
+                .withArguments(new IntegerArgument("minutes", 0))
                 .withOptionalArguments(CommandArgumentConstants.targetArgument())
                 .executes(this::setPlaytime))
                 .under("playtime");
@@ -117,8 +125,7 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
     private Argument<String> resetScopeArgument() {
         return CommandArgumentConstants.string(
                 "scope",
-                info -> List.of("all", "alltime", "year", "month", "week", "day", "session", "streaks",
-                        "milestones"));
+                info -> List.of("all", "alltime", "year", "month", "week", "day", "session", "milestones"));
     }
 
     private int showOwnStats(final CommandSender sender, final CommandArguments arguments) {
@@ -131,42 +138,45 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
         if (!target.hasTarget() && sender instanceof final Player player
                 && sender.hasPermission(PlaytimePerms.COMMAND_MENU)) {
             final SunUser self = this.module.userManager().getOrFetch(player);
-            return this.module.openStatsMenu(player, self) ? 1 : 0;
+            return self != null && this.module.openStatsMenu(player, self) ? 1 : 0;
         }
         return target.runAs(this.module, sender, PlaytimePerms.COMMAND_STATS_OTHERS, (user, targetPlayer) -> {
-            module.ensureRollover(user);
+            this.module.sendPrefixed(PlaytimeLang.STATS_HEADER, sender, b -> b
+                    .with(SLPlaceholders.PLAYER_NAME, user::getName));
 
-            module.sendPrefixed(PlaytimeLang.STATS_HEADER,
-                    sender, b -> b
-                            .with(SLPlaceholders.PLAYER_NAME, user::getName));
+            this.module.sendPrefixed(PlaytimeLang.STATS_TOTAL, sender, b -> b
+                    .with(SLPlaceholders.GENERIC_TIME,
+                            () -> TimeUtil
+                                    .formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
 
-            module.sendPrefixed(PlaytimeLang.STATS_TOTAL,
-                    sender, b -> b
-                            .with(SLPlaceholders.GENERIC_TIME,
-                                    () -> TimeUtil
-                                            .formatMillis(module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
+            this.sendPeriodLine(sender, "Year", this.module.getEffectivePlaytime(user, PlaytimePeriod.YEAR));
+            this.sendPeriodLine(sender, "Month", this.module.getEffectivePlaytime(user, PlaytimePeriod.MONTH));
+            this.sendPeriodLine(sender, "Week", this.module.getEffectivePlaytime(user, PlaytimePeriod.WEEK));
+            this.sendPeriodLine(sender, "Day", this.module.getEffectivePlaytime(user, PlaytimePeriod.DAY));
 
-            this.sendPeriodLine(sender, "Year", module.getEffectivePlaytime(user, PlaytimePeriod.YEAR));
-            this.sendPeriodLine(sender, "Month", module.getEffectivePlaytime(user, PlaytimePeriod.MONTH));
-            this.sendPeriodLine(sender, "Week", module.getEffectivePlaytime(user, PlaytimePeriod.WEEK));
-            this.sendPeriodLine(sender, "Day", module.getEffectivePlaytime(user, PlaytimePeriod.DAY));
-
-            module.sendPrefixed(PlaytimeLang.STATS_STREAK_DAILY,
-                    sender, b -> b
-                            .with(SLPlaceholders.GENERIC_VALUE,
-                                    () -> String
-                                            .valueOf(Math.max(0,
-                                                    user.getPropertyOrDefault(PlaytimeProperties.DAILY_STREAK)))));
-            module.sendPrefixed(PlaytimeLang.STATS_STREAK_WEEKLY,
-                    sender, b -> b
-                            .with(SLPlaceholders.GENERIC_VALUE, () -> String
-                                    .valueOf(
-                                            Math.max(0, user.getPropertyOrDefault(PlaytimeProperties.WEEKLY_STREAK)))));
+            this.module.sendPrefixed(PlaytimeLang.STATS_STREAK_DAILY, sender, b -> b
+                    .with(SLPlaceholders.GENERIC_VALUE, () -> String.valueOf(this.module.getDailyStreak(user))));
+            this.module.sendPrefixed(PlaytimeLang.STATS_STREAK_WEEKLY, sender, b -> b
+                    .with(SLPlaceholders.GENERIC_VALUE, () -> String.valueOf(this.module.getWeeklyStreak(user))));
+            this.module.sendPrefixed(PlaytimeLang.STATS_DAYS_PLAYED, sender, b -> b
+                    .with(SLPlaceholders.GENERIC_VALUE, () -> String.valueOf(this.module.getDaysPlayed(user))));
+            this.sendPlayedLine(sender, PlaytimeLang.STATS_FIRST_PLAYED, this.module.getFirstPlayedDay(user));
+            this.sendPlayedLine(sender, PlaytimeLang.STATS_LAST_PLAYED, this.module.getLastPlayedDay(user));
         });
     }
 
+    private void sendPlayedLine(final CommandSender sender,
+            final su.nightexpress.nightcore.locale.entry.MessageLocale locale,
+            final long epochDay) {
+        if (epochDay <= 0L) {
+            return;
+        }
+        this.module.sendPrefixed(locale, sender, b -> b
+                .with(SLPlaceholders.GENERIC_TIME, () -> LocalDate.ofEpochDay(epochDay).format(DATE)));
+    }
+
     private void sendPeriodLine(final CommandSender sender, final String name, final long ms) {
-        module.sendPrefixed(PlaytimeLang.STATS_PERIOD, sender, b -> b
+        this.module.sendPrefixed(PlaytimeLang.STATS_PERIOD, sender, b -> b
                 .with(SLPlaceholders.GENERIC_NAME, () -> name)
                 .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(ms)));
     }
@@ -180,21 +190,18 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             return 0;
         }
         return target.runAs(this.module, sender, PlaytimePerms.COMMAND_STATS_OTHERS, (user, targetPlayer) -> {
-            module.ensureRollover(user);
-
-            module.sendPrefixed(PlaytimeLang.STATS_HEADER, sender, b -> b
+            this.module.sendPrefixed(PlaytimeLang.STATS_HEADER, sender, b -> b
                     .with(SLPlaceholders.PLAYER_NAME, user::getName));
 
             if (period == PlaytimePeriod.ALLTIME) {
-                module.sendPrefixed(PlaytimeLang.STATS_TOTAL, sender, b -> b
+                this.module.sendPrefixed(PlaytimeLang.STATS_TOTAL, sender, b -> b
                         .with(SLPlaceholders.GENERIC_TIME,
                                 () -> TimeUtil
-                                        .formatMillis(module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
+                                        .formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
                 return;
             }
 
-            final String label = period.name().substring(0, 1) + period.name().substring(1).toLowerCase();
-            this.sendPeriodLine(sender, label, module.getEffectivePlaytime(user, period));
+            this.sendPeriodLine(sender, period.displayname(), this.module.getEffectivePlaytime(user, period));
         });
     }
 
@@ -209,16 +216,12 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
         if (sender instanceof final Player player) {
             return this.module.openTopMenu(player, period) ? 1 : 0;
         }
-        final List<TopEntry> entries = new ArrayList<>(module.topHandler.getTop(period));
+        final List<TopEntry> entries = new ArrayList<>(this.module.topHandler().getTop(period));
         final int totalPages = Math.max(1, (int) Math.ceil(entries.size() / (double) PlaytimeModule.TOP_PAGE_SIZE));
         final int currentPage = Math.min(Math.max(1, page), totalPages);
 
-        final String label = period == PlaytimePeriod.ALLTIME ? "Alltime"
-                : period.name().substring(0, 1) + period.name().substring(1).toLowerCase();
-
-        module.sendPrefixed(PlaytimeLang.TOP_TITLE,
-                sender, b -> b
-                        .with(SLPlaceholders.GENERIC_NAME, () -> label + "  " + currentPage + "/" + totalPages));
+        this.module.sendPrefixed(PlaytimeLang.TOP_TITLE, sender, b -> b
+                .with(SLPlaceholders.GENERIC_NAME, () -> period.displayname() + "  " + currentPage + "/" + totalPages));
 
         final int start = (currentPage - 1) * PlaytimeModule.TOP_PAGE_SIZE;
         final int end = Math.min(entries.size(), start + PlaytimeModule.TOP_PAGE_SIZE);
@@ -226,11 +229,10 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             final TopEntry entry = entries.get(index);
             final String rank = String.valueOf(index + 1);
             final String formatted = TimeUtil.formatMillis(entry.value());
-            module.sendPrefixed(PlaytimeLang.TOP_ENTRY,
-                    sender, b -> b
-                            .with(SLPlaceholders.GENERIC_PAGE, () -> rank)
-                            .with(SLPlaceholders.PLAYER_NAME, entry::name)
-                            .with(SLPlaceholders.GENERIC_TOTAL, () -> formatted));
+            this.module.sendPrefixed(PlaytimeLang.TOP_ENTRY, sender, b -> b
+                    .with(SLPlaceholders.GENERIC_PAGE, () -> rank)
+                    .with(SLPlaceholders.PLAYER_NAME, entry::name)
+                    .with(SLPlaceholders.GENERIC_TOTAL, () -> formatted));
         }
         return 1;
     }
@@ -246,8 +248,22 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             return 0;
         }
         return target.runAs(this.module, sender, PlaytimePerms.COMMAND_MENU_OTHERS, (user, targetPlayer) -> {
-            final SunUser resolved = this.module.userManager().getOrFetch(targetPlayer);
-            this.module.openStatsMenu(player, resolved);
+            this.module.openStatsMenu(player, user);
+        });
+    }
+
+    private int showCalendar(final CommandSender sender, final CommandArguments arguments) {
+        if (!(sender instanceof final Player player)) {
+            this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
+            return 0;
+        }
+        final CommandArgumentConstants.Target target = CommandArgumentConstants.target(arguments);
+        if (target == null) {
+            this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
+            return 0;
+        }
+        return target.runAs(this.module, sender, PlaytimePerms.COMMAND_CALENDAR_OTHERS, (user, targetPlayer) -> {
+            this.module.openCalendarMenu(player, user, null);
         });
     }
 
@@ -261,43 +277,44 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
         final Object minutesObj = arguments.get("minutes");
 
         final SunUser user = this.module.userManager().getOrFetch(player);
+        if (user == null) {
+            return 0;
+        }
 
         if (period == null) {
-            showGoals(sender, user);
+            this.showGoals(sender, user);
             return 1;
         }
 
         if (!(minutesObj instanceof final Integer minutes)) {
-            showGoals(sender, user);
+            this.showGoals(sender, user);
             return 1;
         }
 
         if (!sender.hasPermission(PlaytimePerms.COMMAND_GOAL_SET)) {
-            module.sendPrefixed(CoreLang.ERROR_NO_PERMISSION, sender);
+            this.module.sendPrefixed(CoreLang.ERROR_NO_PERMISSION, sender);
             return 0;
         }
 
         if (minutes < 0) {
-            module.sendPrefixed(PlaytimeLang.ERROR_GOAL_NEGATIVE, sender);
+            this.module.sendPrefixed(PlaytimeLang.ERROR_GOAL_NEGATIVE, sender);
             return 0;
         }
 
         if (minutes == 0) {
             if (!this.isGoalPeriod(period)) {
-                showGoals(sender, user);
+                this.showGoals(sender, user);
                 return 0;
             }
             this.module.getSettings().setGoalMinutes(period, 0L);
-            module.sendPrefixed(PlaytimeLang.GOAL_RESET, sender, b -> b
-                    .with(SLPlaceholders.GENERIC_NAME, () -> period.name()));
+            this.module.sendPrefixed(PlaytimeLang.GOAL_RESET, sender, b -> b
+                    .with(SLPlaceholders.GENERIC_NAME, period::displayname));
             return 1;
         }
 
         final long min = this.module.getSettings().getGoalMinMinutes();
         final long max = this.module.getSettings().getGoalMaxMinutes();
-        final boolean belowMin = min > 0 && minutes < min;
-        final boolean aboveMax = max > 0 && minutes > max;
-        if (belowMin || aboveMax) {
+        if ((min > 0 && minutes < min) || (max > 0 && minutes > max)) {
             this.module.sendPrefixed(PlaytimeLang.GOAL_ERROR_RANGE, sender, b -> b
                     .with(SLPlaceholders.GENERIC_MIN, () -> String.valueOf(Math.max(0, min)))
                     .with(SLPlaceholders.GENERIC_MAX, () -> String.valueOf(Math.max(0, max))));
@@ -305,36 +322,34 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
         }
 
         if (!this.isGoalPeriod(period) || !this.module.getSettings().setGoalMinutes(period, minutes)) {
-            showGoals(sender, user);
+            this.showGoals(sender, user);
             return 0;
         }
 
         this.module.sendPrefixed(PlaytimeLang.GOAL_SET, sender, b -> b
-                .with(SLPlaceholders.GENERIC_NAME, () -> period.name())
+                .with(SLPlaceholders.GENERIC_NAME, period::displayname)
                 .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(minutes * 60_000L)));
         return 1;
     }
 
-    public void showGoals(final CommandSender viewer, final SunUser user) {
-        module.ensureRollover(user);
-        module.sendPrefixed(PlaytimeLang.GOAL_HEADER, viewer);
-        this.sendGoalLine(viewer, user, "Daily", module.getEffectivePlaytime(user, PlaytimePeriod.DAY),
-                module.getSettings().getGoalMs(PlaytimePeriod.DAY));
-        this.sendGoalLine(viewer, user, "Weekly", module.getEffectivePlaytime(user, PlaytimePeriod.WEEK),
-                module.getSettings().getGoalMs(PlaytimePeriod.WEEK));
-        this.sendGoalLine(viewer, user, "Monthly", module.getEffectivePlaytime(user, PlaytimePeriod.MONTH),
-                module.getSettings().getGoalMs(PlaytimePeriod.MONTH));
+    private void showGoals(final CommandSender viewer, final SunUser user) {
+        this.module.sendPrefixed(PlaytimeLang.GOAL_HEADER, viewer);
+        this.sendGoalLine(viewer, "Daily", this.module.getEffectivePlaytime(user, PlaytimePeriod.DAY),
+                this.module.getSettings().getGoalMs(PlaytimePeriod.DAY));
+        this.sendGoalLine(viewer, "Weekly", this.module.getEffectivePlaytime(user, PlaytimePeriod.WEEK),
+                this.module.getSettings().getGoalMs(PlaytimePeriod.WEEK));
+        this.sendGoalLine(viewer, "Monthly", this.module.getEffectivePlaytime(user, PlaytimePeriod.MONTH),
+                this.module.getSettings().getGoalMs(PlaytimePeriod.MONTH));
     }
 
-    private void sendGoalLine(final CommandSender viewer, final SunUser user, final String name, final long current,
-            final long goal) {
+    private void sendGoalLine(final CommandSender viewer, final String name, final long current, final long goal) {
         if (goal <= 0L) {
-            module.sendPrefixed(PlaytimeLang.GOAL_LINE_INACTIVE, viewer, b -> b
+            this.module.sendPrefixed(PlaytimeLang.GOAL_LINE_INACTIVE, viewer, b -> b
                     .with(SLPlaceholders.GENERIC_NAME, () -> name));
             return;
         }
         final long percent = current <= 0L ? 0L : Math.min(100L, current * 100L / Math.max(1L, goal));
-        module.sendPrefixed(PlaytimeLang.GOAL_LINE, viewer, b -> b
+        this.module.sendPrefixed(PlaytimeLang.GOAL_LINE, viewer, b -> b
                 .with(SLPlaceholders.GENERIC_NAME, () -> name)
                 .with(SLPlaceholders.GENERIC_VALUE, () -> String.valueOf(percent))
                 .with(SLPlaceholders.GENERIC_CURRENT, () -> TimeUtil.formatMillis(Math.max(0L, current)))
@@ -346,9 +361,7 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
     }
 
     private int addPlaytime(final CommandSender sender, final CommandArguments arguments) {
-        final PlaytimePeriod period = arguments.getOrDefaultUnchecked("period", PlaytimePeriod.ALLTIME);
         final Object minutesObj = arguments.get("minutes");
-
         if (!(minutesObj instanceof final Integer minutes)) {
             return 0;
         }
@@ -364,19 +377,15 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             return 0;
         }
         return target.runAs(this.module, sender, PlaytimePerms.COMMAND_ADMIN_ADD, (user, targetPlayer) -> {
-            final SunUser resolved = this.module.userManager().getOrFetch(targetPlayer);
-            this.module.addPlaytime(resolved, period, deltaMs);
+            this.module.addPlaytime(user, deltaMs);
             this.module.sendPrefixed(PlaytimeLang.ADMIN_ADDED, sender, b -> b
                     .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(deltaMs))
-                    .with(SLPlaceholders.PLAYER_NAME, resolved::getName)
-                    .with(SLPlaceholders.GENERIC_NAME, () -> period.name()));
+                    .with(SLPlaceholders.PLAYER_NAME, user::getName));
         });
     }
 
     private int setPlaytime(final CommandSender sender, final CommandArguments arguments) {
-        final PlaytimePeriod period = arguments.getOrDefaultUnchecked("period", PlaytimePeriod.ALLTIME);
         final Object minutesObj = arguments.get("minutes");
-
         if (!(minutesObj instanceof final Integer minutes)) {
             return 0;
         }
@@ -384,7 +393,6 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             this.module.sendPrefixed(PlaytimeLang.ERROR_GOAL_NEGATIVE, sender);
             return 0;
         }
-
         final long valueMs = (long) minutes * 60_000L;
 
         final CommandArgumentConstants.Target target = CommandArgumentConstants.target(arguments);
@@ -393,12 +401,10 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             return 0;
         }
         return target.runAs(this.module, sender, PlaytimePerms.COMMAND_ADMIN_SET, (user, targetPlayer) -> {
-            final SunUser resolved = this.module.userManager().getOrFetch(targetPlayer);
-            this.module.setPlaytime(resolved, period, valueMs);
+            this.module.setPlaytime(user, valueMs);
             this.module.sendPrefixed(PlaytimeLang.ADMIN_SET, sender, b -> b
                     .with(SLPlaceholders.GENERIC_TIME, () -> TimeUtil.formatMillis(valueMs))
-                    .with(SLPlaceholders.PLAYER_NAME, resolved::getName)
-                    .with(SLPlaceholders.GENERIC_NAME, () -> period.name()));
+                    .with(SLPlaceholders.PLAYER_NAME, user::getName));
         });
     }
 
@@ -415,11 +421,10 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             return 0;
         }
         return target.runAs(this.module, sender, PlaytimePerms.COMMAND_ADMIN_RESET, (user, targetPlayer) -> {
-            final SunUser resolved = this.module.userManager().getOrFetch(targetPlayer);
-            this.module.resetScope(resolved, scope);
+            this.module.resetScope(user, scope);
             this.module.sendPrefixed(PlaytimeLang.ADMIN_RESET, sender, b -> b
                     .with(SLPlaceholders.GENERIC_NAME, () -> scope)
-                    .with(SLPlaceholders.PLAYER_NAME, resolved::getName));
+                    .with(SLPlaceholders.PLAYER_NAME, user::getName));
         });
     }
 }

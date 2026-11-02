@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.playtime2;
+package su.nightexpress.sunlight.moduleImpl.playtime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,9 @@ import su.nightexpress.sunlight.user.SunUser;
 
 public class PlaytimeProviderImpl implements PlaytimeProvider {
 
-  private final Playtime2Module module;
+  private final PlaytimeModule module;
 
-  public PlaytimeProviderImpl(final Playtime2Module module) {
+  public PlaytimeProviderImpl(final PlaytimeModule module) {
     this.module = module;
   }
 
@@ -52,12 +52,12 @@ public class PlaytimeProviderImpl implements PlaytimeProvider {
 
   @Override
   public List<PlaytimeProvider.TopEntry> getTop(final String period, final int limit) {
-    final List<Playtime2TopHandler.TopEntry> board = module.topHandler()
+    final List<PlaytimeTopHandler.TopEntry> board = module.topHandler()
         .getTop(PlaytimePeriod.fromString(period));
     final int size = Math.max(0, Math.min(limit, board.size()));
     final List<PlaytimeProvider.TopEntry> result = new ArrayList<>(size);
     for (int index = 0; index < size; index++) {
-      final Playtime2TopHandler.TopEntry entry = board.get(index);
+      final PlaytimeTopHandler.TopEntry entry = board.get(index);
       result.add(new PlaytimeProvider.TopEntry(entry.id(), entry.name(), entry.value()));
     }
     return result;

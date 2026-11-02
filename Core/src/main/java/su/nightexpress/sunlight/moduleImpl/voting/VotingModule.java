@@ -2223,7 +2223,7 @@ public class VotingModule extends Module {
      *         so an absent requirement is satisfied rather than failed.
      */
     private double getPlaytimeHours(final Player player) {
-        if (!this.plugin.moduleManager().isPresent("playtime2")) {
+        if (!this.plugin.moduleManager().isPresent("playtime")) {
             return Integer.MAX_VALUE;
         }
         final long millis = this.plugin.playtimeProvider()

@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.playtime2.menu;
+package su.nightexpress.sunlight.moduleImpl.playtime.menu;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GOLD;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
@@ -33,9 +33,9 @@ import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
 import su.nightexpress.nightcore.ui.inventory.menu.AbstractMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
-import su.nightexpress.sunlight.moduleImpl.playtime2.Playtime2History;
-import su.nightexpress.sunlight.moduleImpl.playtime2.Playtime2Module;
-import su.nightexpress.sunlight.moduleImpl.playtime2.config.Playtime2Lang;
+import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeHistory;
+import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeModule;
+import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimeLang;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.TimeUtil;
 
@@ -45,7 +45,7 @@ import su.nightexpress.sunlight.utils.TimeUtil;
  * Previous and next months open a fresh menu, so the viewed month never has
  * to be shared state.
  */
-public class Playtime2CalendarMenu extends AbstractMenu {
+public class PlaytimeCalendarMenu extends AbstractMenu {
 
         private static final DateTimeFormatter MONTH = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
         private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy", Locale.ENGLISH);
@@ -53,12 +53,12 @@ public class Playtime2CalendarMenu extends AbstractMenu {
         /** First slot of the day grid: row 1, column 0 of a 9-wide inventory. */
         private static final int GRID_ORIGIN = 9;
 
-        private final Playtime2Module module;
+        private final PlaytimeModule module;
         private final UUID targetId;
         private final YearMonth month;
 
-        public Playtime2CalendarMenu(final Playtime2Module module, final UUID targetId, final YearMonth month) {
-                super(MenuType.GENERIC_9X6, Playtime2Lang.MENU_TITLE_CALENDAR.text());
+        public PlaytimeCalendarMenu(final PlaytimeModule module, final UUID targetId, final YearMonth month) {
+                super(MenuType.GENERIC_9X6, PlaytimeLang.MENU_TITLE_CALENDAR.text());
                 this.module = module;
                 this.targetId = targetId;
                 this.month = month == null ? java.time.YearMonth.now(TimeUtil.getZoneId()) : month;
@@ -129,7 +129,7 @@ public class Playtime2CalendarMenu extends AbstractMenu {
 
         /** The day grid of one month, keyed by epoch day. Empty days are absent. */
         public Map<Long, Long> monthGrid(final UUID playerId, final YearMonth month) {
-                final Playtime2History history = this.module.historyOrLoad(playerId);
+                final PlaytimeHistory history = this.module.historyOrLoad(playerId);
                 synchronized (history) {
                         return history.monthGrid(month);
                 }
@@ -172,7 +172,7 @@ public class Playtime2CalendarMenu extends AbstractMenu {
 
                 list.add(MenuItem.button()
                                 .defaultState(NightItem.fromType(Material.ARROW)
-                                                .setDisplayName(GOLD.wrap(Playtime2Lang.MENU_BUTTON_PREVIOUS.text()))
+                                                .setDisplayName(GOLD.wrap(PlaytimeLang.MENU_BUTTON_PREVIOUS.text()))
                                                 .hideAllComponents(),
                                                 actionContext -> this.open(user, this.month.minusMonths(1),
                                                                 actionContext.getPlayer()))
@@ -192,7 +192,7 @@ public class Playtime2CalendarMenu extends AbstractMenu {
                         list.add(MenuItem.button()
                                         .defaultState(NightItem.fromType(Material.ARROW)
                                                         .setDisplayName(GOLD
-                                                                        .wrap(Playtime2Lang.MENU_BUTTON_NEXT.text()))
+                                                                        .wrap(PlaytimeLang.MENU_BUTTON_NEXT.text()))
                                                         .hideAllComponents(),
                                                         actionContext -> this.open(user, this.month.plusMonths(1),
                                                                         actionContext.getPlayer()))
@@ -202,7 +202,7 @@ public class Playtime2CalendarMenu extends AbstractMenu {
 
                 list.add(MenuItem.button()
                                 .defaultState(NightItem.fromType(Material.BOOK)
-                                                .setDisplayName(GOLD.wrap(Playtime2Lang.MENU_BUTTON_BACK.text()))
+                                                .setDisplayName(GOLD.wrap(PlaytimeLang.MENU_BUTTON_BACK.text()))
                                                 .setLore(List.of(GRAY.wrap("Back to the statistics."), "",
                                                                 GOLD.wrap("→ " + UNDERLINED.wrap("Click to open."))))
                                                 .hideAllComponents(),
@@ -213,7 +213,7 @@ public class Playtime2CalendarMenu extends AbstractMenu {
 
                 list.add(MenuItem.button()
                                 .defaultState(NightItem.fromType(Material.BARRIER)
-                                                .setDisplayName(GRAY.wrap(Playtime2Lang.MENU_BUTTON_CLOSE.text()))
+                                                .setDisplayName(GRAY.wrap(PlaytimeLang.MENU_BUTTON_CLOSE.text()))
                                                 .hideAllComponents(),
                                                 actionContext -> actionContext.getViewer().closeMenu())
                                 .slots(50)
@@ -221,7 +221,7 @@ public class Playtime2CalendarMenu extends AbstractMenu {
         }
 
         private void open(final SunUser user, final YearMonth month, final Player viewer) {
-                new Playtime2CalendarMenu(this.module, user.getId(), month).show(this.module.plugin(), viewer);
+                new PlaytimeCalendarMenu(this.module, user.getId(), month).show(this.module.plugin(), viewer);
         }
 
         @Override

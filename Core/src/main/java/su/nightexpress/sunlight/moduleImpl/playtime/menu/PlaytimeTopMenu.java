@@ -1,5 +1,12 @@
 package su.nightexpress.sunlight.moduleImpl.playtime.menu;
 
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GOLD;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GREEN;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.ORANGE;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.UNDERLINED;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.WHITE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -22,13 +29,11 @@ import su.nightexpress.nightcore.ui.inventory.viewer.MenuViewer;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.sunlight.SunLightPlugin;
+import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeModule;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeTopHandler.TopEntry;
 import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimeLang;
-import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.utils.TimeUtil;
-
-import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 
 /**
  * Paginated leaderboard with a period switcher on top.
@@ -44,24 +49,22 @@ public class PlaytimeTopMenu extends AbstractMenu {
     private final PlaytimeModule module;
     private final PlaytimePeriod period;
 
-    public PlaytimeTopMenu(PlaytimeModule module, PlaytimePeriod period) {
+    public PlaytimeTopMenu(final PlaytimeModule module, final PlaytimePeriod period) {
         super(MenuType.GENERIC_9X5, PlaytimeLang.MENU_TITLE_TOP.text());
         this.module = module;
         this.period = period == null ? PlaytimePeriod.ALLTIME : period;
     }
 
-    public boolean open(SunLightPlugin plugin, Player viewer) {
+    public boolean open(final SunLightPlugin plugin, final Player viewer) {
         return this.show(plugin, viewer);
     }
 
     @Override
     public void registerActions() {
-
     }
 
     @Override
     public void registerConditions() {
-
     }
 
     @Override
@@ -73,31 +76,28 @@ public class PlaytimeTopMenu extends AbstractMenu {
     }
 
     @Override
-    protected void onLoad(FileConfig config) {
-
+    protected void onLoad(final FileConfig config) {
     }
 
     @Override
-    protected void onClick(ViewerContext context, InventoryClickEvent event) {
-
+    protected void onClick(final ViewerContext context, final InventoryClickEvent event) {
     }
 
     @Override
-    protected void onDrag(ViewerContext context, InventoryDragEvent event) {
-
+    protected void onDrag(final ViewerContext context, final InventoryDragEvent event) {
     }
 
     @Override
-    protected void onClose(ViewerContext context, InventoryCloseEvent event) {
-
+    protected void onClose(final ViewerContext context, final InventoryCloseEvent event) {
     }
 
     @Override
-    public void onPrepare(ViewerContext context, InventoryView view, Inventory inventory, List<MenuItem> list) {
-        Player viewer = context.getPlayer();
-        MenuViewer menuViewer = context.getViewer();
+    public void onPrepare(final ViewerContext context, final InventoryView view, final Inventory inventory,
+            final List<MenuItem> list) {
+        final Player viewer = context.getPlayer();
+        final MenuViewer menuViewer = context.getViewer();
 
-        List<TopEntry> entries = new ArrayList<>(this.module.topHandler.getTop(this.period));
+        final List<TopEntry> entries = new ArrayList<>(this.module.topHandler().getTop(this.period));
         menuViewer.setTotalPages(Math.max(1, (entries.size() + PAGE_SIZE - 1) / PAGE_SIZE));
 
         this.addPeriodButton(list, PlaytimePeriod.ALLTIME, Material.NETHER_STAR, 1);
@@ -106,11 +106,11 @@ public class PlaytimeTopMenu extends AbstractMenu {
         this.addPeriodButton(list, PlaytimePeriod.WEEK, Material.CLOCK, 4);
         this.addPeriodButton(list, PlaytimePeriod.DAY, Material.SUNFLOWER, 5);
 
-        int fromIndex = (menuViewer.getCurrentPage() - 1) * PAGE_SIZE;
+        final int fromIndex = (menuViewer.getCurrentPage() - 1) * PAGE_SIZE;
         if (fromIndex < entries.size()) {
-            int toIndex = Math.min(entries.size(), fromIndex + PAGE_SIZE);
+            final int toIndex = Math.min(entries.size(), fromIndex + PAGE_SIZE);
             for (int index = fromIndex; index < toIndex; index++) {
-                TopEntry entry = entries.get(index);
+                final TopEntry entry = entries.get(index);
                 list.add(this.entryItem(entry, index + 1, viewer.getUniqueId(), FIRST_SLOT + index - fromIndex));
             }
         } else {
@@ -130,7 +130,7 @@ public class PlaytimeTopMenu extends AbstractMenu {
                                 GOLD.wrap("→ " + UNDERLINED.wrap("Click to open."))))
                         .hideAllComponents(),
                         actionContext -> {
-                            Player clicker = actionContext.getPlayer();
+                            final Player clicker = actionContext.getPlayer();
                             this.module.openStatsMenu(clicker, this.module.userManager().getOrFetch(clicker));
                         })
                 .slots(40)
@@ -145,10 +145,11 @@ public class PlaytimeTopMenu extends AbstractMenu {
                 .build());
     }
 
-    private void addPeriodButton(List<MenuItem> list, PlaytimePeriod value, Material icon, int slot) {
-        boolean selected = this.period == value;
-        String label = this.periodLabel(value);
-        List<String> lore = new ArrayList<>();
+    private void addPeriodButton(final List<MenuItem> list, final PlaytimePeriod value, final Material icon,
+            final int slot) {
+        final boolean selected = this.period == value;
+        final String label = value.displayname();
+        final List<String> lore = new ArrayList<>();
         lore.add(GRAY.wrap("Sort the board by " + label.toLowerCase() + " playtime."));
         lore.add("");
         lore.add(selected ? GREEN.wrap("Currently selected.") : GOLD.wrap("→ " + UNDERLINED.wrap("Click to select.")));
@@ -164,46 +165,39 @@ public class PlaytimeTopMenu extends AbstractMenu {
                 .build());
     }
 
-    private MenuItem entryItem(TopEntry entry, int rank, UUID viewerId, int slot) {
-        String medal = switch (rank) {
+    private MenuItem entryItem(final TopEntry entry, final int rank, final UUID viewerId, final int slot) {
+        final String medal = switch (rank) {
             case 1 -> GOLD.wrap("#" + rank + " ");
             case 2 -> WHITE.wrap("#" + rank + " ");
             case 3 -> ORANGE.wrap("#" + rank + " ");
             default -> GRAY.wrap("#" + rank + " ");
         };
-        boolean self = entry.id().equals(viewerId);
+        final boolean self = entry.id().equals(viewerId);
 
-        List<String> lore = new ArrayList<>();
+        final List<String> lore = new ArrayList<>();
         lore.add(GRAY.wrap("Playtime: ") + WHITE.wrap(TimeUtil.formatMillis(entry.value())));
-        lore.add(GRAY.wrap("Period: ") + WHITE.wrap(this.periodLabel(this.period)));
+        lore.add(GRAY.wrap("Period: ") + WHITE.wrap(this.period.displayname()));
         if (self) {
             lore.add("");
             lore.add(GREEN.wrap("That's you!"));
         }
 
-        NightItem icon = NightItem.fromType(Material.PLAYER_HEAD)
+        final NightItem icon = NightItem.fromType(Material.PLAYER_HEAD)
                 .setDisplayName(medal + (self ? GREEN.wrap(entry.name()) : WHITE.wrap(entry.name())))
                 .setLore(lore)
                 .hideAllComponents();
         try {
             icon.setSkullOwner(Bukkit.getOfflinePlayer(entry.id()));
-        } catch (Exception ignored) {
+        } catch (final Exception ignored) {
         }
         return MenuItem.button().defaultState(icon).slots(slot).build();
     }
 
-    private String periodLabel(PlaytimePeriod period) {
-        return period == PlaytimePeriod.ALLTIME ? "Alltime"
-                : period.name().substring(0, 1) + period.name().substring(1).toLowerCase();
+    @Override
+    public void onReady(final ViewerContext context, final InventoryView view, final Inventory inventory) {
     }
 
     @Override
-    public void onReady(ViewerContext context, InventoryView view, Inventory inventory) {
-
-    }
-
-    @Override
-    public void onRender(ViewerContext context, InventoryView view, Inventory inventory) {
-
+    public void onRender(final ViewerContext context, final InventoryView view, final Inventory inventory) {
     }
 }

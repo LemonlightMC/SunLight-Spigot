@@ -35,7 +35,7 @@ import su.nightexpress.sunlight.moduleImpl.nametags.NametagsModule;
 import su.nightexpress.sunlight.moduleImpl.nerfphantoms.PhantomsModule;
 import su.nightexpress.sunlight.moduleImpl.nick.NickModule;
 import su.nightexpress.sunlight.moduleImpl.playerwarps.PlayerWarpsModule;
-import su.nightexpress.sunlight.moduleImpl.playtime2.Playtime2Module;
+import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeModule;
 import su.nightexpress.sunlight.moduleImpl.profiles.ProfilesModule;
 import su.nightexpress.sunlight.moduleImpl.ptp.PTPModule;
 // TEMP
@@ -286,7 +286,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
                 LoadCondition::tabOrBridge);
         manager.register("nick", "Nick", NickModule::new);
         manager.register("playerwarps", "Player Warps", PlayerWarpsModule::new);
-        manager.register("playtime2", "Playtime", Playtime2Module::new);
+        manager.register("playtime", "Playtime", PlaytimeModule::new);
         manager.register("profiles", "Profiles", ProfilesModule::new);
         manager.register("ptp", "PTP", PTPModule::new);
         manager.register("rtp", "RTP", RTPModule::new);
@@ -476,7 +476,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
 
     @Override
     public Optional<? extends PlaytimeProvider> playtimeProvider() {
-        return this.moduleManager.getByType(Playtime2Module.class).map(m -> m.provider());
+        return this.moduleManager.getByType(PlaytimeModule.class).map(m -> m.provider());
     }
 
 }

@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.playtime2.data;
+package su.nightexpress.sunlight.moduleImpl.playtime.data;
 
 import java.util.UUID;
 
@@ -6,13 +6,13 @@ import java.util.UUID;
  * One row of the daily history: how many milliseconds a player was tracked on
  * a single epoch day.
  */
-public class Playtime2Day {
+public class PlaytimeDay {
 
     private final UUID playerId;
     public final long day;
     public final long millis;
 
-    public Playtime2Day(UUID playerId, long day, long millis) {
+    public PlaytimeDay(UUID playerId, long day, long millis) {
         this.playerId = playerId;
         this.day = day;
         this.millis = Math.max(0L, millis);

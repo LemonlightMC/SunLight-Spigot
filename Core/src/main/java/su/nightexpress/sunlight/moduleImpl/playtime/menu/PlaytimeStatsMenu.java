@@ -1,5 +1,17 @@
 package su.nightexpress.sunlight.moduleImpl.playtime.menu;
 
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.DARK_GRAY;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GOLD;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GREEN;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.RED;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.SOFT_RED;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.UNDERLINED;
+import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.WHITE;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,43 +34,46 @@ import su.nightexpress.nightcore.ui.inventory.menu.AbstractMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.sunlight.SunLightPlugin;
+import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimeMilestone;
+import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
+import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeHistory;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeModule;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeProperties;
 import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimeLang;
-import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimeMilestone;
-import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.TimeUtil;
 
-import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
-
 /**
  * Player-facing statistics overview: totals per period, session, streaks,
- * goal progress bars and milestone progress.
+ * goal progress bars, milestone progress and a strip of the recent days.
  */
 public class PlaytimeStatsMenu extends AbstractMenu {
+
+        private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd MMM");
+        private static final DateTimeFormatter DATE = DateTimeFormatter.ISO_LOCAL_DATE;
+
+        /** Slots of the recent-days strip, oldest on the left. */
+        private static final int[] RECENT_SLOTS = { 19, 20, 21, 22, 23, 24, 25 };
 
         private final PlaytimeModule module;
         private final UUID targetId;
 
-        public PlaytimeStatsMenu(PlaytimeModule module, UUID targetId) {
+        public PlaytimeStatsMenu(final PlaytimeModule module, final UUID targetId) {
                 super(MenuType.GENERIC_9X5, PlaytimeLang.MENU_TITLE_STATS.text());
                 this.module = module;
                 this.targetId = targetId;
         }
 
-        public boolean open(SunLightPlugin plugin, Player viewer) {
+        public boolean open(final SunLightPlugin plugin, final Player viewer) {
                 return this.show(plugin, viewer);
         }
 
         @Override
         public void registerActions() {
-
         }
 
         @Override
         public void registerConditions() {
-
         }
 
         @Override
@@ -68,29 +83,26 @@ public class PlaytimeStatsMenu extends AbstractMenu {
         }
 
         @Override
-        protected void onLoad(FileConfig config) {
-
+        protected void onLoad(final FileConfig config) {
         }
 
         @Override
-        protected void onClick(ViewerContext context, InventoryClickEvent event) {
-
+        protected void onClick(final ViewerContext context, final InventoryClickEvent event) {
         }
 
         @Override
-        protected void onDrag(ViewerContext context, InventoryDragEvent event) {
-
+        protected void onDrag(final ViewerContext context, final InventoryDragEvent event) {
         }
 
         @Override
-        protected void onClose(ViewerContext context, InventoryCloseEvent event) {
-
+        protected void onClose(final ViewerContext context, final InventoryCloseEvent event) {
         }
 
         @Override
-        public void onPrepare(ViewerContext context, InventoryView view, Inventory inventory, List<MenuItem> list) {
-                Player viewer = context.getPlayer();
-                SunUser user = this.module.userManager().getOrFetch(this.targetId).orElse(null);
+        public void onPrepare(final ViewerContext context, final InventoryView view, final Inventory inventory,
+                        final List<MenuItem> list) {
+                final Player viewer = context.getPlayer();
+                final SunUser user = this.module.userManager().getOrFetch(this.targetId).orElse(null);
                 if (user == null) {
                         list.add(MenuItem.button()
                                         .defaultState(NightItem.fromType(Material.BARRIER)
@@ -101,25 +113,25 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                                         .build());
                         return;
                 }
-                this.module.ensureRollover(user);
 
                 list.add(this.headItem(user, 4));
 
-                list.add(PlaytimePeriod.YEAR.item(Material.ENDER_EYE, 11,
+                list.add(PlaytimePeriod.YEAR.item(Material.ENDER_EYE, 10,
                                 this.module.getEffectivePlaytime(user, PlaytimePeriod.YEAR)));
-                list.add(PlaytimePeriod.MONTH.item(Material.MAP, 12,
+                list.add(PlaytimePeriod.MONTH.item(Material.MAP, 11,
                                 this.module.getEffectivePlaytime(user, PlaytimePeriod.MONTH)));
-                list.add(PlaytimePeriod.WEEK.item(Material.CLOCK, 13, 
+                list.add(PlaytimePeriod.WEEK.item(Material.CLOCK, 12,
                                 this.module.getEffectivePlaytime(user, PlaytimePeriod.WEEK)));
-                list.add(PlaytimePeriod.DAY.item(Material.SUNFLOWER, 14,
+                list.add(PlaytimePeriod.DAY.item(Material.SUNFLOWER, 13,
                                 this.module.getEffectivePlaytime(user, PlaytimePeriod.DAY)));
-                list.add(PlaytimePeriod.SESSION.item(Material.FEATHER, 15, this.module.getEffectivePlaytime(user, PlaytimePeriod.DAY)));
+                list.add(PlaytimePeriod.SESSION.item(Material.FEATHER, 14,
+                                this.module.getEffectivePlaytime(user, PlaytimePeriod.SESSION)));
 
-                list.add(this.streakItem(Material.FIREWORK_STAR, 29, "Daily streak",
-                                Math.max(0, user.getPropertyOrDefault(PlaytimeProperties.DAILY_STREAK)), "day"));
-                list.add(this.streakItem(Material.FIREWORK_STAR, 30, "Weekly streak",
-                                Math.max(0, user.getPropertyOrDefault(PlaytimeProperties.WEEKLY_STREAK)), "week"));
-                list.add(this.milestoneItem(user, 31));
+                list.add(this.streakItem(Material.FIREWORK_STAR, 28, "Daily streak",
+                                this.module.getDailyStreak(user), "day"));
+                list.add(this.streakItem(Material.FIREWORK_STAR, 29, "Weekly streak",
+                                this.module.getWeeklyStreak(user), "week"));
+                list.add(this.milestoneItem(user, 30));
 
                 list.add(this.goalItem(32, "Daily", this.module.getEffectivePlaytime(user, PlaytimePeriod.DAY),
                                 this.module.getSettings().getGoalMs(PlaytimePeriod.DAY)));
@@ -127,6 +139,8 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                                 this.module.getSettings().getGoalMs(PlaytimePeriod.WEEK)));
                 list.add(this.goalItem(34, "Monthly", this.module.getEffectivePlaytime(user, PlaytimePeriod.MONTH),
                                 this.module.getSettings().getGoalMs(PlaytimePeriod.MONTH)));
+
+                this.addRecentDays(list, user);
 
                 list.add(MenuItem.button()
                                 .defaultState(NightItem.fromType(Material.GOLD_INGOT)
@@ -136,6 +150,18 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                                                 .hideAllComponents(),
                                                 actionContext -> this.module.openTopMenu(actionContext.getPlayer(),
                                                                 PlaytimePeriod.ALLTIME))
+                                .slots(38)
+                                .build());
+
+                list.add(MenuItem.button()
+                                .defaultState(NightItem.fromType(Material.CLOCK)
+                                                .setDisplayName(GOLD.wrap(PlaytimeLang.MENU_BUTTON_CALENDAR.text()))
+                                                .setLore(List.of(GRAY.wrap("Every day of the month."), "",
+                                                                GOLD.wrap("→ " + UNDERLINED.wrap("Click to open."))))
+                                                .hideAllComponents(),
+                                                actionContext -> this.module.openCalendarMenu(actionContext.getPlayer(),
+                                                                user,
+                                                                YearMonth.now(TimeUtil.getZoneId())))
                                 .slots(39)
                                 .build());
 
@@ -169,45 +195,72 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                 }
         }
 
-        private MenuItem headItem(SunUser user, int slot) {
-                NightItem icon = NightItem.fromType(Material.PLAYER_HEAD)
+        private MenuItem headItem(final SunUser user, final int slot) {
+                final List<String> lore = new ArrayList<>();
+                lore.add(GRAY.wrap("Total: ") + WHITE.wrap(
+                                TimeUtil.formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME))));
+                lore.add(GRAY.wrap("Session: ") + WHITE.wrap(
+                                TimeUtil.formatMillis(this.module.getEffectivePlaytime(user, PlaytimePeriod.SESSION))));
+                lore.add("");
+                lore.add(GRAY.wrap("Days played: ") + WHITE.wrap(String.valueOf(this.module.getDaysPlayed(user))));
+
+                final long first = this.module.getFirstPlayedDay(user);
+                final long last = this.module.getLastPlayedDay(user);
+                if (first > 0L) {
+                        lore.add(GRAY.wrap("First played: ") + WHITE.wrap(LocalDate.ofEpochDay(first).format(DATE)));
+                }
+                if (last > 0L) {
+                        lore.add(GRAY.wrap("Last played: ") + WHITE.wrap(LocalDate.ofEpochDay(last).format(DATE)));
+                }
+
+                final NightItem icon = NightItem.fromType(Material.PLAYER_HEAD)
                                 .setDisplayName(GOLD.wrap(user.getName()))
-                                .setLore(List.of(
-                                                GRAY.wrap("Total: ") + WHITE.wrap(
-                                                                TimeUtil.formatMillis(this.module.getEffectivePlaytime(
-                                                                                user, PlaytimePeriod.ALLTIME))),
-                                                "",
-                                                GRAY.wrap("Session: ") + WHITE.wrap(TimeUtil.formatMillis(this.module
-                                                                .getEffectivePlaytime(user, PlaytimePeriod.SESSION)))))
+                                .setLore(lore)
                                 .hideAllComponents();
                 try {
                         icon.setSkullOwner(Bukkit.getOfflinePlayer(user.getId()));
-                } catch (Exception ignored) {
+                } catch (final Exception ignored) {
                 }
                 return MenuItem.button().defaultState(icon).slots(slot).build();
         }
 
-        private MenuItem sessionItem(SunUser user, int slot) {
-                long session = this.module.getEffectivePlaytime(user, PlaytimePeriod.SESSION);
-                return MenuItem.button()
-                                .defaultState(NightItem.fromType(Material.FEATHER)
-                                                .setDisplayName(GOLD.wrap("Session"))
-                                                .setLore(List.of(WHITE.wrap(TimeUtil.formatMillis(session))))
-                                                .hideAllComponents())
-                                .slots(slot)
-                                .build();
+        /** The last seven days, ending today, coloured by how much was played. */
+        private void addRecentDays(final List<MenuItem> list, final SunUser user) {
+                // The calendar menu already loads the history on demand for offline
+                // players; without the same here the strip would claim every recent
+                // day was unplayed for anyone who is not currently online.
+                final PlaytimeHistory history = this.module.historyOrLoad(user.getId());
+                final long today = this.module.currentKeys().day();
+                for (int index = 0; index < RECENT_SLOTS.length; index++) {
+                        final long day = today - (RECENT_SLOTS.length - 1 - index);
+                        final long millis = history.getMillis(day);
+                        final LocalDate date = LocalDate.ofEpochDay(day);
+
+                        final List<String> lore = new ArrayList<>();
+                        lore.add(millis > 0L ? WHITE.wrap(TimeUtil.formatMillis(millis)) : GRAY.wrap("Not played"));
+                        if (day == today) {
+                                lore.add("");
+                                lore.add(GREEN.wrap("Today"));
+                        }
+
+                        list.add(MenuItem.button()
+                                        .defaultState(NightItem
+                                                        .fromType(this.module.getSettings().calendarMaterial(millis))
+                                                        .setDisplayName(GOLD.wrap(date.format(DAY)))
+                                                        .setLore(lore)
+                                                        .hideAllComponents())
+                                        .slots(RECENT_SLOTS[index])
+                                        .build());
+                }
         }
 
-        private MenuItem streakItem(Material material, int slot, String name, int value, String unit) {
-                List<String> lore = new ArrayList<>();
+        private MenuItem streakItem(final Material material, final int slot, final String name, final int value,
+                        final String unit) {
+                final List<String> lore = new ArrayList<>();
                 lore.add(WHITE.wrap(String.valueOf(value)) + GRAY.wrap(" " + unit + (value == 1 ? "" : "s")));
-                if (value > 1) {
-                        lore.add("");
-                        lore.add(GREEN.wrap("Keep it going!"));
-                } else {
-                        lore.add("");
-                        lore.add(GRAY.wrap("Play consecutive " + unit + "s to grow it."));
-                }
+                lore.add("");
+                lore.add(value > 1 ? GREEN.wrap("Keep it going!")
+                                : GRAY.wrap("Play consecutive " + unit + "s to grow it."));
                 return MenuItem.button()
                                 .defaultState(NightItem.fromType(material)
                                                 .setDisplayName(GOLD.wrap(name))
@@ -217,12 +270,12 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                                 .build();
         }
 
-        private MenuItem goalItem(int slot, String name, long current, long goal) {
-                List<String> lore = new ArrayList<>();
+        private MenuItem goalItem(final int slot, final String name, final long current, final long goal) {
+                final List<String> lore = new ArrayList<>();
                 if (goal <= 0L) {
                         lore.add(SOFT_RED.wrap("No goal set"));
                 } else {
-                        long percent = current <= 0L ? 0L : Math.min(100L, current * 100L / Math.max(1L, goal));
+                        final long percent = current <= 0L ? 0L : Math.min(100L, current * 100L / Math.max(1L, goal));
                         lore.add(WHITE.wrap(TimeUtil.formatMillis(Math.max(0L, current))) + GRAY.wrap(" / ")
                                         + WHITE.wrap(TimeUtil.formatMillis(goal)));
                         lore.add(this.progressBar(percent) + GRAY.wrap(" " + percent + "%"));
@@ -236,28 +289,24 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                                 .build();
         }
 
-        private MenuItem milestoneItem(SunUser user, int slot) {
-                Map<String, PlaytimeMilestone> all = this.module.milestoneHandler.getMilestones();
-                Map<String, Integer> progress = user.getPropertyOrDefault(PlaytimeProperties.MILESTONE_PROGRESS);
-                long total = this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME);
+        private MenuItem milestoneItem(final SunUser user, final int slot) {
+                final Map<String, PlaytimeMilestone> all = this.module.milestoneHandler().getMilestones();
+                final Map<String, Integer> progress = user.getPropertyOrDefault(PlaytimeProperties.MILESTONE_PROGRESS);
+                final long total = this.module.getEffectivePlaytime(user, PlaytimePeriod.ALLTIME);
 
-                List<String> lore = new ArrayList<>();
+                final List<String> lore = new ArrayList<>();
                 if (all.isEmpty()) {
                         lore.add(GRAY.wrap("No milestones configured."));
                 } else {
-                        long claimed = all.values().stream()
+                        final long claimed = all.values().stream()
                                         .filter(m -> !m.repeatable() && progress.getOrDefault(m.id(), 0) > 0)
                                         .count();
-                        long oneShots = all.values().stream().filter(m -> !m.repeatable()).count();
+                        final long oneShots = all.values().stream().filter(m -> !m.repeatable()).count();
                         lore.add(GRAY.wrap("Claimed: ") + WHITE.wrap(claimed + "/" + oneShots));
 
-                        PlaytimeMilestone next = all.values().stream()
-                                        .filter(m -> !m.repeatable() && progress.getOrDefault(m.id(), 0) <= 0)
-                                        .sorted((first, second) -> Long.compare(first.thresholdMs(),
-                                                        second.thresholdMs()))
-                                        .findFirst().orElse(null);
+                        final PlaytimeMilestone next = this.module.milestoneHandler().nextMilestone(user);
                         if (next != null) {
-                                long percent = Math.min(100L, total * 100L / Math.max(1L, next.thresholdMs()));
+                                final long percent = Math.min(100L, total * 100L / Math.max(1L, next.thresholdMs()));
                                 lore.add("");
                                 lore.add(GRAY.wrap("Next: ") + WHITE.wrap(next.name()));
                                 lore.add(WHITE.wrap(TimeUtil.formatMillis(total)) + GRAY.wrap(" / ")
@@ -277,23 +326,20 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                                 .build();
         }
 
-        private String progressBar(long percent) {
-                int filled = (int) Math.min(20L, Math.max(0L, percent / 5L));
-                StringBuilder builder = new StringBuilder();
-                for (int index = 0; index < filled; index++)
-                        builder.append("▓");
-                for (int index = filled; index < 20; index++)
-                        builder.append("░");
+        private String progressBar(final long percent) {
+                final int filled = (int) Math.min(20L, Math.max(0L, percent / 5L));
+                final StringBuilder builder = new StringBuilder();
+                for (int index = 0; index < 20; index++) {
+                        builder.append(index < filled ? "▓" : "░");
+                }
                 return GREEN.wrap(builder.substring(0, filled)) + DARK_GRAY.wrap(builder.substring(filled));
         }
 
         @Override
-        public void onReady(ViewerContext context, InventoryView view, Inventory inventory) {
-
+        public void onReady(final ViewerContext context, final InventoryView view, final Inventory inventory) {
         }
 
         @Override
-        public void onRender(ViewerContext context, InventoryView view, Inventory inventory) {
-
+        public void onRender(final ViewerContext context, final InventoryView view, final Inventory inventory) {
         }
 }
