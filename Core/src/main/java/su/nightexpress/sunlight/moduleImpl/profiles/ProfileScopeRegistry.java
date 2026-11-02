@@ -91,11 +91,22 @@ public class ProfileScopeRegistry {
         this.setPropertyDefault("reportsrewarddaykey", ProfileScope.GLOBAL);
         this.setPropertyDefault("reportsrewarddaycount", ProfileScope.GLOBAL);
         this.setPropertyDefault("reportsrewardlastpaid", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_v2_total", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_v2_year", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_v2_month", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_v2_week", ProfileScope.GLOBAL);
-        this.setPropertyDefault("playtime_v2_day", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_total", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_archived_total", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_daily_streak", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_weekly_streak", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_days_played", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_first_played_day", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_last_played_day", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_last_seen", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_rewarded_day_key", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_rewarded_week_key", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_rewarded_month_key", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_reminded_day_key", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_reminded_week_key", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_reminded_month_key", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_session_start", ProfileScope.GLOBAL);
+        this.setPropertyDefault("playtime_milestone_progress", ProfileScope.GLOBAL);
         this.setPropertyDefault("profile_active", ProfileScope.GLOBAL);
     }
 
