@@ -1,11 +1,5 @@
 package su.nightexpress.sunlight.moduleImpl.friends.repository;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.sunlight.moduleImpl.friends.model.BlockRecord;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
 
@@ -89,19 +83,19 @@ public class FriendsRepository {
 
         final List<FriendRecord> list = new ArrayList<>(set);
         list.sort(Comparator
-                .comparing((final FriendRecord record) -> !isOnline(record.getFriendId()))
-                .thenComparing(record -> record.getFriend().name(), String.CASE_INSENSITIVE_ORDER));
+                .comparing((final FriendRecord record) -> !record.isFriendOnline())
+                .thenComparing(record -> record.getFriend().getName(), String.CASE_INSENSITIVE_ORDER));
         return list;
     }
 
     public List<FriendRecord> getOnlineFriends(final UUID playerId) {
-        return this.getFriends(playerId).stream().filter(record -> isOnline(record.getFriendId())).toList();
+        return this.getFriends(playerId).stream().filter(record -> record.isFriendOnline()).toList();
     }
 
     /**
      * The row describing what that player thinks of the other one, or {@code null}.
      */
-    @Nullable
+
     public FriendRecord getFriend(final UUID playerId, final UUID otherId) {
         final Set<FriendRecord> set = this.friendsByOwner.get(playerId);
         if (set == null) {
@@ -130,7 +124,6 @@ public class FriendsRepository {
         return list;
     }
 
-    @Nullable
     public FriendRecord getFavorite(final UUID playerId) {
         final Set<FriendRecord> set = this.friendsByOwner.get(playerId);
         if (set == null) {
@@ -144,7 +137,7 @@ public class FriendsRepository {
      * <p>
      * Returns the row that now holds the pin so the caller can persist both rows.
      */
-    @Nullable
+
     public synchronized FriendRecord setFavorite(final UUID playerId, final UUID friendId, final boolean favorite) {
         final FriendRecord target = this.getFriend(playerId, friendId);
         if (target == null) {
@@ -200,8 +193,8 @@ public class FriendsRepository {
         }
 
         final List<BlockRecord> list = new ArrayList<>(set);
-        list.sort(Comparator.comparing((final BlockRecord block) -> !isOnline(block.getBlockedId()))
-                .thenComparing(block -> block.getBlocked().name(), String.CASE_INSENSITIVE_ORDER));
+        list.sort(Comparator.comparing((final BlockRecord block) -> !block.getBlocked().isOnline())
+                .thenComparing(block -> block.getBlocked().getName(), String.CASE_INSENSITIVE_ORDER));
         return list;
     }
 
@@ -226,21 +219,5 @@ public class FriendsRepository {
         final List<BlockRecord> list = new ArrayList<>();
         this.blocksByBlocker.values().forEach(list::addAll);
         return list;
-    }
-
-    // Helpers
-
-    public static boolean isOnline(final UUID playerId) {
-        return Bukkit.getPlayer(playerId) != null;
-    }
-
-    @Nullable
-    public static Player getPlayer(final UUID playerId) {
-        return Bukkit.getPlayer(playerId);
-    }
-
-    @NotNull
-    public static UserInfo infoOf(@NotNull final Player player) {
-        return UserInfo.of(player);
     }
 }

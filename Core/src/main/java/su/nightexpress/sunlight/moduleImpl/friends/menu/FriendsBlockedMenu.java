@@ -86,7 +86,7 @@ public class FriendsBlockedMenu extends AbstractMenu {
                 this.populator = ItemPopulator.builder(BlockRecord.class)
                                 .slots(slots)
                                 .itemProvider((context, block) -> NightItem.fromType(Material.PAPER)
-                                                .setDisplayName(TagWrappers.RED.wrap(block.getBlocked().name()))
+                                                .setDisplayName(TagWrappers.RED.wrap(block.getBlocked().getName()))
                                                 .setLore(Lists.newList(
                                                                 TagWrappers.DARK_GRAY.wrap("» ")
                                                                                 + TagWrappers.GRAY.wrap("Blocked: ")
@@ -106,7 +106,7 @@ public class FriendsBlockedMenu extends AbstractMenu {
                                 .actionProvider(block -> actionContext -> {
                                         final Player player = actionContext.getPlayer();
                                         this.module.closeInventoryOnAction(player);
-                                        this.module.unblockCommand(player, block.getBlocked().name());
+                                        this.module.unblockCommand(player, block.getBlocked().getName());
                                         actionContext.getViewer().refresh();
                                 })
                                 .build();
@@ -131,7 +131,7 @@ public class FriendsBlockedMenu extends AbstractMenu {
         public void onPrepare(final ViewerContext context, final InventoryView view, final Inventory inventory,
                         final List<MenuItem> items) {
                 this.populator.populateTo(context,
-                                this.module.getRepository().getBlocks(context.getPlayer().getUniqueId()),
+                                this.module.repository().getBlocks(context.getPlayer().getUniqueId()),
                                 items);
         }
 

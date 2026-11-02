@@ -2,9 +2,8 @@ package su.nightexpress.sunlight.moduleImpl.friends.event;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
-import su.nightexpress.nightcore.user.UserInfo;
+import su.nightexpress.sunlight.user.SunUser;
 
 /**
  * Fired after a block has been added or lifted.
@@ -13,30 +12,30 @@ public class PlayerFriendBlockEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final UserInfo blocker;
-    private final UserInfo blocked;
+    private final SunUser blocker;
+    private final SunUser blocked;
     private final boolean blocking;
 
-    public PlayerFriendBlockEvent(@NotNull UserInfo blocker, @NotNull UserInfo blocked, boolean blocking) {
+    public PlayerFriendBlockEvent(SunUser blocker, SunUser blocked, boolean blocking) {
         this.blocker = blocker;
         this.blocked = blocked;
         this.blocking = blocking;
     }
 
-    public static @NotNull HandlerList getHandlerList() {
+    public static HandlerList getHandlerList() {
         return HANDLERS;
     }
 
     @Override
-    public @NotNull HandlerList getHandlers() {
+    public HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public @NotNull UserInfo getBlocker() {
+    public SunUser getBlocker() {
         return this.blocker;
     }
 
-    public @NotNull UserInfo getBlocked() {
+    public SunUser getBlocked() {
         return this.blocked;
     }
 

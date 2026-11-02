@@ -99,6 +99,10 @@ public class Utils {
     return Bukkit.getServer().getPlayer(uuid);
   }
 
+  public static boolean isOnline(final UUID playerId) {
+    return Bukkit.getPlayer(playerId) != null;
+  }
+
   public static Set<Player> onlinePlayers() {
     return Set.copyOf(Bukkit.getServer().getOnlinePlayers());
   }

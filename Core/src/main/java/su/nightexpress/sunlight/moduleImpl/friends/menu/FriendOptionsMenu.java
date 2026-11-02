@@ -90,7 +90,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                                 return;
                                                         }
                                                         item.setSkullOwner(PlayerProfiles.create(record.getFriendId(),
-                                                                        record.getFriend().name()))
+                                                                        record.getFriendName()))
                                                                         .setLore(Lists.newList(
                                                                                         TagWrappers.DARK_GRAY.wrap("» ")
                                                                                                         + TagWrappers.GRAY
@@ -153,7 +153,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                         }
                                                         this.module.closeInventoryOnAction(context.getPlayer());
                                                         this.module.promptMessage(context.getPlayer(),
-                                                                        record.getFriend().name());
+                                                                        record.getFriendName());
                                                 })
                                                 .build())
                                 .slots(15)
@@ -173,7 +173,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                         }
                                                         this.module.closeInventoryOnAction(context.getPlayer());
                                                         this.module.jumpToFriend(context.getPlayer(),
-                                                                        record.getFriend().name());
+                                                                        record.getFriendName());
                                                 })
                                                 .build())
                                 .slots(22)
@@ -201,7 +201,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                         this.module.closeInventoryOnAction(context.getPlayer());
                                                         this.plugin.showDialog(context.getPlayer(),
                                                                         FriendsDialogKeys.FRIEND_REMOVE,
-                                                                        record.getFriend().name(),
+                                                                        record.getFriendName(),
                                                                         () -> this.module.openFriends(
                                                                                         context.getPlayer()));
                                                 })
@@ -232,7 +232,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                         this.module.closeInventoryOnAction(context.getPlayer());
                                                         this.plugin.showDialog(context.getPlayer(),
                                                                         FriendsDialogKeys.FRIEND_BLOCK,
-                                                                        record.getFriend().name(),
+                                                                        record.getFriendName(),
                                                                         () -> this.module.openFriends(
                                                                                         context.getPlayer()));
                                                 })

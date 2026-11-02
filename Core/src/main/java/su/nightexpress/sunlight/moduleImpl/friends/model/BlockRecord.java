@@ -2,11 +2,9 @@ package su.nightexpress.sunlight.moduleImpl.friends.model;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NullMarked;
 
-import su.nightexpress.nightcore.user.UserInfo;
+import su.nightexpress.sunlight.user.SunUser;
 
 import java.util.UUID;
 
@@ -21,34 +19,34 @@ import java.util.UUID;
 @NullMarked
 public class BlockRecord {
 
-    private final UserInfo blocker;
-    private final UserInfo blocked;
+    private final SunUser blocker;
+    private final SunUser blocked;
     private final long createDate;
 
-    public BlockRecord(final UserInfo blocker, final UserInfo blocked, final long createDate) {
+    public BlockRecord(final SunUser blocker, final SunUser blocked, final long createDate) {
         this.blocker = blocker;
         this.blocked = blocked;
         this.createDate = createDate;
     }
 
-    public static BlockRecord create(final UserInfo blocker, final UserInfo blocked) {
+    public static BlockRecord create(final SunUser blocker, final SunUser blocked) {
         return new BlockRecord(blocker, blocked, System.currentTimeMillis());
     }
 
-    public UserInfo getBlocker() {
+    public SunUser getBlocker() {
         return this.blocker;
     }
 
-    public UserInfo getBlocked() {
+    public SunUser getBlocked() {
         return this.blocked;
     }
 
     public UUID getBlockerId() {
-        return this.blocker.id();
+        return this.blocker.getId();
     }
 
     public UUID getBlockedId() {
-        return this.blocked.id();
+        return this.blocked.getId();
     }
 
     public long getCreateDate() {
@@ -62,25 +60,24 @@ public class BlockRecord {
      * neither may send
      * a request.
      */
-    public boolean isBetween(@NotNull final UUID playerId, @NotNull final UUID otherId) {
+    public boolean isBetween(final UUID playerId, final UUID otherId) {
         return this.involves(playerId) && this.involves(otherId);
     }
 
-    public boolean involves(@NotNull final UUID playerId) {
-        return this.blocker.id().equals(playerId) || this.blocked.id().equals(playerId);
+    public boolean involves(final UUID playerId) {
+        return this.blocker.getId().equals(playerId) || this.blocked.getId().equals(playerId);
     }
 
-    public boolean isBlocking(@NotNull final UUID playerId) {
-        return this.blocker.id().equals(playerId);
+    public boolean isBlocking(final UUID playerId) {
+        return this.blocker.getId().equals(playerId);
     }
 
     /** Whether the blocked player is online right now. */
     public boolean isBlockedOnline() {
-        return Bukkit.getPlayer(this.blocked.id()) != null;
+        return Bukkit.getPlayer(this.blocked.getId()) != null;
     }
 
-    @Nullable
     public Player getBlockedPlayer() {
-        return Bukkit.getPlayer(this.blocked.id());
+        return Bukkit.getPlayer(this.blocked.getId());
     }
 }

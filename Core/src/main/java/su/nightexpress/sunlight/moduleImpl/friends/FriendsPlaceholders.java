@@ -5,7 +5,6 @@ import su.nightexpress.nightcore.util.placeholder.TypedPlaceholder;
 import su.nightexpress.nightcore.util.time.TimeFormatType;
 import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
-import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendsRepository;
 import su.nightexpress.sunlight.utils.TimeUtil;
 
 import java.util.List;
@@ -40,15 +39,15 @@ public class FriendsPlaceholders {
 
     public static final TypedPlaceholder<FriendRecord> FRIEND = TypedPlaceholder
             .builder(FriendRecord.class)
-            .with(FRIEND_NAME, record -> record.getFriend().name())
+            .with(FRIEND_NAME, record -> record.getFriendName())
             .with(FRIEND_UUID, record -> record.getFriendId().toString())
-            .with(FRIEND_OWNER, record -> record.getOwner().name())
+            .with(FRIEND_OWNER, record -> record.getOwnerName())
             .with(FRIEND_OWNER_UUID, record -> record.getOwnerId().toString())
-            .with(FRIEND_ONLINE, record -> CoreLang.STATE_YES_NO.get(FriendsRepository.isOnline(record.getFriendId())))
+            .with(FRIEND_ONLINE, record -> CoreLang.STATE_YES_NO.get(record.isFriendOnline()))
             .with(FRIEND_CREATE_DATE, record -> TimeUtil.formatDateTime(record.getCreateDate()))
             .with(FRIEND_AGE, record -> formatAge(record.getCreateDate()))
             .with(FRIEND_FAVORITE, record -> CoreLang.STATE_YES_NO.get(record.isFavorite()))
-            .with(FRIEND_STATUS, record -> FriendsRepository.isOnline(record.getFriendId()) ? "Online" : "Offline")
+            .with(FRIEND_STATUS, record -> record.isFriendOnline() ? "Online" : "Offline")
             .build();
 
     private FriendsPlaceholders() {
@@ -82,6 +81,6 @@ public class FriendsPlaceholders {
         if (records.isEmpty()) {
             return CoreLang.OTHER_NONE.text();
         }
-        return records.stream().map(record -> record.getFriend().name()).collect(Collectors.joining(", "));
+        return records.stream().map(record -> record.getFriendName()).collect(Collectors.joining(", "));
     }
 }

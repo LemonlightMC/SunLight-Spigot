@@ -20,10 +20,7 @@ import su.nightexpress.sunlight.moduleImpl.friends.FriendsConfig;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsPerms;
-import su.nightexpress.sunlight.moduleImpl.friends.dialog.FriendsDialogKeys;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRequest;
-import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.Utils;
 
 /**
@@ -427,7 +424,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
             return List.of();
         }
         return this.module.getFriendRecords(player.getUniqueId()).stream()
-                .map(record -> record.getFriend().name())
+                .map(record -> record.getFriendName())
                 .toList();
     }
 
@@ -436,7 +433,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
             return List.of();
         }
         return this.module.getOnlineFriendRecords(player.getUniqueId()).stream()
-                .map(record -> record.getFriend().name())
+                .map(record -> record.getFriendName())
                 .toList();
     }
 
@@ -444,7 +441,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
-        return this.module.getRequestRepository().getIncoming(player.getUniqueId()).stream()
+        return this.module.requestRepository().getIncoming(player.getUniqueId()).stream()
                 .map(FriendRequest::getSenderName)
                 .toList();
     }
@@ -453,7 +450,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
-        return this.module.getRequestRepository().getOutgoing(player.getUniqueId()).stream()
+        return this.module.requestRepository().getOutgoing(player.getUniqueId()).stream()
                 .map(FriendRequest::getTargetName)
                 .toList();
     }
@@ -462,8 +459,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
-        return this.module.getRepository().getBlocks(player.getUniqueId()).stream()
-                .map(block -> block.getBlocked().name())
+        return this.module.repository().getBlocks(player.getUniqueId()).stream()
+                .map(block -> block.getBlocked().getName())
                 .toList();
     }
 }

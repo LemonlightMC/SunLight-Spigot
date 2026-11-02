@@ -3,16 +3,17 @@ package su.nightexpress.sunlight.moduleImpl.friends.event;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.user.SunUser;
 
 /**
  * Fired before a friendship is created or removed, in either direction.
  * <p>
- * Fires once per row, so a mutual friendship fires it twice. That is deliberate: a plugin that
- * only wants to know "did these two just become friends" can watch for the pair, while a plugin
+ * Fires once per row, so a mutual friendship fires it twice. That is
+ * deliberate: a plugin that
+ * only wants to know "did these two just become friends" can watch for the
+ * pair, while a plugin
  * maintaining its own per-owner index needs each row.
  */
 public class PreFriendChangeEvent extends Event implements Cancellable {
@@ -23,30 +24,30 @@ public class PreFriendChangeEvent extends Event implements Cancellable {
     private final boolean removal;
     private boolean cancelled;
 
-    public PreFriendChangeEvent(@NotNull FriendRecord record, boolean removal) {
+    public PreFriendChangeEvent(FriendRecord record, boolean removal) {
         this.record = record;
         this.removal = removal;
     }
 
-    public static @NotNull HandlerList getHandlerList() {
+    public static HandlerList getHandlerList() {
         return HANDLERS;
     }
 
     @Override
-    public @NotNull HandlerList getHandlers() {
+    public HandlerList getHandlers() {
         return HANDLERS;
     }
 
     /** The row about to be written or deleted. */
-    public @NotNull FriendRecord getRecord() {
+    public FriendRecord getRecord() {
         return this.record;
     }
 
-    public @NotNull UserInfo getOwner() {
+    public SunUser getOwner() {
         return this.record.getOwner();
     }
 
-    public @NotNull UserInfo getFriend() {
+    public SunUser getFriend() {
         return this.record.getFriend();
     }
 

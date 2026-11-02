@@ -1,7 +1,5 @@
 package su.nightexpress.sunlight.moduleImpl.friends;
 
-import org.jetbrains.annotations.NotNull;
-
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.TimeUtil;
 
@@ -13,9 +11,8 @@ import java.util.UUID;
  * Reads and advances the daily request counters stored on a {@link SunUser}.
  * <p>
  * Kept out of the module so the rollover rule lives in exactly one place: a
- * stored count from an
- * earlier day reads as zero rather than silently carrying yesterday's total
- * into today.
+ * stored count from an earlier day reads as zero rather than silently carrying
+ * yesterday's total into today.
  */
 public final class FriendRequestCounters {
 
@@ -23,7 +20,7 @@ public final class FriendRequestCounters {
     }
 
     /** How many requests that player has sent today, server-wide. */
-    public static int getTotal(@NotNull final SunUser user) {
+    public static int getTotal(final SunUser user) {
         if (!today().equals(user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_KEY))) {
             return 0;
         }
@@ -31,7 +28,7 @@ public final class FriendRequestCounters {
     }
 
     /** How many requests that player has sent today to one specific target. */
-    public static int getForTarget(@NotNull final SunUser user, @NotNull final UUID targetId) {
+    public static int getForTarget(final SunUser user, final UUID targetId) {
         if (!today().equals(user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_KEY))) {
             return 0;
         }
@@ -45,7 +42,7 @@ public final class FriendRequestCounters {
      * Both counters advance together so the per-target read cannot disagree with
      * the total.
      */
-    public static void increment(@NotNull final SunUser user, @NotNull final UUID targetId) {
+    public static void increment(final SunUser user, final UUID targetId) {
         final String today = today();
         final boolean sameDay = today.equals(user.getPropertyOrDefault(FriendsProperties.REQUEST_DAY_KEY));
 
@@ -62,7 +59,7 @@ public final class FriendRequestCounters {
         user.markDirty();
     }
 
-    private static Map<String, Integer> targetCounts(@NotNull final SunUser user) {
+    private static Map<String, Integer> targetCounts(final SunUser user) {
         final Map<String, Integer> map = user.getPropertyOrDefault(FriendsProperties.REQUEST_TARGET_DAY_COUNTS);
         return map == null ? Map.of() : map;
     }

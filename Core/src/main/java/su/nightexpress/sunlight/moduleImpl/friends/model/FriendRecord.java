@@ -1,13 +1,12 @@
 package su.nightexpress.sunlight.moduleImpl.friends.model;
 
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NullMarked;
 
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderResolvable;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderResolver;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsPlaceholders;
+import su.nightexpress.sunlight.user.SunUser;
+import su.nightexpress.sunlight.utils.Utils;
 
 import java.util.UUID;
 
@@ -23,23 +22,22 @@ import java.util.UUID;
  * favourite flag is
  * per-owner: two friends of each other may have pinned each other differently.
  */
-@NullMarked
 public class FriendRecord implements PlaceholderResolvable {
 
-    private final UserInfo owner;
-    private final UserInfo friend;
+    private final SunUser owner;
+    private final SunUser friend;
 
     private long createDate;
     private boolean favorite;
 
-    public FriendRecord(final UserInfo owner, final UserInfo friend, final long createDate, final boolean favorite) {
+    public FriendRecord(final SunUser owner, final SunUser friend, final long createDate, final boolean favorite) {
         this.owner = owner;
         this.friend = friend;
         this.createDate = createDate;
         this.favorite = favorite;
     }
 
-    public static FriendRecord create(final UserInfo owner, final UserInfo friend) {
+    public static FriendRecord create(final SunUser owner, final SunUser friend) {
         return new FriendRecord(owner, friend, System.currentTimeMillis(), false);
     }
 
@@ -48,20 +46,36 @@ public class FriendRecord implements PlaceholderResolvable {
         return FriendsPlaceholders.FRIEND.resolver(this);
     }
 
-    public UserInfo getOwner() {
+    public SunUser getOwner() {
         return this.owner;
     }
 
-    public UserInfo getFriend() {
+    public SunUser getFriend() {
         return this.friend;
     }
 
     public UUID getOwnerId() {
-        return this.owner.id();
+        return this.owner.getId();
+    }
+
+    public String getOwnerName() {
+        return this.owner.getName();
+    }
+
+    public boolean isOwnerOnline() {
+        return Utils.isOnline(this.friend.getId());
     }
 
     public UUID getFriendId() {
-        return this.friend.id();
+        return this.friend.getId();
+    }
+
+    public String getFriendName() {
+        return this.friend.getName();
+    }
+
+    public boolean isFriendOnline() {
+        return Utils.isOnline(this.friend.getId());
     }
 
     public long getCreateDate() {
@@ -81,24 +95,24 @@ public class FriendRecord implements PlaceholderResolvable {
     }
 
     public boolean isOwner(final Player player) {
-        return this.owner.isUser(player);
+        return player == null ? false : this.owner.getId().equals(player.getUniqueId());
     }
 
     public boolean isOwner(final UUID playerId) {
-        return this.owner.id().equals(playerId);
+        return this.owner.getId().equals(playerId);
     }
 
     public boolean isMember(final UUID playerId) {
-        return this.owner.id().equals(playerId) || this.friend.id().equals(playerId);
+        return this.owner.getId().equals(playerId) || this.friend.getId().equals(playerId);
     }
 
     /** The other party, or {@code null} when that player is neither of the two. */
-    @Nullable
-    public UserInfo getOther(final UUID playerId) {
-        if (this.owner.id().equals(playerId)) {
+
+    public SunUser getOther(final UUID playerId) {
+        if (this.owner.getId().equals(playerId)) {
             return this.friend;
         }
-        if (this.friend.id().equals(playerId)) {
+        if (this.friend.getId().equals(playerId)) {
             return this.owner;
         }
         return null;

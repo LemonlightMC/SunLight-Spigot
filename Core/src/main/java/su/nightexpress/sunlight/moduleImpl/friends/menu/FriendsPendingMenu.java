@@ -182,10 +182,10 @@ public class FriendsPendingMenu extends AbstractMenu {
                 final Player player = context.getPlayer();
 
                 this.incomingPopulator.populateTo(context,
-                                new ArrayList<>(this.module.getRequestRepository().getIncoming(player.getUniqueId())),
+                                new ArrayList<>(this.module.requestRepository().getIncoming(player.getUniqueId())),
                                 items);
                 this.outgoingPopulator.populateTo(context,
-                                new ArrayList<>(this.module.getRequestRepository().getOutgoing(player.getUniqueId())),
+                                new ArrayList<>(this.module.requestRepository().getOutgoing(player.getUniqueId())),
                                 items);
         }
 

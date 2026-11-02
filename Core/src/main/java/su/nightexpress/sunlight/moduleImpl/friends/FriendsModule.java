@@ -1,12 +1,8 @@
 package su.nightexpress.sunlight.moduleImpl.friends;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.core.config.CoreLang;
@@ -20,7 +16,6 @@ import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.api.provider.FriendsProvider;
 import su.nightexpress.sunlight.api.provider.dto.FriendHandle;
-import su.nightexpress.sunlight.api.provider.dto.FriendRelation;
 import su.nightexpress.sunlight.api.provider.dto.FriendRequestHandle;
 import su.nightexpress.sunlight.config.Lang;
 import su.nightexpress.sunlight.hook.placeholder.PlaceholderRegistry;
@@ -113,6 +108,22 @@ public class FriendsModule extends Module implements FriendsProvider {
         this.requestRepository = new FriendRequestRepository();
     }
 
+    public FriendsRepository repository() {
+        return repository;
+    }
+
+    public FriendRequestRepository requestRepository() {
+        return requestRepository;
+    }
+
+    public FriendsDataManager dataManager() {
+        return dataManager;
+    }
+
+    public TeleportManager teleportManager() {
+        return teleportManager;
+    }
+
     @Override
     protected void loadModule(final FileConfig config) {
         config.initializeOptions(FriendsConfig.class);
@@ -190,22 +201,6 @@ public class FriendsModule extends Module implements FriendsProvider {
         });
     }
 
-    public boolean isDataLoaded() {
-        return this.dataLoaded;
-    }
-
-    public FriendsRepository getRepository() {
-        return this.repository;
-    }
-
-    public FriendRequestRepository getRequestRepository() {
-        return this.requestRepository;
-    }
-
-    public FriendsDataManager getDataManager() {
-        return this.dataManager;
-    }
-
     // Placeholders
 
     @Override
@@ -246,11 +241,11 @@ public class FriendsModule extends Module implements FriendsProvider {
 
         registry.register("friends_favorite_name", (player, payload) -> {
             final FriendRecord favorite = this.repository.getFavorite(player.getUniqueId());
-            return favorite == null ? CoreLang.OTHER_NONE.text() : favorite.getFriend().name();
+            return favorite == null ? CoreLang.OTHER_NONE.text() : favorite.getFriend().getName();
         });
         registry.register("friends_favorite_online", (player, payload) -> {
             final FriendRecord favorite = this.repository.getFavorite(player.getUniqueId());
-            return CoreLang.STATE_YES_NO.get(favorite != null && FriendsRepository.isOnline(favorite.getFriendId()));
+            return CoreLang.STATE_YES_NO.get(favorite != null && favorite.isFriendOnline());
         });
 
         registry.register("friends_list_names", (player, payload) -> FriendsPlaceholders
@@ -263,27 +258,60 @@ public class FriendsModule extends Module implements FriendsProvider {
                 return CoreLang.OTHER_NONE.text();
             }
             return records.stream().limit(FRIEND_LIST_LIMITED_COUNT)
-                    .map(record -> record.getFriend().name())
+                    .map(record -> record.getFriend().getName())
                     .collect(Collectors.joining(", "));
         });
         registry.register("friends_list_online_first", (player, payload) -> {
             final List<FriendRecord> records = this.getFriendRecords(player.getUniqueId());
-            return records.isEmpty() ? CoreLang.OTHER_NONE.text() : records.getFirst().getFriend().name();
+            return records.isEmpty() ? CoreLang.OTHER_NONE.text() : records.getFirst().getFriend().getName();
         });
 
         // Per-player checks. The payload is the other player's name, resolved online
-        // first and
-        // then through the user cache, so a scoreboard can ask about an offline friend
-        // without a
-        // database round trip.
-        registry.register("friends_relation", (player, payload) -> this.relationText(player, payload));
-        registry.register("friends_is_friend", (player, payload) -> CoreLang.STATE_YES_NO
-                .get(this.isFriendByName(player, payload)));
-        registry.register("friends_is_blocked", (player, payload) -> CoreLang.STATE_YES_NO
-                .get(this.isBlockedByName(player, payload)));
+        // first and then through the user cache, so a scoreboard can ask about an
+        // offline friend without a database round trip.
+        registry.register("friends_relation", (player, payload) -> {
+            final UUID otherId = this.resolveId(payload);
+            if (otherId == null) {
+                return "None";
+            }
+            final UUID thisId = player.getUniqueId();
+            if (thisId.equals(otherId)) {
+                return "Self";
+            }
+            if (this.repository.isFriend(thisId, otherId)) {
+                return "Friend";
+            }
+            if (this.repository.isBlockedEitherWay(thisId, otherId)) {
+                return "Blocked";
+            }
+            if (this.requestRepository.hasIncoming(thisId, otherId)) {
+                return "Pending Incoming";
+            }
+            if (this.requestRepository.getOutgoing(otherId, thisId) != null) {
+                return "Pending Outgoing";
+            }
+            return "None";
+        });
+        registry.register("friends_is_friend", (player, payload) -> {
+            final UUID otherId = this.resolveId(payload);
+            return CoreLang.STATE_YES_NO.get(otherId != null && this.isFriend(player.getUniqueId(), otherId));
+        });
+        registry.register("friends_is_blocked", (player, payload) -> {
+            final UUID otherId = this.resolveId(payload);
+            return CoreLang.STATE_YES_NO
+                    .get(otherId != null && this.isBlocked(player.getUniqueId(), otherId));
+        });
         registry.register("friends_last_seen", (player, payload) -> {
             final UUID otherId = this.resolveId(payload);
-            return otherId == null ? CoreLang.OTHER_NONE.text() : this.getLastSeenText(otherId);
+            if (otherId == null) {
+                return CoreLang.OTHER_NONE.text();
+            }
+            final Player online = Utils.getPlayer(otherId);
+            if (online != null) {
+                return "Online now";
+            }
+            return FriendsPlaceholders.formatLastSeen(
+                    this.userManager.getRepository().getById(otherId).map(SunUser::getLastOnline).orElse(0L));
         });
 
         // Toggles, matching how the other modules expose theirs.
@@ -297,27 +325,9 @@ public class FriendsModule extends Module implements FriendsProvider {
         registry.register("friends_total", (player, payload) -> String.valueOf(this.repository.size()));
     }
 
-    private String relationText(final Player player, final String name) {
-        final UUID otherId = this.resolveId(name);
-        if (otherId == null) {
-            return FriendRelation.NONE.name();
-        }
-        return this.getRelation(player.getUniqueId(), otherId).name();
-    }
-
-    private boolean isFriendByName(final Player player, final String name) {
-        final UUID otherId = this.resolveId(name);
-        return otherId != null && this.isFriend(player.getUniqueId(), otherId);
-    }
-
-    private boolean isBlockedByName(final Player player, final String name) {
-        final UUID otherId = this.resolveId(name);
-        return otherId != null && this.isBlocked(player.getUniqueId(), otherId);
-    }
-
     /** Resolves a name against online players, then the user cache. */
-    @Nullable
-    public UUID resolveId(@Nullable final String name) {
+
+    public UUID resolveId(final String name) {
         if (name == null || name.isBlank()) {
             return null;
         }
@@ -332,33 +342,13 @@ public class FriendsModule extends Module implements FriendsProvider {
     // Relations
 
     @Override
-    public boolean isFriend(@NotNull final UUID playerId, @NotNull final UUID otherId) {
+    public boolean isFriend(final UUID playerId, final UUID otherId) {
         return this.repository.isFriend(playerId, otherId);
     }
 
     @Override
-    public boolean isBlocked(@NotNull final UUID playerId, @NotNull final UUID otherId) {
+    public boolean isBlocked(final UUID playerId, final UUID otherId) {
         return this.repository.isBlocked(playerId, otherId);
-    }
-
-    @Override
-    public @NotNull FriendRelation getRelation(@NotNull final UUID playerId, @NotNull final UUID otherId) {
-        if (playerId.equals(otherId)) {
-            return FriendRelation.SELF;
-        }
-        if (this.repository.isFriend(playerId, otherId)) {
-            return FriendRelation.FRIEND;
-        }
-        if (this.repository.isBlockedEitherWay(playerId, otherId)) {
-            return FriendRelation.BLOCKED;
-        }
-        if (this.requestRepository.hasIncoming(playerId, otherId)) {
-            return FriendRelation.PENDING_INCOMING;
-        }
-        if (this.requestRepository.getOutgoing(otherId, playerId) != null) {
-            return FriendRelation.PENDING_OUTGOING;
-        }
-        return FriendRelation.NONE;
     }
 
     // Lists
@@ -374,46 +364,46 @@ public class FriendsModule extends Module implements FriendsProvider {
     /**
      * That player's own side of the friendship with the other one, or {@code null}.
      */
-    @Nullable
+
     public FriendRecord getFriendRecord(final UUID playerId, final UUID friendId) {
         return this.repository.getFriend(playerId, friendId);
     }
 
     @Override
-    public @NotNull List<FriendHandle> getFriends(@NotNull final UUID playerId) {
+    public List<FriendHandle> getFriends(final UUID playerId) {
         return this.getFriendRecords(playerId).stream().map(this::snapshot).toList();
     }
 
     @Override
-    public @NotNull List<FriendHandle> getOnlineFriends(@NotNull final UUID playerId) {
+    public List<FriendHandle> getOnlineFriends(final UUID playerId) {
         return this.getOnlineFriendRecords(playerId).stream().map(this::snapshot).toList();
     }
 
     @Override
-    public @Nullable FriendHandle getFavoriteFriend(@NotNull final UUID playerId) {
+    public FriendHandle getFavoriteFriend(final UUID playerId) {
         final FriendRecord favorite = this.repository.getFavorite(playerId);
         return favorite == null ? null : this.snapshot(favorite);
     }
 
     @Override
-    public @NotNull List<FriendHandle> getBlocked(@NotNull final UUID playerId) {
+    public List<FriendHandle> getBlocked(final UUID playerId) {
         return this.repository.getBlocks(playerId).stream()
-                .map(block -> FriendSnapshots.ofBlocked(block, this.lastSeen(block.getBlockedId())))
+                .map(block -> FriendSnapshots.ofBlocked(block, block.getBlocked().getLastOnline()))
                 .toList();
     }
 
     @Override
-    public int countFriends(@NotNull final UUID playerId) {
+    public int countFriends(final UUID playerId) {
         return this.repository.getFriends(playerId).size();
     }
 
     @Override
-    public int countOnlineFriends(@NotNull final UUID playerId) {
+    public int countOnlineFriends(final UUID playerId) {
         return this.getOnlineFriendRecords(playerId).size();
     }
 
     @Override
-    public int getFriendLimit(@NotNull final Player player) {
+    public int getFriendLimit(final Player player) {
         if (player.hasPermission(FriendsPerms.BYPASS_LIMITS)) {
             return -1;
         }
@@ -449,11 +439,7 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     private FriendHandle snapshot(final FriendRecord record) {
-        return FriendSnapshots.of(record, this.lastSeen(record.getFriendId()));
-    }
-
-    private long lastSeen(final UUID playerId) {
-        return this.userManager.getRepository().getById(playerId).map(SunUser::getLastOnline).orElse(0L);
+        return FriendSnapshots.of(record, record.getFriend().getLastOnline());
     }
 
     /** Human-readable last-seen text, shared by the menus and the placeholder. */
@@ -462,7 +448,8 @@ public class FriendsModule extends Module implements FriendsProvider {
         if (online != null) {
             return "Online now";
         }
-        return FriendsPlaceholders.formatLastSeen(this.lastSeen(playerId));
+        return FriendsPlaceholders.formatLastSeen(
+                this.userManager.getRepository().getById(playerId).map(SunUser::getLastOnline).orElse(0L));
     }
 
     /**
@@ -471,7 +458,8 @@ public class FriendsModule extends Module implements FriendsProvider {
      */
     public Collection<String> getKnownNames() {
         return this.repository.getAll().stream()
-                .flatMap(record -> java.util.stream.Stream.of(record.getOwner().name(), record.getFriend().name()))
+                .flatMap(
+                        record -> java.util.stream.Stream.of(record.getOwner().getName(), record.getFriend().getName()))
                 .distinct()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
                 .toList();
@@ -480,10 +468,10 @@ public class FriendsModule extends Module implements FriendsProvider {
     // Mutations
 
     @Override
-    public boolean addFriend(@NotNull final UUID playerId, @NotNull final UUID otherId) {
-        final UserInfo owner = this.infoOf(playerId);
-        final UserInfo friend = this.infoOf(otherId);
-        if (owner == null || friend == null || owner.id().equals(friend.id())) {
+    public boolean addFriend(final UUID playerId, final UUID otherId) {
+        final SunUser owner = this.infoOf(playerId);
+        final SunUser friend = this.infoOf(otherId);
+        if (owner == null || friend == null || owner.getId().equals(friend.getId())) {
             return false;
         }
 
@@ -492,11 +480,11 @@ public class FriendsModule extends Module implements FriendsProvider {
         return true;
     }
 
-    private boolean addRow(final UserInfo owner, final UserInfo friend) {
+    private boolean addRow(final SunUser owner, final SunUser friend) {
         // Another server in the same sync window may already have written this row, in
         // which case
         // this one would be a duplicate rather than an update.
-        if (this.dataManager.existsInDatabase(owner.id(), friend.id())) {
+        if (this.dataManager.existsInDatabase(owner.getId(), friend.getId())) {
             return false;
         }
 
@@ -515,7 +503,7 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     @Override
-    public boolean removeFriend(@NotNull final UUID playerId, @NotNull final UUID otherId) {
+    public boolean removeFriend(final UUID playerId, final UUID otherId) {
         final List<FriendRecord> rows = this.repository.getBothSides(playerId, otherId);
         if (rows.isEmpty()) {
             return false;
@@ -561,10 +549,10 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     @Override
-    public boolean block(@NotNull final UUID playerId, @NotNull final UUID otherId) {
-        final UserInfo blocker = this.infoOf(playerId);
-        final UserInfo blocked = this.infoOf(otherId);
-        if (blocker == null || blocked == null || blocker.id().equals(blocked.id())) {
+    public boolean block(final UUID playerId, final UUID otherId) {
+        final SunUser blocker = this.infoOf(playerId);
+        final SunUser blocked = this.infoOf(otherId);
+        if (blocker == null || blocked == null || blocker.getId().equals(blocked.getId())) {
             return false;
         }
 
@@ -624,9 +612,9 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     @Override
-    public boolean unblock(@NotNull final UUID playerId, @NotNull final UUID otherId) {
-        final UserInfo blocker = this.infoOf(playerId);
-        final UserInfo blocked = this.infoOf(otherId);
+    public boolean unblock(final UUID playerId, final UUID otherId) {
+        final SunUser blocker = this.infoOf(playerId);
+        final SunUser blocked = this.infoOf(otherId);
         if (blocker == null || blocked == null) {
             return false;
         }
@@ -685,7 +673,7 @@ public class FriendsModule extends Module implements FriendsProvider {
         final boolean state = !record.isFavorite();
         this.repository.setFavorite(player.getUniqueId(), friendId, state);
 
-        if (previous != null && !previous.getFriendId().equals(friendId)) {
+        if (previous != null && !previous.getFriend().equals(friendId)) {
             this.plugin.runTaskAsync(() -> this.dataManager.updateFriend(previous));
         }
         final FriendRecord updated = this.repository.getFriend(player.getUniqueId(), friendId);
@@ -694,35 +682,29 @@ public class FriendsModule extends Module implements FriendsProvider {
         }
 
         this.sendPrefixed(state ? FriendsLang.FAVORITE_SET : FriendsLang.FAVORITE_UNSET, player,
-                builder -> builder.with(CommonPlaceholders.PLAYER_NAME, record.getFriend()::name));
+                builder -> builder.with(CommonPlaceholders.PLAYER_NAME, record::getFriendName));
         return true;
     }
 
-    @Nullable
-    private UserInfo infoOf(final UUID playerId) {
-        return this.userManager.getRepository().getById(playerId)
-                .map(user -> new UserInfo(user.getId(), user.getName()))
-                .orElseGet(() -> {
-                    final Player online = Utils.getPlayer(playerId);
-                    return online == null ? null : UserInfo.of(online);
-                });
+    private SunUser infoOf(final UUID playerId) {
+        return this.userManager.getRepository().getById(playerId).orElse(null);
     }
 
     // Requests
 
     @Override
-    public @NotNull List<FriendRequestHandle> getIncomingRequests(@NotNull final UUID playerId) {
+    public List<FriendRequestHandle> getIncomingRequests(final UUID playerId) {
         return this.requestRepository.getIncoming(playerId).stream().map(FriendRequest::toHandle).toList();
     }
 
     @Override
-    public @NotNull List<FriendRequestHandle> getOutgoingRequests(@NotNull final UUID playerId) {
+    public List<FriendRequestHandle> getOutgoingRequests(final UUID playerId) {
         return this.requestRepository.getOutgoing(playerId).stream().map(FriendRequest::toHandle).toList();
     }
 
     @Override
-    public @Nullable FriendRequestHandle getIncomingRequest(@NotNull final UUID playerId,
-            @NotNull final String senderName) {
+    public FriendRequestHandle getIncomingRequest(final UUID playerId,
+            final String senderName) {
         final FriendRequest request = this.requestRepository.getIncoming(playerId).stream()
                 .filter(entry -> entry.isSender(senderName))
                 .findFirst()
@@ -731,7 +713,7 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     @Override
-    public boolean sendRequest(@NotNull final Player sender, @NotNull final Player target) {
+    public boolean sendRequest(final Player sender, final Player target) {
         if (!this.dataLoaded) {
             this.sendPrefixed(FriendsLang.ERROR_DATA_NOT_LOADED, sender);
             return false;
@@ -874,12 +856,12 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     @Override
-    public boolean acceptRequest(@NotNull final Player player, @Nullable final String senderName) {
+    public boolean acceptRequest(final Player player, final String senderName) {
         return this.acceptIncoming(player, senderName);
     }
 
     /** Accepts an incoming request addressed to that player. */
-    public boolean acceptIncoming(final Player player, @Nullable final String senderName) {
+    public boolean acceptIncoming(final Player player, final String senderName) {
         final List<FriendRequest> incoming = this.requestRepository.getIncoming(player.getUniqueId());
         final FriendRequest request = senderName == null
                 ? (incoming.isEmpty() ? null : incoming.getLast())
@@ -919,12 +901,12 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     @Override
-    public boolean declineRequest(@NotNull final Player player, @Nullable final String senderName) {
+    public boolean declineRequest(final Player player, final String senderName) {
         return this.declineIncoming(player, senderName);
     }
 
     /** Declines an incoming request addressed to that player. */
-    public boolean declineIncoming(final Player player, @Nullable final String senderName) {
+    public boolean declineIncoming(final Player player, final String senderName) {
         final List<FriendRequest> incoming = this.requestRepository.getIncoming(player.getUniqueId());
         final FriendRequest request = senderName == null
                 ? (incoming.isEmpty() ? null : incoming.getLast())
@@ -950,7 +932,7 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     /** Withdraws a request this player has sent. */
-    public boolean cancelRequest(final Player player, @Nullable final String targetName) {
+    public boolean cancelRequest(final Player player, final String targetName) {
         final List<FriendRequest> outgoing = this.requestRepository.getOutgoing(player.getUniqueId());
         final FriendRequest request = targetName == null
                 ? (outgoing.isEmpty() ? null : outgoing.getLast())
@@ -976,7 +958,7 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     @Override
-    public void clearRequests(@NotNull final UUID playerId) {
+    public void clearRequests(final UUID playerId) {
         this.requestRepository.clearFor(playerId);
     }
 
@@ -1000,38 +982,38 @@ public class FriendsModule extends Module implements FriendsProvider {
     // Toggles
 
     @Override
-    public boolean isRequestsEnabled(@NotNull final UUID playerId) {
+    public boolean isRequestsEnabled(final UUID playerId) {
         return this.userManager.getRepository().getById(playerId)
                 .map(FriendToggle.REQUESTS::get)
                 .orElse(FriendsProperties.REQUESTS_ENABLED.getDefaultValue());
     }
 
     @Override
-    public void setRequestsEnabled(@NotNull final Player player, final boolean enabled) {
+    public void setRequestsEnabled(final Player player, final boolean enabled) {
         FriendToggle.REQUESTS.set(this.userManager.getOrFetch(player), enabled);
     }
 
     @Override
-    public boolean isLoginAlertsEnabled(@NotNull final UUID playerId) {
+    public boolean isLoginAlertsEnabled(final UUID playerId) {
         return this.userManager.getRepository().getById(playerId)
                 .map(FriendToggle.LOGIN_ALERTS::get)
                 .orElse(FriendsProperties.LOGIN_ALERTS.getDefaultValue());
     }
 
     @Override
-    public void setLoginAlertsEnabled(@NotNull final Player player, final boolean enabled) {
+    public void setLoginAlertsEnabled(final Player player, final boolean enabled) {
         FriendToggle.LOGIN_ALERTS.set(this.userManager.getOrFetch(player), enabled);
     }
 
     @Override
-    public boolean isFriendTeleportEnabled(@NotNull final UUID playerId) {
+    public boolean isFriendTeleportEnabled(final UUID playerId) {
         return this.userManager.getRepository().getById(playerId)
                 .map(FriendToggle.TELEPORT::get)
                 .orElse(FriendsProperties.FRIEND_TELEPORT.getDefaultValue());
     }
 
     @Override
-    public void setFriendTeleportEnabled(@NotNull final Player player, final boolean enabled) {
+    public void setFriendTeleportEnabled(final Player player, final boolean enabled) {
         FriendToggle.TELEPORT.set(this.userManager.getOrFetch(player), enabled);
     }
 
@@ -1049,7 +1031,7 @@ public class FriendsModule extends Module implements FriendsProvider {
      * on its own.
      */
     public void sendToggle(final Player player, final FriendToggle toggle, final boolean state,
-            @Nullable final CommandSender executor) {
+            final CommandSender executor) {
         if (executor != null && executor != player) {
             this.sendPrefixed(FriendsLang.TOGGLE_FEEDBACK, executor, builder -> builder
                     .with(CommonPlaceholders.PLAYER.resolver(player))
@@ -1108,10 +1090,7 @@ public class FriendsModule extends Module implements FriendsProvider {
             return false;
         }
 
-        final World world = target.getWorld();
-        final Location destination = target.getLocation();
-
-        final TeleportContext context = TeleportContext.builder(this, player, destination)
+        final TeleportContext context = TeleportContext.builder(this, player, target.getLocation())
                 .withFlag(TeleportFlag.LOOK_FOR_SURFACE)
                 .withFlag(TeleportFlag.AVOID_LAVA)
                 .callback(() -> {
@@ -1275,4 +1254,5 @@ public class FriendsModule extends Module implements FriendsProvider {
     public static String countText(final int value) {
         return NumberUtil.format(value);
     }
+
 }

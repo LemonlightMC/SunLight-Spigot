@@ -1,19 +1,14 @@
 package su.nightexpress.sunlight.moduleImpl.friends.model;
 
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.NotNull;
 
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.sunlight.api.provider.dto.FriendHandle;
-
-import java.util.UUID;
 
 /**
  * Builds the immutable API snapshot of a {@link FriendRecord}.
  * <p>
  * The last-seen stamp comes from the caller, not from the friendship row, so it
- * stays correct
- * while a player is online and survives a rename.
+ * stays correct while a player is online and survives a rename.
  */
 public final class FriendSnapshots {
 
@@ -23,9 +18,9 @@ public final class FriendSnapshots {
     public static FriendHandle of(final FriendRecord record, final long lastSeen) {
         return new FriendHandle(
                 record.getOwnerId(),
-                record.getOwner().name(),
+                record.getOwner().getName(),
                 record.getFriendId(),
-                record.getFriend().name(),
+                record.getFriend().getName(),
                 record.getCreateDate(),
                 record.isFavorite(),
                 Bukkit.getPlayer(record.getFriendId()) != null,
@@ -35,9 +30,9 @@ public final class FriendSnapshots {
     public static FriendHandle ofBlocked(final BlockRecord block, final long lastSeen) {
         return new FriendHandle(
                 block.getBlockerId(),
-                block.getBlocker().name(),
+                block.getBlocker().getName(),
                 block.getBlockedId(),
-                block.getBlocked().name(),
+                block.getBlocked().getName(),
                 block.getCreateDate(),
                 false,
                 Bukkit.getPlayer(block.getBlockedId()) != null,
@@ -49,11 +44,5 @@ public final class FriendSnapshots {
      */
     private static Long normalize(final long lastSeen) {
         return lastSeen <= 0L ? null : lastSeen;
-    }
-
-    /** The side of the friendship that belongs to that player. */
-    @NotNull
-    public static UserInfo viewOf(@NotNull final FriendRecord record, @NotNull final UUID playerId) {
-        return record.getOwner().id().equals(playerId) ? record.getOwner() : record.getFriend();
     }
 }

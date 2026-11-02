@@ -2,13 +2,18 @@ package su.nightexpress.sunlight.moduleImpl.friends.data;
 
 import org.jetbrains.annotations.NotNull;
 
+import su.nightexpress.nightcore.db.statement.RowMapper;
 import su.nightexpress.nightcore.db.statement.condition.Operator;
 import su.nightexpress.nightcore.db.statement.condition.Wheres;
+import su.nightexpress.nightcore.db.statement.template.InsertStatement;
+import su.nightexpress.nightcore.db.statement.template.SelectStatement;
+import su.nightexpress.nightcore.db.statement.template.UpdateStatement;
 import su.nightexpress.nightcore.db.table.Table;
 import su.nightexpress.sunlight.data.DataHandler;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.model.BlockRecord;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.user.SunUser;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +25,7 @@ import static su.nightexpress.sunlight.moduleImpl.friends.data.FriendsColumns.*;
 public class FriendsDataManager {
 
     private final DataHandler dataHandler;
-    private final FriendsModule module;
+    private FriendsModule module;
 
     private Table tableFriends;
     private Table tableBlocks;
@@ -46,13 +51,107 @@ public class FriendsDataManager {
         this.dataHandler.addTableSync(this.tableBlocks, this::syncBlock);
     }
 
+    private final RowMapper<FriendRecord> FRIEND_LOADER = resultSet -> {
+        try {
+            final UUID ownerId = readUuid(resultSet, OWNER_ID.getName());
+            final UUID friendId = readUuid(resultSet, FRIEND_ID.getName());
+
+            if (ownerId == null || friendId == null) {
+                return null;
+            }
+            if (ownerId.equals(friendId)) {
+                // A self-friendship is meaningless and would inflate every count that reads
+                // this row.
+                return null;
+            }
+            final SunUser owner = module.userManager().getRepository().getById(ownerId).orElse(null);
+            final SunUser friend = module.userManager().getRepository().getById(ownerId).orElse(null);
+            if (owner == null || friend == null) {
+                return null;
+            }
+
+            return new FriendRecord(
+                    owner,
+                    friend,
+                    resultSet.getLong(CREATE_DATE.getName()),
+                    resultSet.getBoolean(FAVORITE.getName()));
+        } catch (final SQLException exception) {
+            exception.printStackTrace();
+            return null;
+        }
+    };
+
+    private final RowMapper<BlockRecord> BLOCK_LOADER = resultSet -> {
+        try {
+            final UUID blockerId = readUuid(resultSet, BLOCKER_ID.getName());
+            final UUID blockedId = readUuid(resultSet, BLOCKED_ID.getName());
+            final String blockerName = resultSet.getString(BLOCKER_NAME.getName());
+            final String blockedName = resultSet.getString(BLOCKED_NAME.getName());
+
+            if (blockerId == null || blockedId == null || blockerName == null || blockedName == null) {
+                return null;
+            }
+            if (blockerId.equals(blockedId)) {
+                return null;
+            }
+            final SunUser blocker = module.userManager().getRepository().getById(blockerId).orElse(null);
+            final SunUser blocked = module.userManager().getRepository().getById(blockedId).orElse(null);
+            if (blocker == null || blocked == null) {
+                return null;
+            }
+
+            return new BlockRecord(
+                    blocker,
+                    blocked,
+                    resultSet.getLong(BLOCK_CREATE_DATE.getName()));
+        } catch (final SQLException exception) {
+            exception.printStackTrace();
+            return null;
+        }
+    };
+
+    private final SelectStatement<FriendRecord> SELECT_FRIEND = SelectStatement
+            .builder(FRIEND_LOADER)
+            .build();
+
+    private final SelectStatement<BlockRecord> SELECT_BLOCK = SelectStatement
+            .builder(BLOCK_LOADER)
+            .build();
+
+    private static final InsertStatement<FriendRecord> INSERT_FRIEND = InsertStatement
+            .builder(FriendRecord.class)
+            .setUUID(OWNER_ID, FriendRecord::getOwnerId)
+            .setString(OWNER_NAME, record -> record.getOwnerName())
+            .setUUID(FRIEND_ID, FriendRecord::getFriendId)
+            .setString(FRIEND_NAME, record -> record.getFriendName())
+            .setLong(CREATE_DATE, FriendRecord::getCreateDate)
+            .setBoolean(FAVORITE, FriendRecord::isFavorite)
+            .build();
+
+    private static final UpdateStatement<FriendRecord> UPDATE_FRIEND = UpdateStatement
+            .builder(FriendRecord.class)
+            .setString(OWNER_NAME, record -> record.getOwnerName())
+            .setString(FRIEND_NAME, record -> record.getFriendName())
+            .setLong(CREATE_DATE, FriendRecord::getCreateDate)
+            .setBoolean(FAVORITE, FriendRecord::isFavorite)
+            .build();
+
+    private static final InsertStatement<BlockRecord> INSERT_BLOCK = InsertStatement
+            .builder(BlockRecord.class)
+            .setUUID(BLOCKER_ID, BlockRecord::getBlockerId)
+            .setString(BLOCKER_NAME, record -> record.getBlocker().getName())
+            .setUUID(BLOCKED_ID, BlockRecord::getBlockedId)
+            .setString(BLOCKED_NAME, record -> record.getBlocked().getName())
+            .setLong(BLOCK_CREATE_DATE, BlockRecord::getCreateDate)
+            .build();
+
     private void syncFriend(final ResultSet resultSet) {
         try {
-            final FriendRecord record = FriendsQueries.FRIEND_LOADER.map(resultSet);
+            final FriendRecord record = FRIEND_LOADER.map(resultSet);
             if (record == null) {
                 return;
             }
-            this.module.getRepository().upsert(record);
+            this.module.repository().upsert(record);
         } catch (final SQLException exception) {
             exception.printStackTrace();
         }
@@ -60,11 +159,11 @@ public class FriendsDataManager {
 
     private void syncBlock(final ResultSet resultSet) {
         try {
-            final BlockRecord block = FriendsQueries.BLOCK_LOADER.map(resultSet);
+            final BlockRecord block = BLOCK_LOADER.map(resultSet);
             if (block == null) {
                 return;
             }
-            this.module.getRepository().upsertBlock(block);
+            this.module.repository().upsertBlock(block);
         } catch (final SQLException exception) {
             exception.printStackTrace();
         }
@@ -73,11 +172,11 @@ public class FriendsDataManager {
     // Friendships
 
     public List<FriendRecord> getFriends() {
-        return this.dataHandler.selectAny(this.tableFriends, FriendsQueries.SELECT_FRIEND);
+        return this.dataHandler.selectAny(this.tableFriends, SELECT_FRIEND);
     }
 
     public List<FriendRecord> getFriends(final UUID ownerId) {
-        return this.dataHandler.selectWhere(this.tableFriends, FriendsQueries.SELECT_FRIEND,
+        return this.dataHandler.selectWhere(this.tableFriends, SELECT_FRIEND,
                 Wheres.whereUUID(OWNER_ID, o -> ownerId));
     }
 
@@ -90,18 +189,18 @@ public class FriendsDataManager {
      * be a duplicate.
      */
     public boolean existsInDatabase(final UUID ownerId, final UUID friendId) {
-        return this.dataHandler.selectFirst(this.tableFriends, FriendsQueries.SELECT_FRIEND,
+        return this.dataHandler.selectFirst(this.tableFriends, SELECT_FRIEND,
                 Wheres.whereUUID(OWNER_ID, o -> ownerId)
                         .and(FRIEND_ID, Operator.EQUALS, o -> friendId.toString()))
                 .isPresent();
     }
 
     public void insertFriend(final FriendRecord record) {
-        this.dataHandler.insert(this.tableFriends, FriendsQueries.INSERT_FRIEND, record);
+        this.dataHandler.insert(this.tableFriends, INSERT_FRIEND, record);
     }
 
     public void updateFriend(final FriendRecord friend) {
-        this.dataHandler.update(this.tableFriends, FriendsQueries.UPDATE_FRIEND, friend,
+        this.dataHandler.update(this.tableFriends, UPDATE_FRIEND, friend,
                 Wheres.whereUUID(OWNER_ID, FriendRecord::getOwnerId)
                         .and(FRIEND_ID, Operator.EQUALS, record -> friend.getFriendId().toString()));
     }
@@ -124,23 +223,23 @@ public class FriendsDataManager {
     // Blocks
 
     public List<BlockRecord> getBlocks() {
-        return this.dataHandler.selectAny(this.tableBlocks, FriendsQueries.SELECT_BLOCK);
+        return this.dataHandler.selectAny(this.tableBlocks, SELECT_BLOCK);
     }
 
     public List<BlockRecord> getBlocks(final UUID blockerId) {
-        return this.dataHandler.selectWhere(this.tableBlocks, FriendsQueries.SELECT_BLOCK,
+        return this.dataHandler.selectWhere(this.tableBlocks, SELECT_BLOCK,
                 Wheres.whereUUID(BLOCKER_ID, o -> blockerId));
     }
 
     public boolean existsBlockInDatabase(final UUID blockerId, final UUID blockedId) {
-        return this.dataHandler.selectFirst(this.tableBlocks, FriendsQueries.SELECT_BLOCK,
+        return this.dataHandler.selectFirst(this.tableBlocks, SELECT_BLOCK,
                 Wheres.whereUUID(BLOCKER_ID, o -> blockerId)
                         .and(BLOCKED_ID, Operator.EQUALS, o -> blockedId.toString()))
                 .isPresent();
     }
 
     public void insertBlock(final BlockRecord block) {
-        this.dataHandler.insert(this.tableBlocks, FriendsQueries.INSERT_BLOCK, block);
+        this.dataHandler.insert(this.tableBlocks, INSERT_BLOCK, block);
     }
 
     public void deleteBlock(final BlockRecord block) {
@@ -181,4 +280,22 @@ public class FriendsDataManager {
     private boolean isOrphan(@NotNull final UUID playerId) {
         return !this.module.userManager().getDataAccessor().isExists(playerId);
     }
+
+    /**
+     * Reads a uuid column that may be null, which is what the nullable-column reads
+     * look like
+     * across SQLite and MySQL alike.
+     */
+    private static UUID readUuid(final ResultSet resultSet, final String column) throws SQLException {
+        final String raw = resultSet.getString(column);
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return UUID.fromString(raw.trim());
+        } catch (final IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
 }

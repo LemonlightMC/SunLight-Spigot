@@ -28,7 +28,6 @@ import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
-import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendsRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -201,12 +200,12 @@ public class FriendsListMenu extends AbstractObjectMenu<UUID> {
 
                                         if (event.getClick() == ClickType.RIGHT) {
                                                 this.module.closeInventoryOnAction(player);
-                                                this.module.promptMessage(player, record.getFriend().name());
+                                                this.module.promptMessage(player, record.getFriendName());
                                                 return;
                                         }
                                         if (event.getClick() == ClickType.SHIFT_RIGHT) {
                                                 this.module.closeInventoryOnAction(player);
-                                                this.module.jumpToFriend(player, record.getFriend().name());
+                                                this.module.jumpToFriend(player, record.getFriendName());
                                                 return;
                                         }
                                         if (event.isLeftClick()) {
@@ -219,12 +218,12 @@ public class FriendsListMenu extends AbstractObjectMenu<UUID> {
 
         private NightItem icon(final FriendRecord record) {
                 final NightItem item = NightItem.fromType(Material.PLAYER_HEAD)
-                                .setSkullOwner(PlayerProfiles.create(record.getFriendId(), record.getFriend().name()));
+                                .setSkullOwner(PlayerProfiles.create(record.getFriendId(), record.getFriendName()));
 
                 IconLocale locale;
                 if (record.isFavorite()) {
                         locale = FriendsLang.ICON_FRIEND_FAVORITE;
-                } else if (FriendsRepository.isOnline(record.getFriendId())) {
+                } else if (record.isFriendOnline()) {
                         locale = FriendsLang.ICON_FRIEND_ONLINE;
                 } else {
                         locale = FriendsLang.ICON_FRIEND_OFFLINE;

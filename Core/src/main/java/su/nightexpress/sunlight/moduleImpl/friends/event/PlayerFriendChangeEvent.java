@@ -2,15 +2,15 @@ package su.nightexpress.sunlight.moduleImpl.friends.event;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.jetbrains.annotations.NotNull;
 
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.user.SunUser;
 
 /**
  * Fired after a friendship row has been added or removed.
  * <p>
- * Fires once per row, so a mutual friendship fires it twice with the owner and friend swapped.
+ * Fires once per row, so a mutual friendship fires it twice with the owner and
+ * friend swapped.
  */
 public class PlayerFriendChangeEvent extends Event {
 
@@ -19,29 +19,29 @@ public class PlayerFriendChangeEvent extends Event {
     private final FriendRecord record;
     private final boolean addition;
 
-    public PlayerFriendChangeEvent(@NotNull FriendRecord record, boolean addition) {
+    public PlayerFriendChangeEvent(FriendRecord record, boolean addition) {
         this.record = record;
         this.addition = addition;
     }
 
-    public static @NotNull HandlerList getHandlerList() {
+    public static HandlerList getHandlerList() {
         return HANDLERS;
     }
 
     @Override
-    public @NotNull HandlerList getHandlers() {
+    public HandlerList getHandlers() {
         return HANDLERS;
     }
 
-    public @NotNull FriendRecord getRecord() {
+    public FriendRecord getRecord() {
         return this.record;
     }
 
-    public @NotNull UserInfo getOwner() {
+    public SunUser getOwner() {
         return this.record.getOwner();
     }
 
-    public @NotNull UserInfo getFriend() {
+    public SunUser getFriend() {
         return this.record.getFriend();
     }
 
