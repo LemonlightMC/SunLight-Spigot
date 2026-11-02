@@ -111,14 +111,14 @@ public class FriendsPendingMenu extends AbstractMenu {
                                         if (event.getClick() == ClickType.RIGHT
                                                         || event.getClick() == ClickType.SHIFT_RIGHT) {
                                                 this.module.closeInventoryOnAction(player);
-                                                this.module.declineIncoming(player, request.getSenderName());
+                                                this.module.userInterface().declineIncoming(player, request.getSenderName());
                                                 actionContext.getViewer().refresh();
                                                 return;
                                         }
 
                                         if (event.isLeftClick()) {
                                                 this.module.closeInventoryOnAction(player);
-                                                this.module.acceptIncoming(player, request.getSenderName());
+                                                this.module.userInterface().acceptIncoming(player, request.getSenderName());
                                         }
                                 })
                                 .build();
@@ -131,7 +131,7 @@ public class FriendsPendingMenu extends AbstractMenu {
                                                                 request::getTargetName)))
                                 .actionProvider(request -> actionContext -> {
                                         this.module.closeInventoryOnAction(actionContext.getPlayer());
-                                        this.module.cancelRequest(actionContext.getPlayer(), request.getTargetName());
+                                        this.module.userInterface().cancelRequest(actionContext.getPlayer(), request.getTargetName());
                                         actionContext.getViewer().refresh();
                                 })
                                 .build();

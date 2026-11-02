@@ -15,6 +15,7 @@ import su.nightexpress.nightcore.ui.dialog.build.DialogButtons;
 import su.nightexpress.nightcore.ui.dialog.build.DialogInputs;
 import su.nightexpress.nightcore.ui.dialog.build.DialogTypes;
 import su.nightexpress.nightcore.ui.dialog.wrap.Dialog;
+import su.nightexpress.nightcore.ui.dialog.wrap.DialogKey;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.utils.Utils;
@@ -29,6 +30,7 @@ import su.nightexpress.sunlight.utils.Utils;
 public class FriendAddDialog extends Dialog<String> {
 
     private static final String JSON_NAME = "name";
+    public static final DialogKey<String> FRIEND_ADD = new DialogKey<>("friend_add");
 
     private static final TextLocale TITLE = LangEntry.builder("Friends.Dialog.Add.Title").text(title("Friend",
             "Add"));

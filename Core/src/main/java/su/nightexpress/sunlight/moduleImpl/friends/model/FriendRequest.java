@@ -1,7 +1,7 @@
 package su.nightexpress.sunlight.moduleImpl.friends.model;
 
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.sunlight.api.provider.dto.FriendRequestHandle;
+import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.TimeUtil;
 
 import java.util.UUID;
@@ -15,44 +15,44 @@ import java.util.UUID;
  * database exactly the
  * flooding problem the request limits exist to prevent.
  */
-public class FriendRequest {
+public class FriendRequest implements su.nightexpress.sunlight.api.provider.dto.FriendRequest {
 
-    private final UserInfo sender;
-    private final UserInfo target;
+    private final SunUser sender;
+    private final SunUser target;
     private final long expireDate;
 
-    public FriendRequest(final UserInfo sender, final UserInfo target, final long expireDate) {
+    public FriendRequest(final SunUser sender, final SunUser target, final long expireDate) {
         this.sender = sender;
         this.target = target;
         this.expireDate = expireDate;
     }
 
-    public static FriendRequest create(final UserInfo sender, final UserInfo target, final int timeoutSeconds) {
+    public static FriendRequest create(final SunUser sender, final SunUser target, final int timeoutSeconds) {
         return new FriendRequest(sender, target, TimeUtil.createFutureTimestamp(timeoutSeconds));
     }
 
-    public UserInfo getSender() {
+    public SunUser getSender() {
         return this.sender;
     }
 
-    public UserInfo getTarget() {
+    public SunUser getTarget() {
         return this.target;
     }
 
     public UUID getSenderId() {
-        return this.sender.id();
+        return this.sender.getId();
     }
 
     public UUID getTargetId() {
-        return this.target.id();
+        return this.target.getId();
     }
 
     public String getSenderName() {
-        return this.sender.name();
+        return this.sender.getName();
     }
 
     public String getTargetName() {
-        return this.target.name();
+        return this.target.getName();
     }
 
     public long getExpireDate() {
@@ -86,12 +86,12 @@ public class FriendRequest {
 
     /** Whether that name matches the sender. */
     public boolean isSender(final String name) {
-        return name != null && this.sender.isUser(name);
+        return name != null && this.sender.getName().equals(name);
     }
 
     /** Whether that name matches the receiver. */
     public boolean isTarget(final String name) {
-        return name != null && this.target.isUser(name);
+        return name != null && this.target.getName().equals(name);
     }
 
     public FriendRequestHandle toHandle() {

@@ -106,7 +106,8 @@ public class FriendsBlockedMenu extends AbstractMenu {
                                 .actionProvider(block -> actionContext -> {
                                         final Player player = actionContext.getPlayer();
                                         this.module.closeInventoryOnAction(player);
-                                        this.module.unblockCommand(player, block.getBlocked().getName());
+                                        this.module.userInterface().unblockCommand(player,
+                                                        block.getBlocked().getName());
                                         actionContext.getViewer().refresh();
                                 })
                                 .build();

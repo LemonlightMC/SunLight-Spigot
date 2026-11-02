@@ -126,7 +126,7 @@ public class FriendsSettingsMenu extends AbstractMenu {
 
                 this.module.applyToggle(user, toggle, state);
                 this.module.closeInventoryOnAction(player);
-                this.module.sendToggle(player, toggle, state, null);
+                this.module.userInterface().sendToggle(player, toggle, state, null);
         }
 
         private String stateText(final Player player, final FriendToggle toggle) {

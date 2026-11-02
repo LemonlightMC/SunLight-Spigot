@@ -20,6 +20,7 @@ import su.nightexpress.nightcore.ui.inventory.item.MenuItem;
 import su.nightexpress.nightcore.ui.inventory.menu.AbstractObjectMenu;
 import su.nightexpress.nightcore.ui.inventory.viewer.ViewerContext;
 import su.nightexpress.nightcore.util.Lists;
+import su.nightexpress.nightcore.util.NumberUtil;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.nightcore.util.profile.PlayerProfiles;
 import su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers;
@@ -82,38 +83,36 @@ public class FriendsListMenu extends AbstractObjectMenu<UUID> {
                                 .slots(47)
                                 .build());
 
-                this.addDefaultButton("pending", MenuItem.button()
-                                .defaultState(ItemState.builder()
-                                                .icon(NightItem.fromType(Material.PAPER)
-                                                                .setDisplayName(TagWrappers.GREEN.and(TagWrappers.BOLD)
-                                                                                .wrap("Pending Requests")))
-                                                .displayModifier((context, item) -> item
-                                                                .setLore(Lists.newList(
-                                                                                TagWrappers.DARK_GRAY.wrap("» ")
-                                                                                                + TagWrappers.GRAY.wrap(
-                                                                                                                "Incoming: ")
-                                                                                                + TagWrappers.WHITE
-                                                                                                                .wrap(FriendsModule
-                                                                                                                                .countText(
-                                                                                                                                                this.module.countIncoming(
-                                                                                                                                                                context.getPlayer()))),
-                                                                                TagWrappers.DARK_GRAY.wrap("» ")
-                                                                                                + TagWrappers.GRAY.wrap(
-                                                                                                                "Sent: ")
-                                                                                                + TagWrappers.WHITE
-                                                                                                                .wrap(FriendsModule
-                                                                                                                                .countText(
-                                                                                                                                                this.module.countOutgoing(
-                                                                                                                                                                context.getPlayer()))),
-                                                                                "",
-                                                                                TagWrappers.GREEN.wrap("→ "
-                                                                                                + TagWrappers.UNDERLINED
-                                                                                                                .wrap("Click to review")))))
-                                                .action(context -> {
-                                                        this.module.closeInventoryOnAction(context.getPlayer());
-                                                        this.module.openPending(context.getPlayer());
-                                                })
-                                                .build())
+                this.addDefaultButton("pending", MenuItem.button().defaultState(ItemState.builder()
+                                .icon(NightItem.fromType(Material.PAPER).setDisplayName(
+                                                TagWrappers.GREEN.and(TagWrappers.BOLD).wrap("Pending Requests")))
+                                .displayModifier((context, item) -> item
+                                                .setLore(Lists.newList(
+                                                                TagWrappers.DARK_GRAY.wrap("» ")
+                                                                                + TagWrappers.GRAY.wrap("Incoming: ")
+                                                                                + TagWrappers.WHITE.wrap(NumberUtil
+                                                                                                .format(this.module
+                                                                                                                .requestRepository()
+                                                                                                                .countIncoming(context
+                                                                                                                                .getPlayer()
+                                                                                                                                .getUniqueId()))),
+                                                                TagWrappers.DARK_GRAY.wrap("» ")
+                                                                                + TagWrappers.GRAY.wrap("Sent: ")
+                                                                                + TagWrappers.WHITE.wrap(
+                                                                                                NumberUtil.format(
+                                                                                                                this.module.requestRepository()
+                                                                                                                                .countOutgoing(context
+                                                                                                                                                .getPlayer()
+                                                                                                                                                .getUniqueId()))),
+                                                                "",
+                                                                TagWrappers.GREEN.wrap("→ "
+                                                                                + TagWrappers.UNDERLINED.wrap(
+                                                                                                "Click to review")))))
+                                .action(context -> {
+                                        this.module.closeInventoryOnAction(context.getPlayer());
+                                        this.module.openPending(context.getPlayer());
+                                })
+                                .build())
                                 .slots(48)
                                 .build());
 
@@ -128,10 +127,11 @@ public class FriendsListMenu extends AbstractObjectMenu<UUID> {
                                                                                                 + TagWrappers.GRAY.wrap(
                                                                                                                 "Blocked: ")
                                                                                                 + TagWrappers.WHITE
-                                                                                                                .wrap(FriendsModule
-                                                                                                                                .countText(
-                                                                                                                                                this.module.countBlocked(
-                                                                                                                                                                context.getPlayer()))),
+                                                                                                                .wrap(NumberUtil.format(
+                                                                                                                                this.module.repository()
+                                                                                                                                                .getBlocksCount(context
+                                                                                                                                                                .getPlayer()
+                                                                                                                                                                .getUniqueId()))),
                                                                                 "",
                                                                                 TagWrappers.RED.wrap("→ "
                                                                                                 + TagWrappers.UNDERLINED
@@ -200,12 +200,12 @@ public class FriendsListMenu extends AbstractObjectMenu<UUID> {
 
                                         if (event.getClick() == ClickType.RIGHT) {
                                                 this.module.closeInventoryOnAction(player);
-                                                this.module.promptMessage(player, record.getFriendName());
+                                                this.module.userInterface().promptMessage(player, record.getFriendName());
                                                 return;
                                         }
                                         if (event.getClick() == ClickType.SHIFT_RIGHT) {
                                                 this.module.closeInventoryOnAction(player);
-                                                this.module.jumpToFriend(player, record.getFriendName());
+                                                this.module.userInterface().jumpToFriend(player, record.getFriendName());
                                                 return;
                                         }
                                         if (event.isLeftClick()) {
@@ -250,7 +250,7 @@ public class FriendsListMenu extends AbstractObjectMenu<UUID> {
         @Override
         public void onPrepare(final ViewerContext context, final InventoryView view, final Inventory inventory,
                         final List<MenuItem> items) {
-                this.populator.populateTo(context, this.module.getFriendRecords(this.getObject(context)), items);
+                this.populator.populateTo(context, this.module.getFriends(this.getObject(context)), items);
         }
 
         @Override

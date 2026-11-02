@@ -13,6 +13,7 @@ import su.nightexpress.nightcore.ui.dialog.build.DialogBodies;
 import su.nightexpress.nightcore.ui.dialog.build.DialogButtons;
 import su.nightexpress.nightcore.ui.dialog.build.DialogTypes;
 import su.nightexpress.nightcore.ui.dialog.wrap.Dialog;
+import su.nightexpress.nightcore.ui.dialog.wrap.DialogKey;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 import su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers;
@@ -24,6 +25,8 @@ import su.nightexpress.sunlight.utils.Utils;
  * so it asks first.
  */
 public class FriendRemoveDialog extends Dialog<String> {
+    
+    public static final DialogKey<String> FRIEND_REMOVE = new DialogKey<>("friend_remove");
 
     private static final TextLocale TITLE = LangEntry.builder("Friends.Dialog.Remove.Title").text(title("Friend",
             "Removal"));
@@ -55,7 +58,7 @@ public class FriendRemoveDialog extends Dialog<String> {
                         return;
                     }
 
-                    this.module.removeFriendCommand(player, friend);
+                    this.module.userInterface().removeFriendCommand(player, friend);
                     viewer.callback();
                 })
                 .build();

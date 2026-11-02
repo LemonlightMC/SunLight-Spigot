@@ -7,7 +7,6 @@ import org.bukkit.entity.Player;
 
 import dev.jorel.commandapi.executors.CommandArguments;
 import su.nightexpress.nightcore.core.config.CoreLang;
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
@@ -16,7 +15,7 @@ import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsPerms;
-import su.nightexpress.sunlight.utils.Utils;
+import su.nightexpress.sunlight.user.SunUser;
 
 /**
  * {@code /friendadmin}: the staff surface.
@@ -94,7 +93,7 @@ public class FriendsAdminCommandProvider extends CommandProvider<FriendsModule> 
 
         return target.runAs(this.module, sender, FriendsPerms.COMMAND_FRIENDS_ADMIN_ROOT,
                 (user, targetPlayer) -> {
-                    final int count = this.module.countFriends(targetPlayer.getUniqueId());
+                    final int count = this.module.repository().getFriendsCount(targetPlayer.getUniqueId());
                     final int limit = this.module.getFriendLimit(targetPlayer);
 
                     this.module.sendPrefixed(FriendsLang.ADMIN_INFO_FEEDBACK, sender, builder -> builder
@@ -109,53 +108,53 @@ public class FriendsAdminCommandProvider extends CommandProvider<FriendsModule> 
     }
 
     private int add(final CommandSender sender, final CommandArguments arguments) {
-        final UserInfo first = this.resolve(arguments, CommandArgumentConstants.PLAYER);
-        final UserInfo second = this.resolve(arguments, CommandArgumentConstants.TARGET);
+        final SunUser first = this.resolve(arguments, CommandArgumentConstants.PLAYER);
+        final SunUser second = this.resolve(arguments, CommandArgumentConstants.TARGET);
         if (first == null || second == null) {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return 0;
         }
-        if (first.id().equals(second.id())) {
+        if (first.getId().equals(second.getId())) {
             this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_NOT_YOURSELF, sender);
             return 0;
         }
-        if (this.module.isFriend(first.id(), second.id())) {
+        if (this.module.isFriend(first.getId(), second.getId())) {
             this.module.sendPrefixed(FriendsLang.ADMIN_ADD_ERROR_ALREADY, sender);
             return 0;
         }
 
-        this.module.addFriend(first.id(), second.id());
+        this.module.addFriend(first.getId(), second.getId());
 
         this.module.sendPrefixed(FriendsLang.ADMIN_ADD_FEEDBACK, sender, builder -> builder
-                .with(CommonPlaceholders.PLAYER_NAME, first::name)
-                .with(SLPlaceholders.GENERIC_TARGET, second::name));
-        this.module.notifyAdminAdd(first, second);
+                .with(CommonPlaceholders.PLAYER_NAME, first::getName)
+                .with(SLPlaceholders.GENERIC_TARGET, second::getName));
+        this.module.notifyWatchers(first, second);
         return 1;
     }
 
     private int remove(final CommandSender sender, final CommandArguments arguments) {
-        final UserInfo first = this.resolve(arguments, CommandArgumentConstants.PLAYER);
-        final UserInfo second = this.resolve(arguments, CommandArgumentConstants.TARGET);
+        final SunUser first = this.resolve(arguments, CommandArgumentConstants.PLAYER);
+        final SunUser second = this.resolve(arguments, CommandArgumentConstants.TARGET);
         if (first == null || second == null) {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return 0;
         }
-        if (!this.module.isFriend(first.id(), second.id())) {
+        if (!this.module.isFriend(first.getId(), second.getId())) {
             this.module.sendPrefixed(FriendsLang.ADMIN_REMOVE_ERROR_NOT_FRIEND, sender);
             return 0;
         }
 
-        this.module.removeFriend(first.id(), second.id());
+        this.module.removeFriend(first.getId(), second.getId());
 
         this.module.sendPrefixed(FriendsLang.ADMIN_REMOVE_FEEDBACK, sender, builder -> builder
-                .with(CommonPlaceholders.PLAYER_NAME, first::name)
-                .with(SLPlaceholders.GENERIC_TARGET, second::name));
+                .with(CommonPlaceholders.PLAYER_NAME, first::getName)
+                .with(SLPlaceholders.GENERIC_TARGET, second::getName));
         return 1;
     }
 
     private int unblock(final CommandSender sender, final CommandArguments arguments) {
-        final UserInfo first = this.resolve(arguments, CommandArgumentConstants.PLAYER);
-        final UserInfo second = this.resolve(arguments, CommandArgumentConstants.TARGET);
+        final SunUser first = this.resolve(arguments, CommandArgumentConstants.PLAYER);
+        final SunUser second = this.resolve(arguments, CommandArgumentConstants.TARGET);
         if (first == null || second == null) {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return 0;
@@ -164,12 +163,12 @@ public class FriendsAdminCommandProvider extends CommandProvider<FriendsModule> 
         // Both directions, because a staff member asking to clear a pair means the
         // pair, not the
         // one arrow they happened to type first.
-        this.module.unblock(first.id(), second.id());
-        this.module.unblock(second.id(), first.id());
+        this.module.unblock(first.getId(), second.getId());
+        this.module.unblock(second.getId(), first.getId());
 
         this.module.sendPrefixed(FriendsLang.ADMIN_UNBLOCK_FEEDBACK, sender, builder -> builder
-                .with(CommonPlaceholders.PLAYER_NAME, first::name)
-                .with(SLPlaceholders.GENERIC_TARGET, second::name));
+                .with(CommonPlaceholders.PLAYER_NAME, first::getName)
+                .with(SLPlaceholders.GENERIC_TARGET, second::getName));
         return 1;
     }
 
@@ -177,7 +176,7 @@ public class FriendsAdminCommandProvider extends CommandProvider<FriendsModule> 
      * Resolves a name to a profile, online or cached, so offline pairs are still
      * reachable.
      */
-    private UserInfo resolve(final CommandArguments arguments, final String key) {
+    private SunUser resolve(final CommandArguments arguments, final String key) {
         final Object raw = arguments.get(key);
         if (!(raw instanceof final String name)) {
             return null;
@@ -186,18 +185,10 @@ public class FriendsAdminCommandProvider extends CommandProvider<FriendsModule> 
         if (trimmed.isEmpty()) {
             return null;
         }
-
-        final Player online = Utils.getPlayer(trimmed);
-        if (online != null) {
-            return UserInfo.of(online);
-        }
-
         final UUID id = this.module.userManager().getRepository().getAssociatedId(trimmed);
         if (id == null) {
             return null;
         }
-        return this.module.userManager().getRepository().getById(id)
-                .map(user -> new UserInfo(user.getId(), user.getName()))
-                .orElse(null);
+        return this.module.userManager().getRepository().getById(id).orElse(null);
     }
 }

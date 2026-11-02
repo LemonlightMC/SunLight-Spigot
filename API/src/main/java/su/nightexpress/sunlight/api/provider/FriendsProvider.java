@@ -2,8 +2,9 @@ package su.nightexpress.sunlight.api.provider;
 
 import org.bukkit.entity.Player;
 
-import su.nightexpress.sunlight.api.provider.dto.FriendHandle;
-import su.nightexpress.sunlight.api.provider.dto.FriendRequestHandle;
+import su.nightexpress.sunlight.api.provider.dto.BlockRecord;
+import su.nightexpress.sunlight.api.provider.dto.FriendRecord;
+import su.nightexpress.sunlight.api.provider.dto.FriendRequest;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,26 +42,27 @@ public interface FriendsProvider {
     /** Whether that player has the other one blocked. */
     boolean isBlocked(UUID playerId, UUID otherId);
 
+    /**
+     * That player's own side of the friendship with the other one, or {@code null}.
+     */
+    FriendRecord getFriend(UUID playerId, UUID friendId);
     // Lists
 
     /** That player's friends, online first, then alphabetically. */
-    List<FriendHandle> getFriends(UUID playerId);
+    List<? extends FriendRecord> getFriends(UUID playerId);
 
     /** That player's friends that are online right now. */
-    List<FriendHandle> getOnlineFriends(UUID playerId);
+    List<? extends FriendRecord> getOnlineFriends(UUID playerId);
+
+    int getFriendsCount(UUID playerId);
+
+    int getOnlineFriendsCount(UUID playerId);
 
     /** That player's pinned friend, or {@code null} when there is none. */
-
-    FriendHandle getFavoriteFriend(UUID playerId);
+    FriendRecord getFavoriteFriend(UUID playerId);
 
     /** That player's blocked players. */
-    List<FriendHandle> getBlocked(UUID playerId);
-
-    /** How many friends that player has. */
-    int countFriends(UUID playerId);
-
-    /** How many of that player's friends are online. */
-    int countOnlineFriends(UUID playerId);
+    List<? extends BlockRecord> getBlocked(UUID playerId);
 
     /**
      * The highest number of friends that player may hold, by their configured rank
@@ -73,17 +75,17 @@ public interface FriendsProvider {
     // Requests
 
     /** Requests sent to that player, expired ones already removed. */
-    List<FriendRequestHandle> getIncomingRequests(UUID playerId);
+    List<? extends FriendRequest> getIncomingRequests(UUID playerId);
 
     /** Requests that player has sent, expired ones already removed. */
-    List<FriendRequestHandle> getOutgoingRequests(UUID playerId);
+    List<? extends FriendRequest> getOutgoingRequests(UUID playerId);
 
     /**
      * The request from a specific sender to that player, or {@code null} when there
      * is none.
      */
 
-    FriendRequestHandle getIncomingRequest(UUID playerId, String senderName);
+    FriendRequest getIncomingRequest(UUID playerId, String senderName);
 
     /**
      * Sends a request or invite, firing the module's cancellable event and sending
@@ -176,4 +178,5 @@ public interface FriendsProvider {
 
     /** Records the player's friend-teleport preference, persisting the choice. */
     void setFriendTeleportEnabled(Player player, boolean enabled);
+
 }

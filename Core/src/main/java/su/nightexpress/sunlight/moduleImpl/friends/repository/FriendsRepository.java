@@ -88,8 +88,36 @@ public class FriendsRepository {
         return list;
     }
 
+    public int getFriendsCount(final UUID playerId) {
+        final Set<FriendRecord> set = this.friendsByOwner.get(playerId);
+        return set == null ? 0 : set.size();
+    }
+
     public List<FriendRecord> getOnlineFriends(final UUID playerId) {
-        return this.getFriends(playerId).stream().filter(record -> record.isFriendOnline()).toList();
+        final Set<FriendRecord> set = this.friendsByOwner.get(playerId);
+        if (set == null || set.isEmpty()) {
+            return List.of();
+        }
+        return set.stream()
+                .filter(record -> record.isFriendOnline())
+                .sorted(Comparator
+                        .comparing((final FriendRecord record) -> !record.isFriendOnline())
+                        .thenComparing(record -> record.getFriend().getName(), String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    public int getOnlineFriendsCount(final UUID playerId) {
+        final Set<FriendRecord> set = this.friendsByOwner.get(playerId);
+        if (set == null || set.isEmpty()) {
+            return 0;
+        }
+        int count = 0;
+        for (final FriendRecord record : set) {
+            if (record.isFriendOnline()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -196,6 +224,11 @@ public class FriendsRepository {
         list.sort(Comparator.comparing((final BlockRecord block) -> !block.getBlocked().isOnline())
                 .thenComparing(block -> block.getBlocked().getName(), String.CASE_INSENSITIVE_ORDER));
         return list;
+    }
+
+    public int getBlocksCount(final UUID blockerId) {
+        final Set<BlockRecord> set = this.blocksByBlocker.get(blockerId);
+        return set == null ? 0 : set.size();
     }
 
     /** Whether that player has blocked the other one. One direction only. */

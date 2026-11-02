@@ -8,6 +8,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import su.nightexpress.nightcore.manager.AbstractListener;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
+import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 
 /**
  * Login and quit handling.
@@ -32,14 +33,14 @@ public class FriendsListener extends AbstractListener<SunLightPlugin> {
         // reads it.
         this.plugin.runTask(task -> {
             if (event.getPlayer().isOnline()) {
-                this.module.notifyLogin(event.getPlayer());
+                this.module.notifyFriends(event.getPlayer(), FriendsLang.NOTIFY_LOGIN);
             }
         });
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(final PlayerQuitEvent event) {
-        this.module.notifyQuit(event.getPlayer());
+        this.module.notifyFriends(event.getPlayer(), FriendsLang.NOTIFY_QUIT);
         this.module.clearRequests(event.getPlayer().getUniqueId());
     }
 }

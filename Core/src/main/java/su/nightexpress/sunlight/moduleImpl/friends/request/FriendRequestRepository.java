@@ -1,7 +1,7 @@
 package su.nightexpress.sunlight.moduleImpl.friends.request;
 
-import su.nightexpress.nightcore.user.UserInfo;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRequest;
+import su.nightexpress.sunlight.user.SunUser;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -182,7 +182,7 @@ public class FriendRequestRepository {
         return this.getOutgoing(senderId).stream().map(FriendRequest::getTargetName).toList();
     }
 
-    public static UserInfo other(final FriendRequest request, final UUID playerId) {
+    public static SunUser other(final FriendRequest request, final UUID playerId) {
         return request.getSenderId().equals(playerId) ? request.getTarget() : request.getSender();
     }
 }

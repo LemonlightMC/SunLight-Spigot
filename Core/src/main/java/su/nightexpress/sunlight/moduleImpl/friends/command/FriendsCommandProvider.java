@@ -250,7 +250,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                         .with(SLPlaceholders.GENERIC_STATE, () -> CoreLang.STATE_ENABLED_DISALBED.get(state)));
             }
 
-            this.module.sendToggle(targetPlayer, toggle, state, sender);
+            this.module.userInterface().sendToggle(targetPlayer, toggle, state, sender);
         });
     }
 
@@ -283,7 +283,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
             return 0;
         }
 
-        return this.module.removeFriendCommand(player, target) ? 1 : 0;
+        return this.module.userInterface().removeFriendCommand(player, target) ? 1 : 0;
     }
 
     private int acceptRequest(final CommandSender sender, final CommandArguments arguments) {
@@ -291,7 +291,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (player == null) {
             return 0;
         }
-        return this.module.acceptIncoming(player, this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
+        return this.module.userInterface().acceptIncoming(player,
+                this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
     }
 
     private int declineRequest(final CommandSender sender, final CommandArguments arguments) {
@@ -299,7 +300,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (player == null) {
             return 0;
         }
-        return this.module.declineIncoming(player, this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
+        return this.module.userInterface().declineIncoming(player,
+                this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
     }
 
     private int cancelRequest(final CommandSender sender, final CommandArguments arguments) {
@@ -307,7 +309,8 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (player == null) {
             return 0;
         }
-        return this.module.cancelRequest(player, this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
+        return this.module.userInterface().cancelRequest(player,
+                this.string(arguments, CommandArgumentConstants.PLAYER)) ? 1 : 0;
     }
 
     private int listFriends(final CommandSender sender, final CommandArguments arguments) {
@@ -339,7 +342,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
             return 0;
         }
 
-        return this.module.blockCommand(player, target) ? 1 : 0;
+        return module.userInterface().blockCommand(player, target) ? 1 : 0;
     }
 
     private int unblockPlayer(final CommandSender sender, final CommandArguments arguments) {
@@ -354,7 +357,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
             return 0;
         }
 
-        return this.module.unblockCommand(player, name) ? 1 : 0;
+        return this.module.userInterface().unblockCommand(player, name) ? 1 : 0;
     }
 
     private int toggleFavorite(final CommandSender sender, final CommandArguments arguments) {
@@ -385,7 +388,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
             return 0;
         }
 
-        return this.module.jumpToFriend(player, name) ? 1 : 0;
+        return this.module.userInterface().jumpToFriend(player, name) ? 1 : 0;
     }
 
     private int messageFriend(final CommandSender sender, final CommandArguments arguments) {
@@ -401,7 +404,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
             return 0;
         }
 
-        return this.module.messageFriend(player, name, message) ? 1 : 0;
+        return this.module.userInterface().messageFriend(player, name, message) ? 1 : 0;
     }
 
     // Helpers
@@ -423,7 +426,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
-        return this.module.getFriendRecords(player.getUniqueId()).stream()
+        return this.module.getFriends(player.getUniqueId()).stream()
                 .map(record -> record.getFriendName())
                 .toList();
     }
@@ -432,7 +435,7 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
         if (!(sender instanceof final Player player)) {
             return List.of();
         }
-        return this.module.getOnlineFriendRecords(player.getUniqueId()).stream()
+        return this.module.getOnlineFriends(player.getUniqueId()).stream()
                 .map(record -> record.getFriendName())
                 .toList();
     }
@@ -463,4 +466,5 @@ public class FriendsCommandProvider extends CommandProvider<FriendsModule> {
                 .map(block -> block.getBlocked().getName())
                 .toList();
     }
+
 }

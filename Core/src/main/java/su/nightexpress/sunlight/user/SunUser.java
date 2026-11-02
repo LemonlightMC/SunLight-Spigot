@@ -17,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public class SunUser extends UserTemplate {
+public class SunUser extends UserTemplate implements su.nightexpress.sunlight.api.SunUser {
 
     private final Map<CommandKey, Long> commandCooldowns;
     private final Map<String, Object> properties;

@@ -2,7 +2,6 @@ package su.nightexpress.sunlight.moduleImpl.friends.model;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.jspecify.annotations.NullMarked;
 
 import su.nightexpress.sunlight.user.SunUser;
 
@@ -16,8 +15,7 @@ import java.util.UUID;
  * deleted, and it has no favourite flag, create date per side, or symmetry to
  * model.
  */
-@NullMarked
-public class BlockRecord {
+public class BlockRecord implements su.nightexpress.sunlight.api.provider.dto.BlockRecord {
 
     private final SunUser blocker;
     private final SunUser blocked;
@@ -37,16 +35,24 @@ public class BlockRecord {
         return this.blocker;
     }
 
-    public SunUser getBlocked() {
-        return this.blocked;
-    }
-
     public UUID getBlockerId() {
         return this.blocker.getId();
     }
 
+    public String getBlockerName() {
+        return this.blocker.getName();
+    }
+
+    public SunUser getBlocked() {
+        return this.blocked;
+    }
+
     public UUID getBlockedId() {
         return this.blocked.getId();
+    }
+
+    public String getBlockedName() {
+        return this.blocked.getName();
     }
 
     public long getCreateDate() {

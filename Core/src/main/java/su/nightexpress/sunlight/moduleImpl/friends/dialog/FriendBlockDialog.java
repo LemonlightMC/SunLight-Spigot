@@ -13,6 +13,7 @@ import su.nightexpress.nightcore.ui.dialog.build.DialogBodies;
 import su.nightexpress.nightcore.ui.dialog.build.DialogButtons;
 import su.nightexpress.nightcore.ui.dialog.build.DialogTypes;
 import su.nightexpress.nightcore.ui.dialog.wrap.Dialog;
+import su.nightexpress.nightcore.ui.dialog.wrap.DialogKey;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
@@ -24,6 +25,8 @@ import su.nightexpress.sunlight.utils.Utils;
  * the player to discover it afterwards.
  */
 public class FriendBlockDialog extends Dialog<String> {
+
+    public static final DialogKey<String> FRIEND_BLOCK = new DialogKey<>("friend_block");
 
     private static final TextLocale TITLE = LangEntry.builder("Friends.Dialog.Block.Title").text(title("Friend",
             "Block"));
@@ -57,7 +60,7 @@ public class FriendBlockDialog extends Dialog<String> {
                         return;
                     }
 
-                    this.module.blockCommand(player, friend);
+                    this.module.userInterface().blockCommand(player, friend);
                     viewer.callback();
                 })
                 .build();

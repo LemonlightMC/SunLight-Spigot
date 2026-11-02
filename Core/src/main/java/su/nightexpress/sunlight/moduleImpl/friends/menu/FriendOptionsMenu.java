@@ -25,7 +25,8 @@ import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsPlaceholders;
-import su.nightexpress.sunlight.moduleImpl.friends.dialog.FriendsDialogKeys;
+import su.nightexpress.sunlight.moduleImpl.friends.dialog.FriendBlockDialog;
+import su.nightexpress.sunlight.moduleImpl.friends.dialog.FriendRemoveDialog;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
 
 import java.util.List;
@@ -83,7 +84,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                                 .setDisplayName(TagWrappers.YELLOW
                                                                                 .wrap(FriendsPlaceholders.FRIEND_NAME)))
                                                 .displayModifier((context, item) -> {
-                                                        final FriendRecord record = this.module.getFriendRecord(
+                                                        final FriendRecord record = this.module.getFriend(
                                                                         context.getPlayer().getUniqueId(),
                                                                         this.getObject(context));
                                                         if (record == null) {
@@ -145,14 +146,14 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                                 .setDisplayName(TagWrappers.WHITE
                                                                                 .wrap("Send a Message")))
                                                 .action(context -> {
-                                                        final FriendRecord record = this.module.getFriendRecord(
+                                                        final FriendRecord record = this.module.getFriend(
                                                                         context.getPlayer().getUniqueId(),
                                                                         this.getObject(context));
                                                         if (record == null) {
                                                                 return;
                                                         }
                                                         this.module.closeInventoryOnAction(context.getPlayer());
-                                                        this.module.promptMessage(context.getPlayer(),
+                                                        this.module.userInterface().promptMessage(context.getPlayer(),
                                                                         record.getFriendName());
                                                 })
                                                 .build())
@@ -165,14 +166,14 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                                 .setDisplayName(TagWrappers.SOFT_AQUA
                                                                                 .wrap("Teleport to Friend")))
                                                 .action(context -> {
-                                                        final FriendRecord record = this.module.getFriendRecord(
+                                                        final FriendRecord record = this.module.getFriend(
                                                                         context.getPlayer().getUniqueId(),
                                                                         this.getObject(context));
                                                         if (record == null) {
                                                                 return;
                                                         }
                                                         this.module.closeInventoryOnAction(context.getPlayer());
-                                                        this.module.jumpToFriend(context.getPlayer(),
+                                                        this.module.userInterface().jumpToFriend(context.getPlayer(),
                                                                         record.getFriendName());
                                                 })
                                                 .build())
@@ -192,7 +193,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                                                                 + TagWrappers.UNDERLINED
                                                                                                                 .wrap("Click to remove")))))
                                                 .action(context -> {
-                                                        final FriendRecord record = this.module.getFriendRecord(
+                                                        final FriendRecord record = this.module.getFriend(
                                                                         context.getPlayer().getUniqueId(),
                                                                         this.getObject(context));
                                                         if (record == null) {
@@ -200,7 +201,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                         }
                                                         this.module.closeInventoryOnAction(context.getPlayer());
                                                         this.plugin.showDialog(context.getPlayer(),
-                                                                        FriendsDialogKeys.FRIEND_REMOVE,
+                                                                        FriendRemoveDialog.FRIEND_REMOVE,
                                                                         record.getFriendName(),
                                                                         () -> this.module.openFriends(
                                                                                         context.getPlayer()));
@@ -223,7 +224,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                                                                 + TagWrappers.UNDERLINED
                                                                                                                 .wrap("Click to block")))))
                                                 .action(context -> {
-                                                        final FriendRecord record = this.module.getFriendRecord(
+                                                        final FriendRecord record = this.module.getFriend(
                                                                         context.getPlayer().getUniqueId(),
                                                                         this.getObject(context));
                                                         if (record == null) {
@@ -231,7 +232,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
                                                         }
                                                         this.module.closeInventoryOnAction(context.getPlayer());
                                                         this.plugin.showDialog(context.getPlayer(),
-                                                                        FriendsDialogKeys.FRIEND_BLOCK,
+                                                                        FriendBlockDialog.FRIEND_BLOCK,
                                                                         record.getFriendName(),
                                                                         () -> this.module.openFriends(
                                                                                         context.getPlayer()));
@@ -242,7 +243,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
         }
 
         private String favoriteText(final ViewerContext context) {
-                final FriendRecord record = this.module.getFriendRecord(context.getPlayer().getUniqueId(),
+                final FriendRecord record = this.module.getFriend(context.getPlayer().getUniqueId(),
                                 this.getObject(context));
                 return record != null && record.isFavorite() ? "Yes" : "No";
         }
@@ -272,7 +273,7 @@ public class FriendOptionsMenu extends AbstractObjectMenu<UUID> {
         public void onPrepare(final ViewerContext context, final InventoryView view, final Inventory inventory,
                         final List<MenuItem> items) {
                 final Player player = context.getPlayer();
-                if (this.module.getFriendRecord(player.getUniqueId(), this.getObject(context)) == null) {
+                if (this.module.getFriend(player.getUniqueId(), this.getObject(context)) == null) {
                         // The friendship was removed while the menu was open; an empty menu is better
                         // than a
                         // set of buttons that all do nothing.

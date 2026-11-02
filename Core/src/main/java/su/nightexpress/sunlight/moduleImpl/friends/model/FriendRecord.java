@@ -22,7 +22,7 @@ import java.util.UUID;
  * favourite flag is
  * per-owner: two friends of each other may have pinned each other differently.
  */
-public class FriendRecord implements PlaceholderResolvable {
+public class FriendRecord implements PlaceholderResolvable, su.nightexpress.sunlight.api.provider.dto.FriendRecord {
 
     private final SunUser owner;
     private final SunUser friend;
@@ -66,6 +66,10 @@ public class FriendRecord implements PlaceholderResolvable {
         return Utils.isOnline(this.friend.getId());
     }
 
+    public long ownerLastOnline() {
+        return friend.getLastOnline();
+    }
+
     public UUID getFriendId() {
         return this.friend.getId();
     }
@@ -76,6 +80,10 @@ public class FriendRecord implements PlaceholderResolvable {
 
     public boolean isFriendOnline() {
         return Utils.isOnline(this.friend.getId());
+    }
+
+    public long friendLastOnline() {
+        return friend.getLastOnline();
     }
 
     public long getCreateDate() {
@@ -106,8 +114,12 @@ public class FriendRecord implements PlaceholderResolvable {
         return this.owner.getId().equals(playerId) || this.friend.getId().equals(playerId);
     }
 
-    /** The other party, or {@code null} when that player is neither of the two. */
+    /** Age of the friendship in milliseconds. */
+    public long getAge() {
+        return System.currentTimeMillis() - this.createDate;
+    }
 
+    /** The other party, or {@code null} when that player is neither of the two. */
     public SunUser getOther(final UUID playerId) {
         if (this.owner.getId().equals(playerId)) {
             return this.friend;
