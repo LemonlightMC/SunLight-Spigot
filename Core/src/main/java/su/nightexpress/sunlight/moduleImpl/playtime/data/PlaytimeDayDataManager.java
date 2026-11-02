@@ -39,17 +39,6 @@ public class PlaytimeDayDataManager {
     }
 
     /**
-     * Rows of one player strictly older than {@code cutoffDay}, oldest first.
-     * Used by the per-player prune, which folds these into the archived total.
-     */
-    public List<PlaytimeDay> loadOlderThan(UUID playerId, long cutoffDay) {
-        Wheres<Object> wheres = Wheres.whereUUID(PlaytimeDayColumns.PLAYER_ID, o -> playerId)
-                .and(PlaytimeDayColumns.DAY, Operator.SMALLER, o -> cutoffDay);
-        return this.dataHandler.selectWhere(this.table,
-                SelectStatement.builder(PlaytimeDayQueries.ROW_MAPPER).build(), wheres);
-    }
-
-    /**
      * Rows of every player on or after {@code fromDay}. One query serves the
      * whole leaderboard, which is why it is not split per player.
      */
@@ -57,11 +46,6 @@ public class PlaytimeDayDataManager {
         Wheres<Object> wheres = Wheres.where(PlaytimeDayColumns.DAY, Operator.GREATER_OR_EQUAL, o -> fromDay);
         return this.dataHandler.selectWhere(this.table,
                 SelectStatement.builder(PlaytimeDayQueries.ROW_MAPPER).build(), wheres);
-    }
-
-    public List<PlaytimeDay> loadAll() {
-        return this.dataHandler.selectAny(this.table,
-                SelectStatement.builder(PlaytimeDayQueries.ROW_MAPPER).build());
     }
 
     public void save(Collection<PlaytimeDay> rows) {

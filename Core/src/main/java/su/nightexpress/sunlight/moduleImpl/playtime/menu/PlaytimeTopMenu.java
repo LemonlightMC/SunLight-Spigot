@@ -32,6 +32,7 @@ import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeModule;
 import su.nightexpress.sunlight.moduleImpl.playtime.PlaytimeTopHandler.TopEntry;
+import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimeLang;
 import su.nightexpress.sunlight.utils.TimeUtil;
 
@@ -48,11 +49,17 @@ public class PlaytimeTopMenu extends AbstractMenu {
 
     private final PlaytimeModule module;
     private final PlaytimePeriod period;
+    private final int initialPage;
 
     public PlaytimeTopMenu(final PlaytimeModule module, final PlaytimePeriod period) {
+        this(module, period, 1);
+    }
+
+    public PlaytimeTopMenu(final PlaytimeModule module, final PlaytimePeriod period, final int initialPage) {
         super(MenuType.GENERIC_9X5, PlaytimeLang.MENU_TITLE_TOP.text());
         this.module = module;
         this.period = period == null ? PlaytimePeriod.ALLTIME : period;
+        this.initialPage = Math.max(1, initialPage);
     }
 
     public boolean open(final SunLightPlugin plugin, final Player viewer) {
@@ -99,6 +106,9 @@ public class PlaytimeTopMenu extends AbstractMenu {
 
         final List<TopEntry> entries = new ArrayList<>(this.module.topHandler().getTop(this.period));
         menuViewer.setTotalPages(Math.max(1, (entries.size() + PAGE_SIZE - 1) / PAGE_SIZE));
+        if (this.initialPage > 1) {
+            menuViewer.setCurrentPage(Math.min(this.initialPage, menuViewer.getTotalPages()));
+        }
 
         this.addPeriodButton(list, PlaytimePeriod.ALLTIME, Material.NETHER_STAR, 1);
         this.addPeriodButton(list, PlaytimePeriod.YEAR, Material.ENDER_EYE, 2);
@@ -131,7 +141,10 @@ public class PlaytimeTopMenu extends AbstractMenu {
                         .hideAllComponents(),
                         actionContext -> {
                             final Player clicker = actionContext.getPlayer();
-                            this.module.openStatsMenu(clicker, this.module.userManager().getOrFetch(clicker));
+                            final SunUser user = this.module.userManager().getOrFetch(clicker);
+                            if (user != null) {
+                                this.module.openStatsMenu(clicker, user);
+                            }
                         })
                 .slots(40)
                 .build());

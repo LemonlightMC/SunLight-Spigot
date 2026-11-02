@@ -47,7 +47,9 @@ public class PlaytimeSettings extends AbstractConfig {
             0L,
             "Sets how many days of daily history are kept per player.",
             "0 keeps the history forever. A positive value prunes older rows when the player joins;",
-            "the pruned time is folded into the all-time total, which never shrinks.");
+            "the pruned time is folded into the all-time total, which never shrinks.",
+            "Note: only the all-time total is preserved; year/month/week totals and days-played",
+            "reflect only the retained days, so values below 365 make the year total inaccurate.");
 
     private final ConfigProperty<Long> saveInterval = this.addProperty(ConfigTypes.LONG,
             "Playtime.Tracking.save-interval",

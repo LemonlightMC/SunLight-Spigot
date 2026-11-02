@@ -122,7 +122,7 @@ public class PlaytimeCalendarMenu extends AbstractMenu {
                                                         .setDisplayName(GRAY.wrap(weekday.getDisplayName(
                                                                         TextStyle.SHORT, Locale.ENGLISH)))
                                                         .hideAllComponents())
-                                        .slots(column + 1)
+                                        .slots(column)
                                         .build());
                 }
         }
@@ -176,7 +176,7 @@ public class PlaytimeCalendarMenu extends AbstractMenu {
                                                 .hideAllComponents(),
                                                 actionContext -> this.open(user, this.month.minusMonths(1),
                                                                 actionContext.getPlayer()))
-                                .slots(45)
+                                .slots(7)
                                 .build());
 
                 list.add(MenuItem.button()
@@ -184,7 +184,7 @@ public class PlaytimeCalendarMenu extends AbstractMenu {
                                                 .setDisplayName(GOLD.wrap(this.month.format(MONTH)))
                                                 .setLore(List.of(GRAY.wrap("Viewing: ") + WHITE.wrap(user.getName())))
                                                 .hideAllComponents())
-                                .slots(49)
+                                .slots(16)
                                 .build());
 
                 // There is nothing to show past the current month.
@@ -196,7 +196,7 @@ public class PlaytimeCalendarMenu extends AbstractMenu {
                                                         .hideAllComponents(),
                                                         actionContext -> this.open(user, this.month.plusMonths(1),
                                                                         actionContext.getPlayer()))
-                                        .slots(53)
+                                        .slots(8)
                                         .build());
                 }
 
@@ -208,7 +208,7 @@ public class PlaytimeCalendarMenu extends AbstractMenu {
                                                 .hideAllComponents(),
                                                 actionContext -> this.module.openStatsMenu(actionContext.getPlayer(),
                                                                 user))
-                                .slots(48)
+                                .slots(25)
                                 .build());
 
                 list.add(MenuItem.button()
@@ -216,7 +216,7 @@ public class PlaytimeCalendarMenu extends AbstractMenu {
                                                 .setDisplayName(GRAY.wrap(PlaytimeLang.MENU_BUTTON_CLOSE.text()))
                                                 .hideAllComponents(),
                                                 actionContext -> actionContext.getViewer().closeMenu())
-                                .slots(50)
+                                .slots(34)
                                 .build());
         }
 

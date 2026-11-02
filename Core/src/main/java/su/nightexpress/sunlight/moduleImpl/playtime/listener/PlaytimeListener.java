@@ -24,8 +24,6 @@ public class PlaytimeListener extends AbstractListener<SunLightPlugin> {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(final PlayerJoinEvent event) {
         final Player player = event.getPlayer();
-        // The history load hits the database, so it stays off the main thread. The
-        // session only starts once the rows are cached.
         this.plugin.runTaskAsync(() -> {
             try {
                 this.module.loadHistory(player.getUniqueId());
@@ -34,29 +32,30 @@ public class PlaytimeListener extends AbstractListener<SunLightPlugin> {
                         .debug("Playtime history load failed for " + player.getName() + ": " + exception.getMessage());
                 return;
             }
-            this.plugin.runTask(() -> this.startSession(player));
+            this.plugin.runTask(() -> {
+                if (!player.isOnline()) {
+                    this.module.releaseHistory(player.getUniqueId());
+                    return;
+                }
+                try {
+                    final SunUser user = this.module.userManager().getOrFetch(player);
+                    if (user == null) {
+                        return;
+                    }
+                    this.module.startSession(user);
+                } catch (final Exception exception) {
+                    this.module.debug(
+                            "Playtime session start failed for " + player.getName() + ": " + exception.getMessage());
+                }
+            });
         });
-    }
-
-    private void startSession(final Player player) {
-        if (!player.isOnline()) {
-            this.module.releaseHistory(player.getUniqueId());
-            return;
-        }
-        try {
-            final SunUser user = this.module.userManager().getOrFetch(player);
-            if (user == null) {
-                return;
-            }
-            this.module.startSession(user);
-        } catch (final Exception exception) {
-            this.module.debug("Playtime session start failed for " + player.getName() + ": " + exception.getMessage());
-        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(final PlayerQuitEvent event) {
         final Player player = event.getPlayer();
+        final boolean wasAfk = this.module.getSettings().isExcludeAfkEnabled()
+                && this.plugin.afkProvider().map(provider -> provider.isAfk(player)).orElse(false);
         try {
             final SunUser user = this.module.userManager().getOrFetch(player);
             if (user != null) {
@@ -65,6 +64,6 @@ public class PlaytimeListener extends AbstractListener<SunLightPlugin> {
         } catch (final Exception ignored) {
         }
         // Flush and drop the cached history off the main thread.
-        this.plugin.runTaskAsync(() -> this.module.closeSession(player.getUniqueId()));
+        this.plugin.runTaskAsync(() -> this.module.closeSession(player.getUniqueId(), wasAfk));
     }
 }

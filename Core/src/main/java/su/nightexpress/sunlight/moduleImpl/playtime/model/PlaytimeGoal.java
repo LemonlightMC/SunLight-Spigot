@@ -16,11 +16,12 @@ public record PlaytimeGoal(long duration, long remainderWindow, List<String> rew
   public PlaytimeGoal(long duration, long remainderWindow, List<String> rewards) {
     this.duration = duration < 0 ? 0 : duration;
     this.remainderWindow = remainderWindow < 0 ? 0 : remainderWindow;
-    this.rewards = rewards != null && rewards.isEmpty() ? null : rewards;
+    this.rewards = rewards == null || rewards.isEmpty() ? List.of() : List.copyOf(rewards);
   }
 
   public PlaytimeGoal(String duration, String remainderWindow, List<String> rewards) {
-    this(TimeUtil.parseDurationMillis(duration), TimeUtil.parseDurationMillis(remainderWindow), rewards);
+    this(TimeUtil.parseDurationMillis(duration),
+        TimeUtil.parseDurationMillis(remainderWindow), rewards);
   }
 
   public long duration() {
@@ -47,8 +48,8 @@ public record PlaytimeGoal(long duration, long remainderWindow, List<String> rew
 
     @Override
     public void write(final FileConfig config, final String path, final PlaytimeGoal value) {
-      config.set(path + ".duration", value.duration());
-      config.set(path + ".remainder-window", value.remainderWindow());
+      config.set(path + ".duration", String.valueOf(value.duration() / 1000L) + "s");
+      config.set(path + ".remainder-window", String.valueOf(value.remainderWindow() / 1000L) + "s");
       config.set(path + ".rewards", value.rewards());
     }
   }

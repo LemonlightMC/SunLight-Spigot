@@ -149,7 +149,7 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                                                                 GOLD.wrap("→ " + UNDERLINED.wrap("Click to open."))))
                                                 .hideAllComponents(),
                                                 actionContext -> this.module.openTopMenu(actionContext.getPlayer(),
-                                                                PlaytimePeriod.ALLTIME))
+                                                                PlaytimePeriod.ALLTIME, 1))
                                 .slots(38)
                                 .build());
 
@@ -233,7 +233,10 @@ public class PlaytimeStatsMenu extends AbstractMenu {
                 final long today = this.module.currentKeys().day();
                 for (int index = 0; index < RECENT_SLOTS.length; index++) {
                         final long day = today - (RECENT_SLOTS.length - 1 - index);
-                        final long millis = history.getMillis(day);
+                        final long millis;
+                        synchronized (history) {
+                                millis = history.getMillis(day);
+                        }
                         final LocalDate date = LocalDate.ofEpochDay(day);
 
                         final List<String> lore = new ArrayList<>();

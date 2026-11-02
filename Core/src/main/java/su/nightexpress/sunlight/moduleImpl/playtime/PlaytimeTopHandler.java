@@ -25,6 +25,7 @@ public class PlaytimeTopHandler {
     private volatile long topCacheTimestamp;
     private volatile long lastDbScan;
     private volatile boolean topRequested;
+    private volatile Map<UUID, SunUser> lastMerged = Map.of();
 
     /**
      * Day/week/month/year totals scanned in one query, so offline players can be
@@ -46,6 +47,7 @@ public class PlaytimeTopHandler {
         this.topCacheTimestamp = 0L;
         this.lastDbScan = 0L;
         this.topRequested = false;
+        this.lastMerged = Map.of();
     }
 
     public record TopEntry(UUID id, String name, long value) {
@@ -93,7 +95,7 @@ public class PlaytimeTopHandler {
         final boolean useDB = (this.topRequested || this.lastDbScan == 0L)
                 && now - this.lastDbScan > module.getSettings().getTopDbScanInterval() * 50L;
 
-        final Map<UUID, SunUser> merged = new LinkedHashMap<>();
+        final Map<UUID, SunUser> merged = new LinkedHashMap<>(this.lastMerged);
 
         if (useDB) {
             final long scanStart = System.nanoTime();
@@ -105,6 +107,7 @@ public class PlaytimeTopHandler {
             } catch (final Exception exception) {
                 module.debug("Top refresh: database scan failed, falling back to cached users.");
             }
+            merged.clear();
             for (final SunUser persisted : users) {
                 if (persisted == null) {
                     continue;
@@ -120,13 +123,11 @@ public class PlaytimeTopHandler {
                     + ((System.nanoTime() - scanStart) / 1_000_000L) + "ms.");
         }
 
+        // Refresh already-loaded (online) users without hitting the database.
         try {
-            final Collection<SunUser> live = module.userManager().getAll();
-            if (live != null) {
-                for (final SunUser user : live) {
-                    if (user == null) {
-                        continue;
-                    }
+            for (final org.bukkit.entity.Player player : org.bukkit.Bukkit.getOnlinePlayers()) {
+                final SunUser user = module.userManager().getOrFetch(player);
+                if (user != null) {
                     merged.put(user.getId(), user);
                 }
             }
@@ -134,6 +135,7 @@ public class PlaytimeTopHandler {
             // Live data is best-effort; persisted rows still produce a board.
         }
 
+        this.lastMerged = Map.copyOf(merged);
         this.rebuildTopBoards(merged);
         this.topCacheTimestamp = System.currentTimeMillis();
     }

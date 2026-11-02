@@ -77,14 +77,6 @@ public class PlaytimeModule extends Module {
 
     @Override
     protected void loadModule(final FileConfig config) {
-        this.settings.load(config);
-        this.milestoneHandler.loadMilestones(config);
-        config.saveChanges();
-        this.plugin.injectLang(PlaytimeLang.class);
-
-        this.dataManager.init();
-
-        // Must happen before any SunUser is deserialised.
         UserPropertyRegistry.register(PlaytimeProperties.TOTAL);
         UserPropertyRegistry.register(PlaytimeProperties.ARCHIVED_TOTAL);
         UserPropertyRegistry.register(PlaytimeProperties.DAILY_STREAK);
@@ -101,6 +93,13 @@ public class PlaytimeModule extends Module {
         UserPropertyRegistry.register(PlaytimeProperties.REMINDED_MONTH_KEY);
         UserPropertyRegistry.register(PlaytimeProperties.SESSION_START);
         UserPropertyRegistry.register(PlaytimeProperties.MILESTONE_PROGRESS);
+
+        this.settings.load(config);
+        this.milestoneHandler.loadMilestones(config);
+        config.saveChanges();
+        this.plugin.injectLang(PlaytimeLang.class);
+
+        this.dataManager.init();
 
         this.addListener(new PlaytimeListener(this.plugin, this));
         this.addTask(this::tick, this.settings.getTickInterval());
@@ -179,6 +178,12 @@ public class PlaytimeModule extends Module {
         final SunUser user = this.userManager.getOrFetch(playerId).orElse(null);
         if (user != null) {
             history.setArchivedTotal(user.getPropertyOrDefault(PlaytimeProperties.ARCHIVED_TOTAL));
+            // Preserve a all-time total (stored directly in playtime_total) when
+            // there is no daily history to derive it from.
+            if (history.isEmpty() && user.getPropertyOrDefault(PlaytimeProperties.ARCHIVED_TOTAL) <= 0L
+                    && user.getPropertyOrDefault(PlaytimeProperties.TOTAL) > 0L) {
+                history.setArchivedTotal(user.getPropertyOrDefault(PlaytimeProperties.TOTAL));
+            }
         }
         this.prune(history, user);
 
@@ -207,14 +212,18 @@ public class PlaytimeModule extends Module {
      * the credit a short session would be rounded down to nothing, which matters
      * because the interval is a minute rather than a second.
      */
-    public void closeSession(final UUID playerId) {
+    public void closeSession(final UUID playerId, final boolean wasAfkAtQuit) {
         final PlaytimeHistory history = this.histories.get(playerId);
         if (history == null) {
             return;
         }
-        this.accrueRemainder(playerId, history);
+        this.accrueRemainder(playerId, history, wasAfkAtQuit);
         this.flush(history);
-        this.histories.remove(playerId, history);
+        // Do not evict the history while the player is online again: a fast
+        // reconnect would otherwise leave them untracked.
+        if (org.bukkit.Bukkit.getPlayer(playerId) == null) {
+            this.histories.remove(playerId, history);
+        }
     }
 
     /**
@@ -222,7 +231,7 @@ public class PlaytimeModule extends Module {
      * for. Without this a short session would be rounded down to nothing, which
      * matters because the interval is a minute rather than a second.
      */
-    private void accrueRemainder(final UUID playerId, final PlaytimeHistory history) {
+    private void accrueRemainder(final UUID playerId, final PlaytimeHistory history, final boolean wasAfkAtQuit) {
         final long now = System.currentTimeMillis();
         synchronized (history) {
             final long last = history.getLastAccrualAt();
@@ -238,11 +247,16 @@ public class PlaytimeModule extends Module {
                 return;
             }
 
-            final Player player = Bukkit.getPlayer(playerId);
             final boolean excludeAfk = this.settings.isExcludeAfkEnabled();
             final var afkProvider = this.plugin.afkProvider();
-            if (player != null && excludeAfk && afkProvider.isPresent() && afkProvider.get().isAfk(player)) {
-                return;
+            if (excludeAfk && afkProvider.isPresent()) {
+                if (wasAfkAtQuit) {
+                    return;
+                }
+                final Player player = Bukkit.getPlayer(playerId);
+                if (player != null && afkProvider.get().isAfk(player)) {
+                    return;
+                }
             }
 
             history.add(this.currentKeys().day(), remainder);
@@ -293,7 +307,7 @@ public class PlaytimeModule extends Module {
         if (retention <= 0L) {
             return;
         }
-        final long cutoff = this.currentKeys().day() - retention;
+        final long cutoff = this.currentKeys().day() - retention + 1L;
         final long folded = history.prune(null, cutoff, true);
         if (folded <= 0L) {
             return;
@@ -313,7 +327,9 @@ public class PlaytimeModule extends Module {
             }
             final PlaytimeHistory history = this.histories.get(player.getUniqueId());
             if (history != null) {
-                this.writeCaches(user, history);
+                synchronized (history) {
+                    this.writeCaches(user, history);
+                }
             }
             if (user.getPropertyOrDefault(PlaytimeProperties.SESSION_START) <= 0L) {
                 user.setProperty(PlaytimeProperties.SESSION_START, System.currentTimeMillis());
@@ -482,7 +498,9 @@ public class PlaytimeModule extends Module {
 
         final PlaytimeHistory cached = this.histories.get(user.getId());
         if (cached != null) {
-            return cached.getMillis(this.currentKeys().day(), resolved);
+            synchronized (cached) {
+                return cached.getMillis(this.currentKeys().day(), resolved);
+            }
         }
         if (resolved == PlaytimePeriod.ALLTIME) {
             return Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.TOTAL));
@@ -499,7 +517,8 @@ public class PlaytimeModule extends Module {
      * online has no running session.
      */
     public long getSessionPlaytime(final SunUser user) {
-        if (user == null || !this.histories.containsKey(user.getId())) {
+        if (user == null || !this.histories.containsKey(user.getId())
+                || org.bukkit.Bukkit.getPlayer(user.getId()) == null) {
             return 0L;
         }
         final long start = user.getPropertyOrDefault(PlaytimeProperties.SESSION_START);
@@ -593,7 +612,9 @@ public class PlaytimeModule extends Module {
         final long today = this.currentKeys().day();
         final PlaytimeHistory history = this.histories.get(user.getId());
         if (history != null) {
-            return history.dailyStreak(today);
+            synchronized (history) {
+                return history.dailyStreak(today);
+            }
         }
         final int cached = Math.max(0, user.getPropertyOrDefault(PlaytimeProperties.DAILY_STREAK));
         final long last = this.getLastPlayedDay(user);
@@ -604,7 +625,9 @@ public class PlaytimeModule extends Module {
         final long today = this.currentKeys().day();
         final PlaytimeHistory history = this.histories.get(user.getId());
         if (history != null) {
-            return history.weeklyStreak(today);
+            synchronized (history) {
+                return history.weeklyStreak(today);
+            }
         }
         final int cached = Math.max(0, user.getPropertyOrDefault(PlaytimeProperties.WEEKLY_STREAK));
         // Valid while the last played day is in this Monday-week or the previous one.
@@ -615,7 +638,9 @@ public class PlaytimeModule extends Module {
     public int getDaysPlayed(final SunUser user) {
         final PlaytimeHistory history = this.histories.get(user.getId());
         if (history != null) {
-            return history.daysPlayed();
+            synchronized (history) {
+                return history.daysPlayed();
+            }
         }
         return Math.max(0, user.getPropertyOrDefault(PlaytimeProperties.DAYS_PLAYED));
     }
@@ -624,8 +649,10 @@ public class PlaytimeModule extends Module {
     public long getFirstPlayedDay(final SunUser user) {
         final PlaytimeHistory history = this.histories.get(user.getId());
         if (history != null) {
-            final Long first = history.firstDay();
-            return first == null ? 0L : first;
+            synchronized (history) {
+                final Long first = history.firstDay();
+                return first == null ? 0L : first;
+            }
         }
         return Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.FIRST_PLAYED_DAY));
     }
@@ -634,8 +661,10 @@ public class PlaytimeModule extends Module {
     public long getLastPlayedDay(final SunUser user) {
         final PlaytimeHistory history = this.histories.get(user.getId());
         if (history != null) {
-            final Long last = history.lastDay();
-            return last == null ? 0L : last;
+            synchronized (history) {
+                final Long last = history.lastDay();
+                return last == null ? 0L : last;
+            }
         }
         return Math.max(0L, user.getPropertyOrDefault(PlaytimeProperties.LAST_PLAYED_DAY));
     }
@@ -861,8 +890,8 @@ public class PlaytimeModule extends Module {
         return new PlaytimeStatsMenu(this, target.getId()).show(this.plugin, viewer);
     }
 
-    public boolean openTopMenu(final Player viewer, final PlaytimePeriod period) {
-        return new PlaytimeTopMenu(this, period).show(this.plugin, viewer);
+    public boolean openTopMenu(final Player viewer, final PlaytimePeriod period, final int page) {
+        return new PlaytimeTopMenu(this, period, page).show(this.plugin, viewer);
     }
 
     public boolean openCalendarMenu(final Player viewer, final SunUser target, final YearMonth month) {

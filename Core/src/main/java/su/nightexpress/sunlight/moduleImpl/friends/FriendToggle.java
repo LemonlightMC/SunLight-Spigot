@@ -3,7 +3,6 @@ package su.nightexpress.sunlight.moduleImpl.friends;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.user.property.UserProperty;
 

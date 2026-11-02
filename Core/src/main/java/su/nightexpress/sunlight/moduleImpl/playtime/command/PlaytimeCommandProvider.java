@@ -214,7 +214,7 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
         }
 
         if (sender instanceof final Player player) {
-            return this.module.openTopMenu(player, period) ? 1 : 0;
+            return this.module.openTopMenu(player, period, page) ? 1 : 0;
         }
         final List<TopEntry> entries = new ArrayList<>(this.module.topHandler().getTop(period));
         final int totalPages = Math.max(1, (int) Math.ceil(entries.size() / (double) PlaytimeModule.TOP_PAGE_SIZE));
@@ -414,6 +414,11 @@ public class PlaytimeCommandProvider extends CommandProvider<PlaytimeModule> {
             return 0;
         }
         final String scope = Utils.lowercase(scopeRaw.trim());
+
+        if (!List.of("all", "alltime", "total", "year", "month", "week", "day", "session", "milestones", "milestone")
+                .contains(scope)) {
+            return 0;
+        }
 
         final CommandArgumentConstants.Target target = CommandArgumentConstants.target(arguments);
         if (target == null) {
