@@ -309,16 +309,17 @@ public class FriendsModule extends Module implements FriendsProvider {
         if (owner == null || friend == null || owner.getId().equals(friend.getId())) {
             return false;
         }
+        this.plugin.runTaskAsync(() -> {
+            this.addRow(owner, friend);
+            this.addRow(friend, owner);
+        });
 
-        this.addRow(owner, friend);
-        this.addRow(friend, owner);
         return true;
     }
 
-    private boolean addRow(final SunUser owner, final SunUser friend) {
+    protected boolean addRow(final SunUser owner, final SunUser friend) {
         // Another server in the same sync window may already have written this row, in
-        // which case
-        // this one would be a duplicate rather than an update.
+        // which case this one would be a duplicate rather than an update.
         if (this.dataManager.existsInDatabase(owner.getId(), friend.getId())) {
             return false;
         }
@@ -331,7 +332,7 @@ public class FriendsModule extends Module implements FriendsProvider {
         }
 
         this.repository.upsert(record);
-        this.plugin.runTaskAsync(() -> this.dataManager.insertFriend(record));
+        this.dataManager.insertFriend(record);
 
         this.plugin.getPluginManager().callEvent(new PlayerFriendChangeEvent(record, true));
         return true;
@@ -339,25 +340,23 @@ public class FriendsModule extends Module implements FriendsProvider {
 
     @Override
     public boolean removeFriend(final UUID playerId, final UUID otherId) {
-        final List<FriendRecord> rows = this.repository.getBothSides(playerId, otherId);
-        if (rows.isEmpty()) {
+        final FriendRecord owned = this.getFriend(playerId, otherId);
+        final FriendRecord reversed = this.getFriend(otherId, playerId);
+
+        return owned != null && removeRow(owned) || reversed != null && removeRow(reversed);
+    }
+
+    protected boolean removeRow(final FriendRecord record) {
+        final PreFriendChangeEvent pre = new PreFriendChangeEvent(record, true);
+        this.plugin.getPluginManager().callEvent(pre);
+        if (pre.isCancelled()) {
             return false;
         }
 
-        boolean removed = false;
-        for (final FriendRecord record : rows) {
-            final PreFriendChangeEvent pre = new PreFriendChangeEvent(record, true);
-            this.plugin.getPluginManager().callEvent(pre);
-            if (pre.isCancelled()) {
-                continue;
-            }
-
-            this.repository.remove(record);
-            this.plugin.runTaskAsync(() -> this.dataManager.deleteFriend(record));
-            this.plugin.getPluginManager().callEvent(new PlayerFriendChangeEvent(record, false));
-            removed = true;
-        }
-        return removed;
+        this.repository.remove(record);
+        this.plugin.runTaskAsync(() -> this.dataManager.deleteFriend(record));
+        this.plugin.getPluginManager().callEvent(new PlayerFriendChangeEvent(record, false));
+        return true;
     }
 
     @Override

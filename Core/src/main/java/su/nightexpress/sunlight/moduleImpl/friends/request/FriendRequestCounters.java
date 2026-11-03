@@ -1,5 +1,6 @@
-package su.nightexpress.sunlight.moduleImpl.friends;
+package su.nightexpress.sunlight.moduleImpl.friends.request;
 
+import su.nightexpress.sunlight.moduleImpl.friends.FriendsProperties;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.TimeUtil;
 

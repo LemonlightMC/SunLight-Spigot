@@ -2,6 +2,7 @@ package su.nightexpress.sunlight.moduleImpl.friends.repository;
 
 import su.nightexpress.sunlight.moduleImpl.friends.model.BlockRecord;
 import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.user.SunUser;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -134,22 +135,6 @@ public class FriendsRepository {
 
     public boolean isFriend(final UUID playerId, final UUID otherId) {
         return this.getFriend(playerId, otherId) != null;
-    }
-
-    /** Both sides of a friendship, so a removal can take them together. */
-    public List<FriendRecord> getBothSides(final UUID playerId, final UUID otherId) {
-        final List<FriendRecord> list = new ArrayList<>(2);
-
-        final FriendRecord owned = this.getFriend(playerId, otherId);
-        if (owned != null) {
-            list.add(owned);
-        }
-        final FriendRecord reversed = this.getFriend(otherId, playerId);
-        if (reversed != null) {
-            list.add(reversed);
-        }
-
-        return list;
     }
 
     public FriendRecord getFavorite(final UUID playerId) {
