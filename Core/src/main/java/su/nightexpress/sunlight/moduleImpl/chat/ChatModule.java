@@ -56,6 +56,7 @@ import su.nightexpress.sunlight.moduleImpl.chat.report.ReportHandler;
 import su.nightexpress.sunlight.moduleImpl.chat.report.ReportPacketsHandler;
 import su.nightexpress.sunlight.moduleImpl.chat.report.ReportProtocolHandler;
 import su.nightexpress.sunlight.moduleImpl.chat.rule.WordFilter;
+import su.nightexpress.sunlight.moduleImpl.chat.dialog.SpyDialog;
 import su.nightexpress.sunlight.moduleImpl.chat.spy.SpyLogger;
 import su.nightexpress.sunlight.moduleImpl.chat.spy.SpyType;
 import su.nightexpress.sunlight.user.SunUser;
@@ -328,6 +329,8 @@ public class ChatModule extends Module implements ChatProvider {
         } catch (IOException exception) {
             exception.printStackTrace();
         }
+
+        this.dialogRegistry.register(SpyDialog.SPY, () -> new SpyDialog(this));
     }
 
     private void loadReportHandler() {
@@ -441,6 +444,10 @@ public class ChatModule extends Module implements ChatProvider {
 
     public void removeFromAllChannels(Player player) {
         this.channelRepository.getChannels().forEach(channel -> channel.removePlayer(player));
+    }
+
+    public void openSpyDialog(Player player) {
+        this.dialogRegistry.show(player, SpyDialog.SPY, "", null);
     }
 
     public Set<Player> getSpies(SpyType type) {
