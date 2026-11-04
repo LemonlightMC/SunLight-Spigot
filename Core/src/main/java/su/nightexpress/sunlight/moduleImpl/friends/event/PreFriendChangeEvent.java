@@ -4,7 +4,7 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRecord;
 import su.nightexpress.sunlight.user.SunUser;
 
 /**

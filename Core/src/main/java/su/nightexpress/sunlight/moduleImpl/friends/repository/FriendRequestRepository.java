@@ -1,6 +1,5 @@
-package su.nightexpress.sunlight.moduleImpl.friends.request;
+package su.nightexpress.sunlight.moduleImpl.friends.repository;
 
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRequest;
 import su.nightexpress.sunlight.user.SunUser;
 
 import java.util.ArrayList;

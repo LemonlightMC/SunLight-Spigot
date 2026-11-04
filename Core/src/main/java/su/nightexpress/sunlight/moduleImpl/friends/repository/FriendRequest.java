@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.friends.model;
+package su.nightexpress.sunlight.moduleImpl.friends.repository;
 
 import su.nightexpress.sunlight.api.provider.dto.FriendRequestHandle;
 import su.nightexpress.sunlight.user.SunUser;

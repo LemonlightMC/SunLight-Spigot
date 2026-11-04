@@ -29,7 +29,7 @@ import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRequest;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequest;
 
 import java.util.ArrayList;
 import java.util.List;

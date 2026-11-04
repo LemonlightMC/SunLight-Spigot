@@ -27,7 +27,7 @@ import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.friends.dialog.FriendBlockDialog;
 import su.nightexpress.sunlight.moduleImpl.friends.dialog.FriendRemoveDialog;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRecord;
 
 import java.util.List;
 import java.util.UUID;

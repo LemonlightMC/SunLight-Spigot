@@ -20,7 +20,7 @@ import su.nightexpress.sunlight.moduleImpl.friends.FriendsConfig;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsPerms;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRequest;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequest;
 import su.nightexpress.sunlight.utils.Utils;
 
 /**

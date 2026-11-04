@@ -19,8 +19,8 @@ import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsPerms;
 import su.nightexpress.sunlight.moduleImpl.friends.event.PlayerFriendRequestEvent;
 import su.nightexpress.sunlight.moduleImpl.friends.event.PreFriendRequestEvent;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRequest;
-import su.nightexpress.sunlight.moduleImpl.friends.request.FriendRequestCounters;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequest;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequestCounters;
 import su.nightexpress.sunlight.teleport.TeleportContext;
 import su.nightexpress.sunlight.teleport.TeleportFlag;
 import su.nightexpress.sunlight.teleport.TeleportType;
@@ -270,9 +270,17 @@ public class FriendsUserInterface {
   /** Declines an incoming request addressed to that player. */
   public boolean declineIncoming(final Player player, final String senderName) {
     final List<FriendRequest> incoming = module.requestRepository().getIncoming(player.getUniqueId());
-    final FriendRequest request = senderName == null
-        ? (incoming.isEmpty() ? null : incoming.getLast())
-        : incoming.stream().filter(entry -> entry.isSender(senderName)).findFirst().orElse(null);
+
+    FriendRequest request = null;
+    if (senderName == null) {
+      request = (incoming.isEmpty() ? null : incoming.getLast());
+    } else {
+      for (FriendRequest tempRequest : incoming) {
+        if (tempRequest.isSender(senderName)) {
+          request = tempRequest;
+        }
+      }
+    }
 
     if (request == null) {
       module.sendPrefixed(FriendsLang.REQUEST_NOTHING_PENDING, player, builder -> builder
@@ -282,8 +290,9 @@ public class FriendsUserInterface {
 
     module.requestRepository().remove(request);
 
+    final String requestSenderName = request.getSenderName();
     module.sendPrefixed(FriendsLang.REQUEST_DECLINE_FEEDBACK, player,
-        builder -> builder.with(CommonPlaceholders.PLAYER_NAME, request::getSenderName));
+        builder -> builder.with(CommonPlaceholders.PLAYER_NAME, () -> requestSenderName));
 
     final Player sender = Utils.getPlayer(request.getSenderId());
     if (sender != null) {
@@ -296,9 +305,17 @@ public class FriendsUserInterface {
   /** Accepts an incoming request addressed to that player. */
   public boolean acceptIncoming(final Player player, final String senderName) {
     final List<FriendRequest> incoming = module.requestRepository().getIncoming(player.getUniqueId());
-    final FriendRequest request = senderName == null
-        ? (incoming.isEmpty() ? null : incoming.getLast())
-        : incoming.stream().filter(entry -> entry.isSender(senderName)).findFirst().orElse(null);
+
+    FriendRequest request = null;
+    if (senderName == null) {
+      request = (incoming.isEmpty() ? null : incoming.getLast());
+    } else {
+      for (FriendRequest tempRequest : incoming) {
+        if (tempRequest.isSender(senderName)) {
+          request = tempRequest;
+        }
+      }
+    }
 
     if (request == null) {
       module.sendPrefixed(FriendsLang.REQUEST_NOTHING_PENDING, player, builder -> builder
@@ -307,8 +324,8 @@ public class FriendsUserInterface {
     }
 
     // Re-checked rather than trusted from the send: this player's own list may have
-    // grown while
-    // the request sat pending, and the sender's may have shrunk by then too.
+    // grown while the request sat pending, and the sender's may have shrunk
+    // by then too.
     if (!checkAddLimit(player)) {
       return false;
     }
@@ -316,8 +333,9 @@ public class FriendsUserInterface {
     module.requestRepository().remove(request);
     module.addFriend(player.getUniqueId(), request.getSenderId());
 
+    final String requestSenderName = request.getSenderName();
     module.sendPrefixed(FriendsLang.REQUEST_ACCEPT_FEEDBACK, player,
-        builder -> builder.with(CommonPlaceholders.PLAYER_NAME, request::getSenderName));
+        builder -> builder.with(CommonPlaceholders.PLAYER_NAME, () -> requestSenderName));
 
     final Player sender = Utils.getPlayer(request.getSenderId());
     if (sender != null) {
@@ -326,8 +344,7 @@ public class FriendsUserInterface {
       module.notifyWatchers(player, sender);
     } else {
       // Accepted while they are offline, which is the common case: the friendship is
-      // real,
-      // they are told about it when they next log in through the login alert.
+      // real, they are told about it when they next log in through the login alert.
       sendStoredAccept(request.getSenderId(), request.getSenderName());
     }
     return true;
@@ -337,10 +354,9 @@ public class FriendsUserInterface {
    * Tells an offline sender their request was accepted.
    * <p>
    * There is no offline message channel in SunLight, so this is a best-effort
-   * send to a cached
-   * player object; when that fails the friendship itself is unaffected and they
-   * are told by the
-   * login alert instead.
+   * send to a cached player object; when that fails the friendship itself is
+   * unaffected
+   * and they are told by the login alert instead.
    */
   private void sendStoredAccept(final UUID playerId, final String senderName) {
     final Player offline = Utils.getPlayer(playerId);
@@ -473,9 +489,17 @@ public class FriendsUserInterface {
   /** Withdraws a request this player has sent. */
   public boolean cancelRequest(final Player player, final String targetName) {
     final List<FriendRequest> outgoing = module.requestRepository().getOutgoing(player.getUniqueId());
-    final FriendRequest request = targetName == null
-        ? (outgoing.isEmpty() ? null : outgoing.getLast())
-        : outgoing.stream().filter(entry -> entry.isTarget(targetName)).findFirst().orElse(null);
+    FriendRequest request = null;
+
+    if (targetName == null) {
+      request = (outgoing.isEmpty() ? null : outgoing.getLast());
+    } else {
+      for (FriendRequest tempRequest : outgoing) {
+        if (tempRequest.isTarget(targetName)) {
+          request = tempRequest;
+        }
+      }
+    }
 
     if (request == null) {
       module.sendPrefixed(FriendsLang.REQUEST_NOTHING_SENT, player, builder -> builder
@@ -485,8 +509,9 @@ public class FriendsUserInterface {
 
     module.requestRepository().remove(request);
 
+    final String requestTargetName = request.getTargetName();
     module.sendPrefixed(FriendsLang.REQUEST_CANCEL_FEEDBACK, player,
-        builder -> builder.with(CommonPlaceholders.PLAYER_NAME, request::getTargetName));
+        builder -> builder.with(CommonPlaceholders.PLAYER_NAME, () -> requestTargetName));
 
     final Player target = Utils.getPlayer(request.getTargetId());
     if (target != null) {

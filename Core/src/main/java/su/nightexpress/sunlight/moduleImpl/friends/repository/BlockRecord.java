@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.friends.model;
+package su.nightexpress.sunlight.moduleImpl.friends.repository;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

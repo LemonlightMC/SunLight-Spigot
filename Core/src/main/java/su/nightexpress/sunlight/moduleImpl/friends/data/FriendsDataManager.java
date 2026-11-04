@@ -11,8 +11,8 @@ import su.nightexpress.nightcore.db.statement.template.UpdateStatement;
 import su.nightexpress.nightcore.db.table.Table;
 import su.nightexpress.sunlight.data.DataHandler;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
-import su.nightexpress.sunlight.moduleImpl.friends.model.BlockRecord;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.BlockRecord;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRecord;
 import su.nightexpress.sunlight.user.SunUser;
 
 import java.sql.ResultSet;

@@ -1,9 +1,5 @@
 package su.nightexpress.sunlight.moduleImpl.friends.repository;
 
-import su.nightexpress.sunlight.moduleImpl.friends.model.BlockRecord;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
-import su.nightexpress.sunlight.user.SunUser;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;

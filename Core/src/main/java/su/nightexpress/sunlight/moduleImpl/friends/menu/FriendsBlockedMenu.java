@@ -24,7 +24,7 @@ import su.nightexpress.nightcore.util.time.TimeFormatType;
 import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
-import su.nightexpress.sunlight.moduleImpl.friends.model.BlockRecord;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.BlockRecord;
 
 import java.util.List;
 import java.util.stream.IntStream;

@@ -6,7 +6,7 @@ import su.nightexpress.nightcore.util.placeholder.TypedPlaceholder;
 import su.nightexpress.nightcore.util.time.TimeFormatType;
 import su.nightexpress.nightcore.util.time.TimeFormats;
 import su.nightexpress.sunlight.hook.placeholder.PlaceholderRegistry;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRecord;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.utils.TimeUtil;
 import su.nightexpress.sunlight.utils.Utils;

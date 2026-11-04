@@ -28,7 +28,7 @@ import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsPlaceholders;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
-import su.nightexpress.sunlight.moduleImpl.friends.model.FriendRecord;
+import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRecord;
 
 import java.util.List;
 import java.util.UUID;
