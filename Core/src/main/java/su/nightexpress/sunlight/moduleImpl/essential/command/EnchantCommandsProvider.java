@@ -58,7 +58,7 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
             .chatMessage(
                     GRAY.wrap("There is no item in the " + WHITE.wrap(PLAYER_DISPLAY_NAME) + "'s "
                             + SOFT_RED.wrap(
-                            GENERIC_SLOT)
+                                    GENERIC_SLOT)
                             + " slot."));
 
     private static final MessageLocale MESSAGE_ERROR_NO_ENCHANT = LangEntry
@@ -74,11 +74,11 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
 
     private static final MessageLocale MESSAGE_ENCHANTED_FEEDBACK = LangEntry.builder(
             "Command.Enchant.Enchanted.Target").chatMessage(
-            Sound.BLOCK_ENCHANTMENT_TABLE_USE,
-            GRAY.wrap("You have enchanted " + WHITE.wrap(GENERIC_ITEM) + " with " +
-                    ORANGE.wrap(GENERIC_NAME + " " + GENERIC_AMOUNT) + " in " +
-                    WHITE.wrap(PLAYER_DISPLAY_NAME) + "'s "
-                    + WHITE.wrap(GENERIC_TYPE) + " slot."));
+                    Sound.BLOCK_ENCHANTMENT_TABLE_USE,
+                    GRAY.wrap("You have enchanted " + WHITE.wrap(GENERIC_ITEM) + " with " +
+                            ORANGE.wrap(GENERIC_NAME + " " + GENERIC_AMOUNT) + " in " +
+                            WHITE.wrap(PLAYER_DISPLAY_NAME) + "'s "
+                            + WHITE.wrap(GENERIC_TYPE) + " slot."));
 
     private static final MessageLocale MESSAGE_ENCHANTED_NOTIFY = LangEntry
             .builder("Command.Enchant.Enchanted.Notify")
@@ -86,36 +86,36 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
                     Sound.BLOCK_ENCHANTMENT_TABLE_USE,
                     GRAY.wrap("Your " + WHITE.wrap(GENERIC_ITEM) + " has been enchanted with "
                             + ORANGE.wrap(GENERIC_NAME +
-                            " " + GENERIC_AMOUNT)
+                                    " " + GENERIC_AMOUNT)
                             + "."));
 
     private static final MessageLocale MESSAGE_DISENCHANTED_SPECIFIC_FEEDBACK = LangEntry.builder(
             "Command.Disenchant.Specific.Target").chatMessage(
-            Sound.BLOCK_GRINDSTONE_USE,
-            GRAY.wrap("You have removed " + ORANGE.wrap(GENERIC_ENCHANTMENT) + " from " +
-                    WHITE.wrap(GENERIC_ITEM) + " in " +
-                    WHITE.wrap(PLAYER_DISPLAY_NAME) + "'s "
-                    + WHITE.wrap(GENERIC_TYPE) + " slot."));
+                    Sound.BLOCK_GRINDSTONE_USE,
+                    GRAY.wrap("You have removed " + ORANGE.wrap(GENERIC_ENCHANTMENT) + " from " +
+                            WHITE.wrap(GENERIC_ITEM) + " in " +
+                            WHITE.wrap(PLAYER_DISPLAY_NAME) + "'s "
+                            + WHITE.wrap(GENERIC_TYPE) + " slot."));
 
     private static final MessageLocale MESSAGE_DISENCHANTED_SPECIFIC_NOTIFY = LangEntry.builder(
             "Command.Disenchant.Specific.Notify").chatMessage(
-            Sound.BLOCK_GRINDSTONE_USE,
-            GRAY.wrap("Your " + WHITE.wrap(GENERIC_ITEM) + " has been disenchanted from "
-                    + ORANGE.wrap(
-                    GENERIC_ENCHANTMENT)
-                    + "."));
+                    Sound.BLOCK_GRINDSTONE_USE,
+                    GRAY.wrap("Your " + WHITE.wrap(GENERIC_ITEM) + " has been disenchanted from "
+                            + ORANGE.wrap(
+                                    GENERIC_ENCHANTMENT)
+                            + "."));
 
     private static final MessageLocale MESSAGE_DISENCHANTED_ALL_FEEDBACK = LangEntry.builder(
             "Command.Disenchant.All.Target").chatMessage(
-            Sound.BLOCK_GRINDSTONE_USE,
-            GRAY.wrap("You have disenchanted " + WHITE.wrap(GENERIC_ITEM) + " in "
-                    + WHITE.wrap(PLAYER_DISPLAY_NAME) +
-                    "'s " + WHITE.wrap(GENERIC_TYPE) + " slot."));
+                    Sound.BLOCK_GRINDSTONE_USE,
+                    GRAY.wrap("You have disenchanted " + WHITE.wrap(GENERIC_ITEM) + " in "
+                            + WHITE.wrap(PLAYER_DISPLAY_NAME) +
+                            "'s " + WHITE.wrap(GENERIC_TYPE) + " slot."));
 
     private static final MessageLocale MESSAGE_DISENCHANTED_ALL_NOTIFY = LangEntry.builder(
             "Command.Disenchant.All.Notify").chatMessage(
-            Sound.BLOCK_GRINDSTONE_USE,
-            GRAY.wrap("Your " + WHITE.wrap(GENERIC_ITEM) + " has been disenchanted."));
+                    Sound.BLOCK_GRINDSTONE_USE,
+                    GRAY.wrap("Your " + WHITE.wrap(GENERIC_ITEM) + " has been disenchanted."));
 
     public EnchantCommandsProvider(final EssentialModule module) {
         super(module, "enchant");
@@ -197,7 +197,7 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
             }
 
             final ItemMeta meta = item.getItemMeta();
-            if (meta instanceof EnchantmentStorageMeta storageMeta) {
+            if (meta instanceof final EnchantmentStorageMeta storageMeta) {
                 storageMeta.addStoredEnchant(enchant, level, true);
                 item.setItemMeta(storageMeta);
             } else {
@@ -255,7 +255,7 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
             final ItemMeta meta = item.getItemMeta();
 
             if (hasEnchant) {
-                final boolean isEnchanted = (meta instanceof EnchantmentStorageMeta storageMeta
+                final boolean isEnchanted = (meta instanceof final EnchantmentStorageMeta storageMeta
                         && storageMeta.hasStoredEnchant(enchant)
                         || meta.hasEnchant(enchant));
                 if (!isEnchanted) {
@@ -268,7 +268,7 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
                 }
             }
 
-            if (meta instanceof EnchantmentStorageMeta storageMeta) {
+            if (meta instanceof final EnchantmentStorageMeta storageMeta) {
                 if (hasEnchant) {
                     storageMeta.removeStoredEnchant(enchant);
                 } else {
@@ -293,7 +293,8 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
                                 .with(GENERIC_SLOT, () -> Lang.EQUIPMENT_SLOT.getLocalized(slot))
                                 .with(GENERIC_ITEM, () -> ItemUtil.getNameSerialized(item))
                                 .with(GENERIC_ENCHANTMENT, () -> hasEnchant
-                                        ? LangUtil.getSerializedName(enchant) : ""));
+                                        ? LangUtil.getSerializedName(enchant)
+                                        : ""));
             }
 
             if (!target.silent()) {
@@ -304,7 +305,8 @@ public class EnchantCommandsProvider extends CommandProvider<EssentialModule> {
                                 .with(GENERIC_SLOT, () -> Lang.EQUIPMENT_SLOT.getLocalized(slot))
                                 .with(GENERIC_ITEM, () -> ItemUtil.getNameSerialized(item))
                                 .with(GENERIC_ENCHANTMENT, () -> hasEnchant
-                                        ? LangUtil.getSerializedName(enchant) : ""));
+                                        ? LangUtil.getSerializedName(enchant)
+                                        : ""));
             }
         });
     }

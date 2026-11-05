@@ -18,9 +18,9 @@ import su.nightexpress.sunlight.command.CommandProvider;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
 
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_DISPLAY_NAME;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.GENERIC_AMOUNT;
-import static su.nightexpress.sunlight.SLPlaceholders.PLAYER_DISPLAY_NAME;
 
 public class FlySpeedCommandProvider extends CommandProvider<EssentialModule> {
 
@@ -28,7 +28,7 @@ public class FlySpeedCommandProvider extends CommandProvider<EssentialModule> {
     private static final float MAX_SPEED = 1.0F;
     private static final int SPEEDS_AMOUNT = 10;
 
-    // TODO Per speed permission
+    // TODO: Per speed permission
 
     private static final String PERMISSION = EssentialPerms.COMMAND + ".flyspeed";
     private static final String PERMISSION_OTHERS = EssentialPerms.COMMAND + ".flyspeed.others";
@@ -73,18 +73,16 @@ public class FlySpeedCommandProvider extends CommandProvider<EssentialModule> {
             return 0;
         }
 
-        final Object valueArg = arguments.get(CommandArgumentConstants.VALUE);
-        if (!(valueArg instanceof final Integer value)) {
+        if (!(arguments.get(CommandArgumentConstants.VALUE) instanceof final Integer value)) {
             return 0;
         }
-
         final int speed = Math.clamp(value, 1, SPEEDS_AMOUNT);
 
         return target.runAs(this.module, sender, PERMISSION_OTHERS, (user, player) -> {
             final float realSpeed = DEF_SPEED
                     + (MAX_SPEED - DEF_SPEED) * (speed - 1) / (SPEEDS_AMOUNT - 1);
-
-            player.setFlySpeed(realSpeed);
+                    
+            module.setFlySpeed(player, realSpeed);
 
             if (sender != player) {
                 this.module.sendPrefixed(MESSAGE_SET_FEEDBACK, sender,

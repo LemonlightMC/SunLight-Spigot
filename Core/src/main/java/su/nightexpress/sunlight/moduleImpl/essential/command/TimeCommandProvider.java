@@ -35,13 +35,10 @@ import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.*;
 
 public class TimeCommandProvider extends CommandProvider<EssentialModule> {
-    public static final long MODIFIER = 1000L;
-    public static final long MAX_TICKS = 24L * MODIFIER;
+    public static final long MAX_TICKS = 24L * 1000;
     public static final long MIN_TICKS = 0L;
 
     private static final String COMMAND_ROOT = "time";
-    private static final String COMMAND_SHOW = "show";
-    private static final String COMMAND_SET = "set";
 
     private static final String PERMISSION_ROOT = EssentialPerms.COMMAND + ".time.root";
     private static final String PERMISSION_SHOW = EssentialPerms.COMMAND + ".time.show";
@@ -87,7 +84,7 @@ public class TimeCommandProvider extends CommandProvider<EssentialModule> {
                     .under(COMMAND_ROOT);
         });
 
-        this.register(COMMAND_SHOW, command -> command
+        this.register("show", command -> command
                 .withFullDescription(DESCRIPTION_SHOW.text())
                 .withPermission(PERMISSION_SHOW)
                 .withOptionalArguments(new WorldArgument(CommandArgumentConstants.WORLD))
@@ -96,19 +93,18 @@ public class TimeCommandProvider extends CommandProvider<EssentialModule> {
                 }))
                 .under(COMMAND_ROOT);
 
-        this.register(COMMAND_SET, command -> command
+        this.register("set", command -> command
                 .withFullDescription(DESCRIPTION_SET_TICKS.text())
                 .withPermission(PERMISSION_SET)
                 .withArguments(new IntegerArgument(CommandArgumentConstants.TIME, (int) MIN_TICKS, (int) MAX_TICKS)
                         .replaceSuggestions(ArgumentSuggestions.stringCollection(
                                 info -> IntStream.range(0, 25)
                                         .boxed()
-                                        .map(hour -> hour * MODIFIER)
+                                        .map(hour -> hour * 1000)
                                         .map(String::valueOf).toList())))
                 .withOptionalArguments(new WorldArgument(CommandArgumentConstants.WORLD))
                 .executes((sender, arguments) -> {
-                    final Object timeArg = arguments.get(CommandArgumentConstants.TIME);
-                    if (!(timeArg instanceof final Integer ticks)) {
+                    if (!(arguments.get(CommandArgumentConstants.TIME) instanceof final Integer ticks)) {
                         return 0;
                     }
                     return this.setWorldTime(sender, arguments, ticks);
@@ -126,7 +122,7 @@ public class TimeCommandProvider extends CommandProvider<EssentialModule> {
             return 0;
         }
 
-        final long worldTime = clampTicks(ticks);
+        final long worldTime = Math.clamp(ticks, MIN_TICKS, MAX_TICKS);
         world.setTime(worldTime);
         final LocalTime localTime = getTimeOfTicks(world.getTime());
 
@@ -150,9 +146,8 @@ public class TimeCommandProvider extends CommandProvider<EssentialModule> {
                 .replace(GENERIC_TICKS, NumberUtil.format(worldTicks))
                 .replace(GENERIC_GLOBAL, SLUtils.formatTime(TimeUtil.getCurrentTime()));
 
-        final String text = String.join("\n",
-                replacer.apply(this.module.settings().timeDisplayFormat.get()));
-        Players.sendMessage(sender, text);
+        Players.sendMessage(sender, String.join("\n",
+                replacer.apply(this.module.settings().timeDisplayFormat.get())));
         return 1;
     }
 
@@ -162,11 +157,9 @@ public class TimeCommandProvider extends CommandProvider<EssentialModule> {
      * @return {@code null} when the sender is not a player and no world was given.
      */
     private World getWorld(final CommandSender sender, final CommandArguments arguments) {
-        final Object worldArg = arguments.get(CommandArgumentConstants.WORLD);
-        if (worldArg instanceof final World world) {
+        if (arguments.get(CommandArgumentConstants.WORLD) instanceof final World world) {
             return world;
         }
-
         if (sender instanceof final Player player) {
             return player.getWorld();
         }
@@ -176,16 +169,11 @@ public class TimeCommandProvider extends CommandProvider<EssentialModule> {
         return null;
     }
 
-    public static long clampTicks(long ticks) {
-        return Math.clamp(ticks, MIN_TICKS, MAX_TICKS);
-    }
-
-    public static LocalTime getTimeOfTicks(long ticks) {
+    public static LocalTime getTimeOfTicks(final long ticks) {
         final double point = ticks * 3.6;
-
-        final int hours = (int) (point / 60D / 60D);
-        final int minutes = (int) ((point / 60D) % 60);
-        final int seconds = (int) (point % 60);
-        return LocalTime.of(hours, minutes, seconds).plusHours(6);
+        return LocalTime.of(
+                (int) (point / 60D / 60D),
+                (int) ((point / 60D) % 60),
+                (int) (point % 60)).plusHours(6);
     }
 }

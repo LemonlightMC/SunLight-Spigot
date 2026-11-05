@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -19,7 +18,6 @@ import su.nightexpress.nightcore.util.NumberUtil;
 import su.nightexpress.nightcore.util.Players;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.Replacer;
-import su.nightexpress.sunlight.SLUtils;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
 import su.nightexpress.sunlight.config.Lang;
@@ -28,12 +26,13 @@ import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
 import su.nightexpress.sunlight.utils.Direction;
 import su.nightexpress.sunlight.utils.Utils;
 
+import static su.nightexpress.nightcore.util.Placeholders.GENERIC_ENTRY;
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_DISPLAY_NAME;
+import static su.nightexpress.nightcore.util.Placeholders.forPlayerWithPAPI;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.*;
 
 public class NearCommandProvider extends CommandProvider<EssentialModule> {
-
-    private static final String COMMAND_NEAR = "near";
 
     private static final String PERMISSION_COMMAND = EssentialPerms.COMMAND + ".near";
     private static final String PERMISSION_OTHERS = EssentialPerms.COMMAND + ".near.others";
@@ -54,12 +53,9 @@ public class NearCommandProvider extends CommandProvider<EssentialModule> {
         super(module, "near");
     }
 
-    private record NearbyPlayer(Player player, int distance, Direction direction) {
-    }
-
     @Override
     public void setup() {
-        this.register(COMMAND_NEAR, command -> command
+        this.register("near", command -> command
                 .withRequirement(sender -> sender instanceof Player)
                 .withFullDescription(DESCRIPTION.text())
                 .withPermission(PERMISSION_COMMAND)
@@ -99,21 +95,13 @@ public class NearCommandProvider extends CommandProvider<EssentialModule> {
             final Player executor = sender instanceof final Player player ? player : null;
             final List<NearbyPlayer> nearbyPlayers = new ArrayList<>();
 
-            final World sourceWorld = source.getWorld();
-            final Location sourceLocation = source.getLocation();
-
             final int radius = this.module.settings().nearRadius.get();
             final int distanceLookup = radius * radius;
             final boolean isOthers = sender != source;
 
-            Utils.onlinePlayers().forEach(other -> {
-                if (other == source) {
-                    return;
-                }
-                if (other.getWorld() != sourceWorld) {
-                    return;
-                }
-                if (other.hasPermission(PERMISSION_EXCLUDE)) {
+            for (final Player other : Utils.onlinePlayers()) {
+                if (other == source || other.getWorld() != source.getWorld()
+                        || other.hasPermission(PERMISSION_EXCLUDE)) {
                     return;
                 }
                 if (executor != null && !executor.canSee(other)) {
@@ -124,18 +112,15 @@ public class NearCommandProvider extends CommandProvider<EssentialModule> {
                 if (location == null) {
                     return;
                 }
-
-                final int delta = (int) location.distanceSquared(sourceLocation);
+                final int delta = (int) location.distanceSquared(source.getLocation());
                 if (delta > distanceLookup) {
                     return;
                 }
 
-                final Direction direction = SLUtils.getDirection(sourceLocation, location);
-
-                final int distance = (int) Math.sqrt(delta);
-
-                nearbyPlayers.add(new NearbyPlayer(other, distance, direction));
-            });
+                nearbyPlayers.add(new NearbyPlayer(other,
+                        (int) Math.sqrt(delta),
+                        getDirection(source.getLocation(), location)));
+            }
 
             if (nearbyPlayers.isEmpty()) {
                 this.module.sendPrefixed(isOthers ? MESSAGE_NOTHING_FEEDBACK : MESSAGE_NOTHING_NOTIFY, sender,
@@ -160,5 +145,31 @@ public class NearCommandProvider extends CommandProvider<EssentialModule> {
 
             Players.sendMessage(sender, text);
         });
+    }
+
+    private record NearbyPlayer(Player player, int distance, Direction direction) {
+    }
+
+    private static final Direction[] DIRECTIONS = {
+            Direction.EAST, Direction.NORTH_EAST, Direction.NORTH, Direction.NORTH_WEST,
+            Direction.WEST, Direction.SOUTH_WEST, Direction.SOUTH, Direction.SOUTH_EAST
+    };
+
+    private static Direction getDirection(final Location from, final Location to) {
+        final int dx = to.getBlockX() - from.getBlockX();
+        final int dz = to.getBlockZ() - from.getBlockZ();
+        if (Math.abs(dx) == 0 && Math.abs(dz) == 0) {
+            return Direction.HERE;
+        }
+
+        // "y" is -dx (because -Z is North) and "x" is dx.
+        // "Normalize" the angle from [-180;180] to [0;360]
+        final double angleNormalized = (Math.toDegrees(Math.atan2(-dz, dx)) + 360) % 360;
+
+        final int slices = DIRECTIONS.length;
+        final double sliceAngle = 360D / slices;
+
+        final int index = (int) ((angleNormalized + sliceAngle / 2D) / sliceAngle);
+        return DIRECTIONS[index % slices];
     }
 }

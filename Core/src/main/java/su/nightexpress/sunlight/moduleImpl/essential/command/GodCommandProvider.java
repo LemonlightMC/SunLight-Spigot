@@ -1,6 +1,5 @@
 package su.nightexpress.sunlight.moduleImpl.essential.command;
 
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
@@ -10,9 +9,9 @@ import dev.jorel.commandapi.executors.CommandArguments;
 import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.sunlight.SLPlaceholders;
+import su.nightexpress.sunlight.api.provider.mode.ToggleMode;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.command.mode.ToggleMode;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialLang;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
@@ -58,11 +57,20 @@ public class GodCommandProvider extends CommandProvider<EssentialModule> {
             user.setProperty(EssentialModule.GOD, state);
             user.markDirty();
 
-            if (state) {
+            final boolean isYourself = sender == player;
+            if (isYourself && !player.hasPermission(EssentialPerms.BYPASS_INVULNERABILITY_WORLD)) {
+                if (state && !this.module.settings().isInvulnerabilityAllowedInThisWorld(player.getWorld())) {
+                    this.module.sendPrefixed(EssentialLang.INVULNERABILITY_RESTRICTED_WORLD_USAGE, sender);
+                    return;
+                }
+            }
+
+            player.setInvulnerable(state);
+            if (state && this.module.settings().isGodNoAggro()) {
                 this.clearAggro(player);
             }
 
-            if (sender != player) {
+            if (!isYourself) {
                 this.module.sendPrefixed(EssentialLang.GOD_TOGGLE_FEEDBACK, sender, builder -> builder
                         .with(CommonPlaceholders.PLAYER.resolver(player))
                         .with(SLPlaceholders.GENERIC_STATE, () -> getEnabledOrDisabled(state)));

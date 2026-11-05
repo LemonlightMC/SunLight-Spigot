@@ -1,7 +1,11 @@
 package su.nightexpress.sunlight.api.provider;
 
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+
+import su.nightexpress.sunlight.api.provider.mode.ModifyMode;
+import su.nightexpress.sunlight.api.provider.mode.ToggleMode;
 
 public interface EssentialProvider {
 
@@ -28,7 +32,7 @@ public interface EssentialProvider {
     void setGod(Player player, boolean god);
 
     /** Flips the player's god mode, returning the new state. */
-    default boolean toggleGod(Player player) {
+    default boolean toggleGod(final Player player) {
         final boolean state = !this.isGod(player);
         this.setGod(player, state);
         return state;
@@ -38,15 +42,58 @@ public interface EssentialProvider {
      * Whether the player is currently invulnerable, through this plugin or any
      * other.
      */
-    default boolean isInvulnerable(Player player) {
+    default boolean isInvulnerable(final Player player) {
         return player.isInvulnerable();
     }
 
     boolean setInvulnerable(Player player, boolean invulnerable);
 
-    default boolean toggleInvulnerable(Player player) {
+    default boolean toggleInvulnerable(final Player player) {
         return this.setInvulnerable(player, !this.isInvulnerable(player));
     }
+
+    // Aggro / targeting
+
+    /**
+     * Makes mobs within a certain {@code radius} of {@code center} target
+     * {@code target}.
+     *
+     * @return number of mobs affected
+     */
+    int setAggro(Location center, double radius, Player target);
+
+    /**
+     * Makes mobs within a certain {@code radius} of the Player {@code center}
+     * target this player.
+     *
+     * @return number of mobs affected
+     */
+    int setAggro(Player player, double radius);
+
+    /**
+     * Makes mobs within a certain {@code radius} of the Player {@code center}
+     * target this player. After the duration (in ticks) is over, the mobs stop
+     * being aggro.
+     *
+     * @return number of mobs affected
+     */
+    int setAggro(Player player, double radius, int duration);
+
+    /**
+     * Clears the targets of mobs within a certain {@code radius} around a
+     * {@code center}.
+     *
+     * @return number of mobs affected
+     */
+    int clearAggro(Location center, double radius);
+
+    /**
+     * Clears the targets of mobs within a certain {@code radius} of a
+     * {@code Player}.
+     *
+     * @return number of mobs affected
+     */
+    int clearAggro(Player player, double radius);
 
     // Gamemode
 
@@ -84,7 +131,7 @@ public interface EssentialProvider {
 
     boolean setFlying(Player player, boolean flying);
 
-    default boolean toggleFlying(Player player) {
+    default boolean toggleFlying(final Player player) {
         return this.setFlying(player, !this.isFlying(player));
     }
 
@@ -94,7 +141,7 @@ public interface EssentialProvider {
 
     boolean setAllowFlight(Player player, boolean allow);
 
-    default boolean toggleAllowFlight(Player player) {
+    default boolean toggleAllowFlight(final Player player) {
         return this.setAllowFlight(player, !this.isAllowFlight(player));
     }
 
@@ -113,6 +160,14 @@ public interface EssentialProvider {
     float setWalkSpeed(Player player, float speed);
 
     float resetWalkSpeed(Player player);
+
+    // Jump strength
+
+    float getJumpStrength(Player player);
+
+    float setJumpStrength(Player player, float strength);
+
+    float resetJumpStrength(Player player);
 
     // Health
 
@@ -133,4 +188,39 @@ public interface EssentialProvider {
     int getTotalExperience(Player player);
 
     void setTotalExperience(Player player, int amount);
+
+    float getExp(Player player);
+
+    void giveExp(Player player, int level);
+
+    void setExp(Player player, float percentage);
+
+    void removeLevel(Player player, int level);
+
+    void resetLevel(Player player);
+
+    void addLevel(Player player, int level);
+
+    void resetExp(Player player);
+
+    boolean setAllowFlight(Player player, ToggleMode mode);
+
+    float setFlySpeed(Player player, float speed, ModifyMode mode);
+
+    int setFoodLevel(Player player, int amount, ModifyMode mode);
+
+    float setWalkSpeed(Player player, float speed, ModifyMode mode);
+
+    float setJumpStrength(Player player, float strength, ModifyMode mode);
+
+    double setHealth(Player player, double amount, ModifyMode mode);
+
+    double setMaxHealth(Player player, double amount);
+
+    double setMaxHealth(Player player, double amount, ModifyMode mode);
+
+    double addHealth(Player player, double amount);
+
+    double removeHealth(Player player, double amount);
+
 }

@@ -1,14 +1,12 @@
 package su.nightexpress.sunlight;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import su.nightexpress.nightcore.util.Players;
 import su.nightexpress.sunlight.config.Config;
 import su.nightexpress.sunlight.hook.HookId;
-import su.nightexpress.sunlight.utils.Direction;
 import su.nightexpress.sunlight.utils.TimeUtil;
 import su.nightexpress.sunlight.utils.Utils;
 
@@ -57,41 +55,6 @@ public class SLUtils {
 
     public static boolean isVanished(Player player) {
         return player.hasMetadata("vanished");
-    }
-
-    private static final Direction[] DIRECTIONS = {
-            Direction.EAST, Direction.NORTH_EAST, Direction.NORTH, Direction.NORTH_WEST,
-            Direction.WEST, Direction.SOUTH_WEST, Direction.SOUTH, Direction.SOUTH_EAST
-    };
-
-    public static Direction getDirection(Location from, Location to) {
-        int dx = to.getBlockX() - from.getBlockX();
-        int dz = to.getBlockZ() - from.getBlockZ();
-        if (Math.abs(dx) == 0 && Math.abs(dz) == 0)
-            return Direction.HERE;
-
-        // "y" is -dx (because -Z is North) and "x" is dx.
-        double angle = Math.toDegrees(Math.atan2(-dz, dx));
-
-        // "Normalize" the angle from [-180;180] to [0;360]
-        double angleNormalized = (angle + 360) % 360;
-
-        int slices = DIRECTIONS.length;
-        double sliceAngle = 360D / slices;
-        double halfSlice = sliceAngle / 2D;
-
-        int index = (int) ((angleNormalized + halfSlice) / sliceAngle);
-
-        int finalIndex = index % slices;
-        return DIRECTIONS[finalIndex];
-    }
-
-    @Deprecated
-    public static int clamp(long value, long min, long max) {
-        if (min > max) {
-            throw new IllegalArgumentException(min + " > " + max);
-        }
-        return (int) Math.min(max, Math.max(value, min));
     }
 
     public static String formatDate(long timestamp) {

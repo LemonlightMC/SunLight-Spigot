@@ -39,19 +39,6 @@ public class TeleportCommandsProvider extends CommandProvider<EssentialModule> {
 
     private static final String COMMAND_ROOT = "teleport";
 
-    // Nested names, used as subcommands of the '/teleport' root.
-    private static final String COMMAND_COORDS = "coords";
-    private static final String COMMAND_PLAYER = "player";
-    private static final String COMMAND_HERE = "here";
-    private static final String COMMAND_SURFACE = "surface";
-
-    // Standalone names.
-    private static final String COMMAND_LOCATION = "tppos";
-    private static final String COMMAND_MOVE = "tpplayer";
-    private static final String COMMAND_BRING = "tphere";
-    private static final String COMMAND_GO_TO = "goto";
-    private static final String COMMAND_TOP = "tptop";
-
     private static final String PERMISSION_ROOT = EssentialPerms.COMMAND + ".teleport.root";
     private static final String PERMISSION_LOCATION = EssentialPerms.COMMAND + ".coords";
     private static final String PERMISSION_LOCATION_OTHERS = EssentialPerms.COMMAND + ".coords.others";
@@ -74,24 +61,24 @@ public class TeleportCommandsProvider extends CommandProvider<EssentialModule> {
 
     private static final MessageLocale MESSAGE_COORDS_FEEDBACK = LangEntry.builder(
             "Command.Teleport.Location.Done.Target").chatMessage(
-            Sound.ENTITY_ENDERMAN_TELEPORT,
-            GRAY.wrap("You have teleported " + WHITE.wrap(PLAYER_DISPLAY_NAME)
-                    + " teleported to " + RED.wrap(
-                    LOCATION_X)
-                    + " " + GREEN.wrap(LOCATION_Y) + " " + BLUE.wrap(LOCATION_Z)
-                    + " @ "
-                    + WHITE.wrap(
-                    LOCATION_WORLD)
-                    + "."));
+                    Sound.ENTITY_ENDERMAN_TELEPORT,
+                    GRAY.wrap("You have teleported " + WHITE.wrap(PLAYER_DISPLAY_NAME)
+                            + " teleported to " + RED.wrap(
+                                    LOCATION_X)
+                            + " " + GREEN.wrap(LOCATION_Y) + " " + BLUE.wrap(LOCATION_Z)
+                            + " @ "
+                            + WHITE.wrap(
+                                    LOCATION_WORLD)
+                            + "."));
 
     private static final MessageLocale MESSAGE_COORDS_NOTIFY = LangEntry.builder(
             "Command.Teleport.Location.Done.Notify").chatMessage(
-            Sound.ENTITY_ENDERMAN_TELEPORT,
-            GRAY.wrap("You have been teleported to " + RED.wrap(LOCATION_X) + " "
-                    + GREEN.wrap(LOCATION_Y) + " "
-                    + BLUE
-                    .wrap(LOCATION_Z)
-                    + " @ " + WHITE.wrap(LOCATION_WORLD) + "."));
+                    Sound.ENTITY_ENDERMAN_TELEPORT,
+                    GRAY.wrap("You have been teleported to " + RED.wrap(LOCATION_X) + " "
+                            + GREEN.wrap(LOCATION_Y) + " "
+                            + BLUE
+                                    .wrap(LOCATION_Z)
+                            + " @ " + WHITE.wrap(LOCATION_WORLD) + "."));
 
     private static final MessageLocale MESSAGE_SUMMON_YOURSELF = LangEntry
             .builder("Command.Teleport.Summon.Yourself")
@@ -149,7 +136,7 @@ public class TeleportCommandsProvider extends CommandProvider<EssentialModule> {
 
     @Override
     public void setup() {
-        this.register(COMMAND_COORDS, command -> command
+        this.register("coords", command -> command
                 .withFullDescription(DESCRIPTION_LOCATION.text())
                 .withPermission(PERMISSION_LOCATION)
                 .withArguments(
@@ -164,24 +151,24 @@ public class TeleportCommandsProvider extends CommandProvider<EssentialModule> {
                 .executes((sender, arguments) -> {
                     return this.teleportToCoords(sender, arguments);
                 }))
-                .aliases(COMMAND_LOCATION)
+                .aliases("tppos")
                 .under(COMMAND_ROOT);
 
-        this.register(COMMAND_PLAYER, command -> command
+        this.register("player", command -> command
                 .withFullDescription(DESCRIPTION_SEND.text())
                 .withPermission(PERMISSION_MOVE)
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.PLAYER,
-                                info -> CommandArgumentConstants.onlinePlayerNames()),
+                        info -> CommandArgumentConstants.onlinePlayerNames()),
                         CommandArgumentConstants.string(CommandArgumentConstants.DESTINATION,
                                 info -> CommandArgumentConstants.onlinePlayerNames()))
                 .withOptionalArguments(CommandArgumentConstants.targetArgument())
                 .executes((sender, arguments) -> {
                     return this.movePlayerToOther(sender, arguments);
                 }))
-                .aliases(COMMAND_MOVE)
+                .aliases("tpplayer")
                 .under(COMMAND_ROOT);
 
-        this.register(COMMAND_HERE, command -> command
+        this.register("here", command -> command
                 .withRequirement(sender -> sender instanceof Player)
                 .withFullDescription(DESCRIPTION_SUMMON.text())
                 .withPermission(PERMISSION_BRING)
@@ -191,10 +178,10 @@ public class TeleportCommandsProvider extends CommandProvider<EssentialModule> {
                 .executes((sender, arguments) -> {
                     return this.summonPlayer(sender, arguments);
                 }))
-                .aliases(COMMAND_BRING)
+                .aliases("tphere")
                 .under(COMMAND_ROOT);
 
-        this.register(COMMAND_GO_TO, command -> command
+        this.register("goto", command -> command
                 .withRequirement(sender -> sender instanceof Player)
                 .withFullDescription(DESCRIPTION_TO.text())
                 .withPermission(PERMISSION_GOTO)
@@ -206,14 +193,14 @@ public class TeleportCommandsProvider extends CommandProvider<EssentialModule> {
                 }))
                 .under(COMMAND_ROOT);
 
-        this.register(COMMAND_SURFACE, command -> command
+        this.register("surface", command -> command
                 .withFullDescription(DESCRIPTION_TOP.text())
                 .withPermission(PERMISSION_SURFACE)
                 .withOptionalArguments(CommandArgumentConstants.targetArgument())
                 .executes((sender, arguments) -> {
                     return this.teleportToTop(sender, arguments);
                 }))
-                .aliases(COMMAND_TOP)
+                .aliases("tptop")
                 .under(COMMAND_ROOT);
 
         this.registerRoot(COMMAND_ROOT, command -> command

@@ -14,22 +14,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static su.nightexpress.nightcore.util.Placeholders.GENERIC_ENTRY;
+import static su.nightexpress.nightcore.util.Placeholders.LOCATION_WORLD;
+import static su.nightexpress.nightcore.util.Placeholders.LOCATION_X;
+import static su.nightexpress.nightcore.util.Placeholders.LOCATION_Y;
+import static su.nightexpress.nightcore.util.Placeholders.LOCATION_Z;
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_DISPLAY_NAME;
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_NAME;
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_PREFIX;
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_SUFFIX;
+import static su.nightexpress.nightcore.util.Placeholders.URL_WIKI_TEXT;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.*;
 import static su.nightexpress.sunlight.moduleImpl.essential.EssentialPlaceholders.*;
 
 public class EssentialSettings extends AbstractConfig {
-
-        public final ConfigProperty<List<String>> broadcastFormat = this.addProperty(ConfigTypes.STRING_LIST,
-                        "Broadcast.Format",
-                        List.of("", YELLOW.and(BOLD).wrap("BROADCAST:"), "", GRAY.wrap(GENERIC_MESSAGE), ""),
-                        "Text Formations: " + URL_WIKI_TEXT);
-
-        public final ConfigProperty<String> disposalTitle = this.addProperty(ConfigTypes.STRING, "Disposal.Title", BLACK
-                        .wrap("Disposal"));
-
-        public final ConfigProperty<Integer> disposalSize = this.addProperty(ConfigTypes.INT, "Disposal.InventorySize",
-                        36);
 
         private final ConfigProperty<Boolean> invulnerabilityEnabled = this.addProperty(ConfigTypes.BOOLEAN,
                         "Invulnerability.Enabled",
@@ -37,11 +36,32 @@ public class EssentialSettings extends AbstractConfig {
                         "Controls whether the Invulnerability feature is available to use.",
                         "[*] Note: The Invulnerability feature uses vanilla 'invulnerable' NBT tag. Ensure that no other plugins depends on that tag to avoid possible conflicts/issues.");
 
+        private final ConfigProperty<Boolean> invulnerabilityNoAggro = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Invulnerability.No-Aggro",
+                        true,
+                        "Controls whether players with Invulnerability won't be targeted by mobs.");
+
         private final ConfigProperty<Boolean> godEnabled = this.addProperty(ConfigTypes.BOOLEAN,
                         "God.Enabled",
                         true,
                         "Controls whether the God Mode feature is available to use.",
                         "Players with God Mode enabled can not be targeted by mobs and take no damage.");
+
+        private final ConfigProperty<Set<String>> godDisabledWorlds = this.addProperty(
+                        ConfigTypes.STRING_SET_LOWER_CASE, "God.Disabled-In-Worlds",
+                        Set.of("world_name", "other_world"),
+                        "List of worlds where the God is disabled.",
+                        "[*] Note: It will reset player's God State when they are in specified worlds.");
+
+        private final ConfigProperty<Boolean> godNoAggro = this.addProperty(ConfigTypes.BOOLEAN,
+                        "God.No-Aggro",
+                        true,
+                        "Controls whether players with God Mode won't be targeted by mobs.");
+
+        private final ConfigProperty<Boolean> godOnePunchKill = this.addProperty(ConfigTypes.BOOLEAN,
+                        "God.One-Punch-Kill",
+                        false,
+                        "Controls whether players with God Mode kill any mob in one hit.");
 
         private final ConfigProperty<Set<String>> invulnerabilityDisabledWorlds = this.addProperty(
                         ConfigTypes.STRING_SET_LOWER_CASE, "Invulnerability.Disabled-In-Worlds",
@@ -83,6 +103,12 @@ public class EssentialSettings extends AbstractConfig {
                         "Health.Restore.ClearEffects",
                         true,
                         "Controls whether the 'health restore' command should remove all potion effects from player.");
+
+        public final ConfigProperty<Boolean> healthClearBadEffects = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Health.Restore.ClearBadEffects",
+                        false,
+                        "Controls whether the 'health restore' command should remove only bad (harmful) potion effects from player.",
+                        "[*] Note: This is only used when 'Health.Restore.ClearEffects' is disabled.");
 
         public final ConfigProperty<Integer> nearRadius = this.addProperty(ConfigTypes.INT, "Near.Radius", 200,
                         "Sets default command radius.");
@@ -227,35 +253,6 @@ public class EssentialSettings extends AbstractConfig {
                         "PlaceholderAPI is supported here.",
                         "[*] Text Formation Guide: " + URL_WIKI_TEXT);
 
-        public final ConfigProperty<List<String>> staffRanks = this.addProperty(ConfigTypes.STRING_LIST,
-                        "Staff.IncludedRanks",
-                        List.of("admin", "moderator", "helper"),
-                        "Player ranks considered as staff.");
-
-        public final ConfigProperty<List<String>> staffFormat = this.addProperty(ConfigTypes.STRING_LIST,
-                        "Staff.Format.List",
-                        List.of(
-                                        DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32)),
-                                        GRAY.wrap("There are " + SOFT_RED.and(UNDERLINED).wrap(GENERIC_AMOUNT)
-                                                        + " staff players online:"),
-                                        " ",
-                                        GENERIC_ENTRY,
-                                        DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32))),
-                        "[*] Text Formations Guide: " + URL_WIKI_TEXT,
-                        "[*] Placeholders: '%s'".formatted(GENERIC_AMOUNT));
-
-        public final ConfigProperty<String> staffEntryFormat = this.addProperty(ConfigTypes.STRING,
-                        "Staff.Format.Entry",
-                        HEAD_HAT.apply(PLAYER_NAME) + " "
-                                        + GRAY.wrap(PLAYER_PREFIX + SUGGEST_COMMAND.with("/msg " + PLAYER_NAME + " ")
-                                                        .wrap(SHOW_TEXT.with(
-                                                                        GRAY.wrap("Click to write private message."))
-                                                                        .wrap(WHITE.wrap(
-                                                                                        PLAYER_DISPLAY_NAME)))
-                                                        + PLAYER_SUFFIX),
-                        "[*] Text Formations Guide: " + URL_WIKI_TEXT,
-                        "[*] Placeholders: '%s', '%s', 'PlaceholderAPI'".formatted(PLAYER_PREFIX, PLAYER_SUFFIX));
-
         public final ConfigProperty<Map<String, Long>> timeAliases = this.addProperty(ConfigTypes.forMapWithLowerKeys(
                         ConfigTypes.LONG), "Time.Aliases",
                         Map.of(
@@ -282,32 +279,30 @@ public class EssentialSettings extends AbstractConfig {
                                                         + GRAY.wrap("Server Time: " + SOFT_BLUE.wrap(GENERIC_GLOBAL)),
                                         DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32))));
 
-        public final ConfigProperty<Boolean> signColorsEnabled = this.addProperty(ConfigTypes.BOOLEAN,
-                        "Sign_Colors.Enabled",
-                        false,
-                        "Controls whether the Sign Colors feature is available to use.",
-                        "Players with '" + EssentialPerms.SIGNS_COLOR + "' permission will be able to use colors on signs.");
 
-        public final ConfigProperty<Boolean> anvilColorsEnabled = this.addProperty(ConfigTypes.BOOLEAN,
-                        "Anvil_Colors.Enabled",
-                        true,
-                        "Controls whether the Anvil Colors feature is available to use.",
-                        "Players with '" + EssentialPerms.ANVILS_COLOR + "' permission will be able to use colors on anvils.");
-
-        public boolean isSignColorsEnabled() {
-                return this.signColorsEnabled.get();
-        }
-
-        public boolean isAnvilColorsEnabled() {
-                return this.anvilColorsEnabled.get();
-        }
 
         public boolean isInvulnerabilityEnabled() {
                 return this.invulnerabilityEnabled.get();
         }
 
+        public boolean isInvulnerabilityNoAggro() {
+                return this.invulnerabilityNoAggro.get();
+        }
+
         public boolean isGodEnabled() {
                 return this.godEnabled.get();
+        }
+
+        public boolean isGodNoAggro() {
+                return this.godNoAggro.get();
+        }
+
+        public boolean isGodOnePunchKill() {
+                return this.godOnePunchKill.get();
+        }
+
+        public boolean isGodAllowedInThisWorld(World world) {
+                return !this.godDisabledWorlds.get().contains(Utils.lowercase(world.getName()));
         }
 
         public boolean isInvulnerabilityAllowedInThisWorld(World world) {

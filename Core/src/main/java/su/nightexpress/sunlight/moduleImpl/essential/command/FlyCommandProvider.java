@@ -1,6 +1,5 @@
 package su.nightexpress.sunlight.moduleImpl.essential.command;
 
-
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 
@@ -12,9 +11,9 @@ import su.nightexpress.nightcore.locale.entry.MessageLocale;
 import su.nightexpress.nightcore.locale.entry.TextLocale;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.sunlight.SLPlaceholders;
+import su.nightexpress.sunlight.api.provider.mode.ToggleMode;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.command.mode.ToggleMode;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
 
 import static su.nightexpress.nightcore.util.Placeholders.PLAYER_DISPLAY_NAME;
@@ -53,13 +52,13 @@ public class FlyCommandProvider extends CommandProvider<EssentialModule> {
         public void setup() {
                 this.register("toggle", command -> this.buildCommand(command,
                                 DESCRIPTION_TOGGLE, ToggleMode.TOGGLE))
-                    .under("fly");
+                                .under("fly");
                 this.register("on", command -> this.buildCommand(command,
                                 DESCRIPTION_ON, ToggleMode.ON))
-                    .under("fly");
+                                .under("fly");
                 this.register("off", command -> this.buildCommand(command,
                                 DESCRIPTION_OFF, ToggleMode.OFF))
-                    .under("fly");
+                                .under("fly");
 
                 this.registerRoot("fly", command -> command
                                 .withFullDescription(DESCRIPTION_ROOT.text())
@@ -85,7 +84,7 @@ public class FlyCommandProvider extends CommandProvider<EssentialModule> {
                 }
 
                 return target.runAs(this.module, sender, "sunlight.command.fly.others", (user, player) -> {
-                        player.setAllowFlight(mode.apply(player.getAllowFlight()));
+                        module.setAllowFlight(player, mode);
 
                         if (sender != player) {
                                 this.module.sendPrefixed(MESSAGE_TOGGLE_FEEDBACK, sender,

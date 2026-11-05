@@ -18,11 +18,13 @@ import su.nightexpress.sunlight.command.CommandProvider;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
 
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_DISPLAY_NAME;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.GENERIC_AMOUNT;
-import static su.nightexpress.sunlight.SLPlaceholders.PLAYER_DISPLAY_NAME;
 
 public class SpeedCommandProvider extends CommandProvider<EssentialModule> {
+
+    // TODO: Per speed permission
 
     private static final String COMMAND_SPEED = "speed";
 
@@ -85,7 +87,7 @@ public class SpeedCommandProvider extends CommandProvider<EssentialModule> {
             final float realSpeed = DEF_SPEED
                     + (MAX_SPEED - DEF_SPEED) * (speed - 1) / (SPEEDS_AMOUNT - 1);
 
-            player.setWalkSpeed(realSpeed);
+            module.setWalkSpeed(player, realSpeed);
 
             if (sender != player) {
                 this.module.sendPrefixed(MESSAGE_SET_SPEED_FEEDBACK, sender, replacer -> replacer
