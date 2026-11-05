@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -15,26 +15,26 @@ import su.nightexpress.nightcore.locale.entry.TextLocale;
 import su.nightexpress.nightcore.util.Players;
 import su.nightexpress.nightcore.util.placeholder.Replacer;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 import su.nightexpress.sunlight.utils.Utils;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.BR;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
 import static su.nightexpress.sunlight.SLPlaceholders.*;
 
-public class StaffCommandProvider extends CommandProvider<EssentialModule> {
+public class StaffCommandProvider extends CommandProvider<ExtrasModule> {
 
     private static final String COMMAND_STAFF = "staff";
 
-    private static final String STAFF = EssentialPerms.COMMAND + ".staff";
+    private static final String STAFF = ExtrasPerms.COMMAND + ".staff";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Staff.Desc").text("Show online staff.");
 
     private static final MessageLocale MESSAGE_NO_STAFF_ONLINE = LangEntry.builder("Command.Staff.Empty").chatMessage(
             GRAY.wrap("There is no staff online."));
 
-    public StaffCommandProvider(final EssentialModule module) {
+    public StaffCommandProvider(final ExtrasModule module) {
         super(module, "staff");
     }
 

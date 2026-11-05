@@ -21,6 +21,7 @@ import su.nightexpress.sunlight.command.mode.ModifyMode;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
 
+import static su.nightexpress.nightcore.util.Placeholders.PLAYER_DISPLAY_NAME;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.*;
 
@@ -107,11 +108,11 @@ public class FoodLevelCommandProvider extends CommandProvider<EssentialModule> {
     @Override
     public void setup() {
         this.register(COMMAND_ADD, command -> this.buildModeCommand(command, ModifyMode.ADD))
-            .under("foodlevel");
+                .under("foodlevel");
         this.register(COMMAND_SET, command -> this.buildModeCommand(command, ModifyMode.SET))
-            .under("foodlevel");
+                .under("foodlevel");
         this.register(COMMAND_REMOVE, command -> this.buildModeCommand(command, ModifyMode.REMOVE))
-            .under("foodlevel");
+                .under("foodlevel");
 
         this.register(COMMAND_RESTORE, command -> command
                 .withFullDescription(DESCRIPTION_RESTORE.text())
@@ -120,7 +121,7 @@ public class FoodLevelCommandProvider extends CommandProvider<EssentialModule> {
                 .executes((sender, arguments) -> {
                     return this.restoreFood(sender, arguments);
                 }))
-            .under("foodlevel");
+                .under("foodlevel");
 
         this.registerRoot("foodlevel", command -> command
                 .withFullDescription(DESCRIPTION_ROOT.text())
@@ -166,10 +167,8 @@ public class FoodLevelCommandProvider extends CommandProvider<EssentialModule> {
         }
 
         return target.runAs(this.module, sender, PERM_OTHERS, (user, player) -> {
-            final int oldValue = player.getFoodLevel();
-            final int newValue = (int) Math.clamp(mode.modify(oldValue, amount), 0, MAX_VALUE);
-
-            player.setFoodLevel(newValue);
+            final int oldFoodLevel = module.getFoodLevel(player);
+            final int newFoodLevel = module.setFoodLevel(player, (int) mode.modify(oldFoodLevel, amount));
 
             final MessageLocale infoMessage = switch (mode) {
                 case SET -> MESSAGE_SET_FEEDBACK;
@@ -186,8 +185,8 @@ public class FoodLevelCommandProvider extends CommandProvider<EssentialModule> {
             if (player != sender) {
                 this.module.sendPrefixed(infoMessage, sender,
                         builder -> builder
-                                .with(GENERIC_NEW_VALUE, () -> NumberUtil.format(player.getFoodLevel()))
-                                .with(GENERIC_OLD_VALUE, () -> NumberUtil.format(oldValue))
+                                .with(GENERIC_NEW_VALUE, () -> NumberUtil.format(newFoodLevel))
+                                .with(GENERIC_OLD_VALUE, () -> NumberUtil.format(oldFoodLevel))
                                 .with(GENERIC_MAX, () -> NumberUtil.format(MAX_VALUE))
                                 .with(GENERIC_AMOUNT, () -> NumberUtil.format(amount))
                                 .with(CommonPlaceholders.PLAYER.resolver(player)));
@@ -195,8 +194,8 @@ public class FoodLevelCommandProvider extends CommandProvider<EssentialModule> {
 
             if (!target.silent()) {
                 this.module.sendPrefixed(notifyMessage, player, builder -> builder
-                        .with(GENERIC_NEW_VALUE, () -> NumberUtil.format(player.getFoodLevel()))
-                        .with(GENERIC_OLD_VALUE, () -> NumberUtil.format(oldValue))
+                        .with(GENERIC_NEW_VALUE, () -> NumberUtil.format(newFoodLevel))
+                        .with(GENERIC_OLD_VALUE, () -> NumberUtil.format(oldFoodLevel))
                         .with(GENERIC_MAX, () -> NumberUtil.format(MAX_VALUE))
                         .with(GENERIC_AMOUNT, () -> NumberUtil.format(amount)));
             }
@@ -211,7 +210,7 @@ public class FoodLevelCommandProvider extends CommandProvider<EssentialModule> {
         }
 
         return target.runAs(this.module, sender, PERM_OTHERS, (user, player) -> {
-            player.setFoodLevel(MAX_VALUE);
+            module.resetFoodLevel(player);
 
             if (this.module.settings().foodSaturationEnabled.get()) {
                 player.setSaturation(Math.min(MAX_VALUE,

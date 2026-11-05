@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -10,17 +10,17 @@ import su.nightexpress.nightcore.locale.LangEntry;
 import su.nightexpress.nightcore.locale.entry.TextLocale;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 
-public class SudoCommandProvider extends CommandProvider<EssentialModule> {
+public class SudoCommandProvider extends CommandProvider<ExtrasModule> {
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".sudo";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".sudo";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Sudo.Desc").text(
             "Force a player to run a command or chat.");
 
-    public SudoCommandProvider(final EssentialModule module) {
+    public SudoCommandProvider(final ExtrasModule module) {
         super(module, "sudo");
     }
 
@@ -38,7 +38,8 @@ public class SudoCommandProvider extends CommandProvider<EssentialModule> {
     private int execute(final CommandSender sender, final CommandArguments arguments) {
         String targetName = (String) arguments.get(CommandArgumentConstants.PLAYER);
         String input = (String) arguments.get("command");
-        if (targetName == null || input == null || input.isBlank()) return 0;
+        if (targetName == null || input == null || input.isBlank())
+            return 0;
         Player target = su.nightexpress.sunlight.utils.Utils.getPlayer(targetName);
         if (target == null) {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);

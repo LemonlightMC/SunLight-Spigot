@@ -29,6 +29,9 @@ public class EssentialLang implements LangContainer {
         GRAY.wrap("You have set " + WHITE.wrap(PLAYER_DISPLAY_NAME) + "'s " + ORANGE.wrap("God Mode") + " to " + WHITE.wrap(GENERIC_STATE) + ".")
     );
 
+    public static final MessageLocale STARTER_KIT_RECEIVED = LangEntry.builder("Essential.StarterKit.Received").chatMessage(
+        GRAY.wrap("You have received your " + ORANGE.wrap("Starter Kit") + ".")
+    );
 
     public static final MessageLocale INVULNERABILITY_RESTRICTED_MOB_DAMAGE = LangEntry.builder("Essential.Invulnerability.RestrictedMobDamage").actionBarMessage(
         GRAY.wrap("You can't damage " + RED.wrap("mobs") + " while invulnerable!")

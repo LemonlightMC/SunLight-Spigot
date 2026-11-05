@@ -1,6 +1,5 @@
 package su.nightexpress.sunlight.moduleImpl.essential.command;
 
-
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 
@@ -17,7 +16,6 @@ import su.nightexpress.sunlight.command.CommandProvider;
 import su.nightexpress.sunlight.config.Lang;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
 import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
-import su.nightexpress.sunlight.nms.SunNMS;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.GENERIC_TYPE;
@@ -60,13 +58,13 @@ public class GamemodeCommandProvider extends CommandProvider<EssentialModule> {
     @Override
     public void setup() {
         this.register(COMMAND_SURVIVAL, command -> this.buildTypeCommand(command, GameMode.SURVIVAL))
-            .under("gm");
+                .under("gm");
         this.register(COMMAND_SPECTATOR, command -> this.buildTypeCommand(command, GameMode.SPECTATOR))
-            .under("gm");
+                .under("gm");
         this.register(COMMAND_ADVENTURE, command -> this.buildTypeCommand(command, GameMode.ADVENTURE))
-            .under("gm");
+                .under("gm");
         this.register(COMMAND_CREATIVE, command -> this.buildTypeCommand(command, GameMode.CREATIVE))
-            .under("gm");
+                .under("gm");
 
         this.registerRoot("gm", command -> command
                 .withFullDescription(DESCRIPTION_ROOT.text())
@@ -99,16 +97,7 @@ public class GamemodeCommandProvider extends CommandProvider<EssentialModule> {
         }
 
         return target.runAs(this.module, sender, PERM_OTEHRS, (user, player) -> {
-            if (player.isOnline()) {
-                player.setGameMode(mode);
-            } else {
-                final SunNMS internals = this.module.plugin().getInternals();
-                if (internals == null) {
-                    this.module.sendPrefixed(Lang.ERROR_NO_INTERNALS_HANDLER, sender);
-                    return;
-                }
-                internals.setGameMode(player, mode);
-            }
+            module.setGamemode(player, mode);
 
             if (sender != player) {
                 this.module.sendPrefixed(MESSAGE_SET_FEEDBACK, sender,

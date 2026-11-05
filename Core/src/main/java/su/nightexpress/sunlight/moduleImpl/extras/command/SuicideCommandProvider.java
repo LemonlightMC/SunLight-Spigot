@@ -1,5 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
-
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import org.bukkit.damage.DamageSource;
 import org.bukkit.damage.DamageType;
@@ -13,23 +12,23 @@ import su.nightexpress.nightcore.locale.entry.MessageLocale;
 import su.nightexpress.nightcore.locale.entry.TextLocale;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
 
-public class SuicideCommandProvider extends CommandProvider<EssentialModule> {
+public class SuicideCommandProvider extends CommandProvider<ExtrasModule> {
 
     private static final String COMMAND_SUICIDE = "suicide";
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".suicide";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".suicide";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Suicide.Desc").text("Commit suicide.");
 
     private static final MessageLocale MESSAGE_SUICIDE_NOTIFY = LangEntry.builder("Command.Suicide.Notify").chatMessage(
             GRAY.wrap("You have commited suicide."));
 
-    public SuicideCommandProvider(final EssentialModule module) {
+    public SuicideCommandProvider(final ExtrasModule module) {
         super(module, "suicide");
     }
 

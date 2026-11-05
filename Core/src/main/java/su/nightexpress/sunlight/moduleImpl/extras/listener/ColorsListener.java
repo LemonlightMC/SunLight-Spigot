@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.listener;
+package su.nightexpress.sunlight.moduleImpl.extras.listener;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,15 +12,15 @@ import su.nightexpress.nightcore.util.ItemUtil;
 import su.nightexpress.nightcore.util.text.NightMessage;
 import su.nightexpress.nightcore.util.text.tag.TagPool;
 import su.nightexpress.sunlight.SunLightPlugin;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialSettings;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasSettings;
 
 public class ColorsListener extends AbstractListener<SunLightPlugin> {
 
-    private final EssentialSettings settings;
+    private final ExtrasSettings settings;
 
-    public ColorsListener(SunLightPlugin plugin, EssentialModule module) {
+    public ColorsListener(SunLightPlugin plugin, ExtrasModule module) {
         super(plugin);
         this.settings = module.settings();
     }
@@ -31,7 +31,7 @@ public class ColorsListener extends AbstractListener<SunLightPlugin> {
             return;
 
         Player player = event.getPlayer();
-        if (!player.hasPermission(EssentialPerms.SIGNS_COLOR))
+        if (!player.hasPermission(ExtrasPerms.SIGNS_COLOR))
             return;
 
         for (int index = 0; index < event.getLines().length; index++) {
@@ -54,7 +54,7 @@ public class ColorsListener extends AbstractListener<SunLightPlugin> {
             return;
 
         Player player = (Player) event.getViewers().getFirst();
-        if (!player.hasPermission(EssentialPerms.ANVILS_COLOR))
+        if (!player.hasPermission(ExtrasPerms.ANVILS_COLOR))
             return;
 
         ItemUtil.editMeta(result, meta -> {

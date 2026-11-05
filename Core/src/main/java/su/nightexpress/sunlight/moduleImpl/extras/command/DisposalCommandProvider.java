@@ -1,5 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
-
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.Inventory;
@@ -13,15 +12,15 @@ import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.text.NightMessage;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 
-public class DisposalCommandProvider extends CommandProvider<EssentialModule> {
+public class DisposalCommandProvider extends CommandProvider<ExtrasModule> {
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".disposal";
-    private static final String PERMISSION_OTHERS = EssentialPerms.COMMAND + ".disposal.others";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".disposal";
+    private static final String PERMISSION_OTHERS = ExtrasPerms.COMMAND + ".disposal.others";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Disposal.Desc").text(
             "Open Virtual Disposal.");
@@ -33,7 +32,7 @@ public class DisposalCommandProvider extends CommandProvider<EssentialModule> {
     private static final MessageLocale MESSAGE_NOTIFY = LangEntry.builder("Command.Disposal.Notify").chatMessage(
             GRAY.wrap("You have opened " + ORANGE.wrap("Virtual Disposal.")));
 
-    public DisposalCommandProvider(final EssentialModule module) {
+    public DisposalCommandProvider(final ExtrasModule module) {
         super(module, "disposal");
     }
 

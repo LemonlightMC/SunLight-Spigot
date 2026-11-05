@@ -17,6 +17,9 @@ public class EssentialPerms {
     public static final String SIGNS_COLOR  = MODULE + ".signs.color";
     public static final String ANVILS_COLOR = MODULE + ".anvils.color";
 
+    public static final String STARTER_KIT = MODULE + ".starterkit";
+    public static final String STARTER_KIT_BYPASS = BYPASS + ".starterkit";
+
     private EssentialPerms() {
     }
 }

@@ -1,5 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
-
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import org.bukkit.command.CommandSender;
 
@@ -11,18 +10,18 @@ import su.nightexpress.nightcore.locale.entry.TextLocale;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.SOFT_YELLOW;
 import static su.nightexpress.sunlight.SLPlaceholders.PLAYER_NAME;
 
-public class SmiteCommandProvider extends CommandProvider<EssentialModule> {
+public class SmiteCommandProvider extends CommandProvider<ExtrasModule> {
 
     private static final String COMMAND_SMITE = "smite";
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".smite";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".smite";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Smite.Desc").text(
             "Smite player with lightning.");
@@ -33,7 +32,7 @@ public class SmiteCommandProvider extends CommandProvider<EssentialModule> {
     private static final MessageLocale COMMAND_SMITE_NOTIFY = LangEntry.builder("Command.Smite.Notify").chatMessage(
             GRAY.wrap("You have been smited!"));
 
-    public SmiteCommandProvider(final EssentialModule module) {
+    public SmiteCommandProvider(final ExtrasModule module) {
         super(module, "smite");
     }
 

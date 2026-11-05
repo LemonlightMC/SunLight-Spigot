@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -24,8 +24,8 @@ import su.nightexpress.nightcore.util.profile.CachedProfile;
 import su.nightexpress.nightcore.util.profile.PlayerProfiles;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 import su.nightexpress.sunlight.utils.Utils;
 
 import java.util.Base64;
@@ -33,13 +33,13 @@ import java.util.Base64;
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.PLAYER_NAME;
 
-public class SkullCommandProvider extends CommandProvider<EssentialModule> {
+public class SkullCommandProvider extends CommandProvider<ExtrasModule> {
 
     private static final String COMMAND_SKULL = "skull";
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".skull";
-    private static final String PERMISSION_OTHERS = EssentialPerms.COMMAND + ".skull.others";
-    private static final String PERMISSION_CUSTOM = EssentialPerms.COMMAND + ".skull.custom";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".skull";
+    private static final String PERMISSION_OTHERS = ExtrasPerms.COMMAND + ".skull.others";
+    private static final String PERMISSION_CUSTOM = ExtrasPerms.COMMAND + ".skull.custom";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Skull.Custom.Desc")
             .text("Get player's head.");
@@ -65,7 +65,7 @@ public class SkullCommandProvider extends CommandProvider<EssentialModule> {
     private static final Pattern URL_VALUE_PATTERN = Pattern.compile("^[0-9a-fA-F]{64}$");
     private static final Pattern BASE_64_PATTERN = Pattern.compile("^[A-Za-z0-9+/=]{180}$");
 
-    public SkullCommandProvider(final EssentialModule module) {
+    public SkullCommandProvider(final ExtrasModule module) {
         super(module, "skull");
     }
 

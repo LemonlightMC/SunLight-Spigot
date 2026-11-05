@@ -1,5 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
-
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import org.bukkit.command.CommandSender;
 
@@ -13,19 +12,19 @@ import su.nightexpress.nightcore.util.text.night.NightMessage;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 import su.nightexpress.sunlight.utils.Utils;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.BR;
 
-public class BroadcastCommandProvider extends CommandProvider<EssentialModule> {
+public class BroadcastCommandProvider extends CommandProvider<ExtrasModule> {
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".broadcast";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".broadcast";
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Broadcast.Desc")
             .text("Broadcast a message.");
 
-    public BroadcastCommandProvider(final EssentialModule module) {
+    public BroadcastCommandProvider(final ExtrasModule module) {
         super(module, "broadcast");
     }
 

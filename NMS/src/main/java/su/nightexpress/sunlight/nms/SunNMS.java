@@ -25,9 +25,12 @@ public interface SunNMS {
 
     void setGameMode(Player player, GameMode mode);
 
+    GameMode getGameMode();
+
     void teleport(Player player, Location location);
 
     void openContainer(Player player, PortableContainer menuType);
 
     void dropFallingContent(FallingBlock fallingBlock);
+
 }

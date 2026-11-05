@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -22,15 +22,15 @@ import su.nightexpress.nightcore.util.ItemUtil;
 import su.nightexpress.nightcore.util.Players;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
 import static su.nightexpress.sunlight.SLPlaceholders.*;
 
-public class CondenseCommandProvider extends CommandProvider<EssentialModule> {
+public class CondenseCommandProvider extends CommandProvider<ExtrasModule> {
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".condense";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".condense";
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Condense.Desc")
             .text("Condense items into blocks.");
 
@@ -48,7 +48,7 @@ public class CondenseCommandProvider extends CommandProvider<EssentialModule> {
             GRAY.wrap("Converted " + SOFT_YELLOW.wrap("x" + GENERIC_TOTAL + " " + GENERIC_SOURCE) + " to "
                     + SOFT_YELLOW.wrap("x" + GENERIC_AMOUNT + " " + GENERIC_RESULT) + "."));
 
-    public CondenseCommandProvider(final EssentialModule module) {
+    public CondenseCommandProvider(final ExtrasModule module) {
         super(module, "condense");
     }
 

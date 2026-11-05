@@ -1,5 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.essential.command;
-
+package su.nightexpress.sunlight.moduleImpl.extras.command;
 
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -15,18 +14,18 @@ import su.nightexpress.nightcore.locale.entry.TextLocale;
 import su.nightexpress.nightcore.util.EntityUtil;
 import su.nightexpress.nightcore.util.Players;
 import su.nightexpress.sunlight.command.CommandProvider;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialModule;
-import su.nightexpress.sunlight.moduleImpl.essential.EssentialPerms;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasModule;
+import su.nightexpress.sunlight.moduleImpl.extras.ExtrasPerms;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY;
 
-public class HatCommandProvider extends CommandProvider<EssentialModule> {
+public class HatCommandProvider extends CommandProvider<ExtrasModule> {
 
     private static final String COMMAND_HAT = "hat";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Hat.Desc").text("Put item in head.");
 
-    private static final String PERMISSION = EssentialPerms.COMMAND + ".hat";
+    private static final String PERMISSION = ExtrasPerms.COMMAND + ".hat";
 
     private static final MessageLocale MESSAGE_HAT_FEEDBACK = LangEntry.builder("Command.Hat.Done").chatMessage(
             Sound.ITEM_ARMOR_EQUIP_LEATHER,
@@ -36,7 +35,7 @@ public class HatCommandProvider extends CommandProvider<EssentialModule> {
             Sound.ENTITY_VILLAGER_NO,
             GRAY.wrap("You must hold an item in your hand to equip it!"));
 
-    public HatCommandProvider(final EssentialModule module) {
+    public HatCommandProvider(final ExtrasModule module) {
         super(module, "hat");
     }
 
