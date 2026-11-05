@@ -15,12 +15,15 @@ import su.nightexpress.sunlight.config.Lang;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendToggle;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsConfig;
 import su.nightexpress.sunlight.moduleImpl.friends.FriendsModule;
+import su.nightexpress.sunlight.moduleImpl.friends.FriendsProperties;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsLang;
 import su.nightexpress.sunlight.moduleImpl.friends.config.FriendsPerms;
 import su.nightexpress.sunlight.moduleImpl.friends.event.PlayerFriendRequestEvent;
 import su.nightexpress.sunlight.moduleImpl.friends.event.PreFriendRequestEvent;
 import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequest;
 import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequestCounters;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.teleport.TeleportContext;
 import su.nightexpress.sunlight.teleport.TeleportFlag;
 import su.nightexpress.sunlight.teleport.TeleportType;
@@ -144,7 +147,8 @@ public class FriendsUserInterface {
           builder -> builder.with(CommonPlaceholders.PLAYER.resolver(target)));
       return false;
     }
-    if (!module.isRequestsEnabled(target.getUniqueId())
+    if (!SettingsAccess.allows(module.plugin(), target, sender, SettingsProperties.FRIEND_REQUEST_MODE,
+        FriendsProperties.REQUESTS_ENABLED)
         && !sender.hasPermission(FriendsPerms.BYPASS_REQUESTS_DISABLED)) {
       module.sendPrefixed(FriendsLang.REQUEST_ERROR_DISABLED, sender,
           builder -> builder.with(CommonPlaceholders.PLAYER.resolver(target)));
@@ -449,7 +453,8 @@ public class FriendsUserInterface {
           builder -> builder.with(CommonPlaceholders.PLAYER.resolver(target)));
       return false;
     }
-    if (!module.isFriendTeleportEnabled(target.getUniqueId())
+    if (!SettingsAccess.allows(module.plugin(), target, player, SettingsProperties.FRIEND_TELEPORT_MODE,
+        FriendsProperties.FRIEND_TELEPORT)
         && !FriendsConfig.TELEPORT_BYPASSES_REQUESTS_DISABLED.get()) {
       module.sendPrefixed(FriendsLang.JUMP_ERROR_DISABLED, player,
           builder -> builder.with(CommonPlaceholders.PLAYER.resolver(target)));

@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 import su.nightexpress.nightcore.config.FileConfig;
 import su.nightexpress.nightcore.util.*;
+import su.nightexpress.nightcore.util.bridge.wrapper.NightComponent;
 import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
 import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 import su.nightexpress.nightcore.util.text.night.NightMessage;
@@ -24,6 +25,9 @@ import su.nightexpress.sunlight.exception.ModuleLoadException;
 import su.nightexpress.sunlight.hook.placeholder.PlaceholderRegistry;
 import su.nightexpress.sunlight.module.Module;
 import su.nightexpress.sunlight.module.ModuleDefinition;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
+import su.nightexpress.sunlight.moduleImpl.settings.model.AudienceMode;
 
 import java.util.Map;
 import java.util.UUID;
@@ -131,7 +135,33 @@ public class DeathMessagesModule extends Module {
 
         String deathMessage = builder.build().apply(rawMessage);
 
-        EventUtils.getAdapter().setDeathMessage(event, NightMessage.parse(deathMessage));
+        this.broadcast(event, player, NightMessage.parse(deathMessage));
+    }
+
+    private void broadcast(PlayerDeathEvent event, Player source, NightComponent message) {
+        if (!SettingsAccess.isEnabled(this.plugin)) {
+            EventUtils.getAdapter().setDeathMessage(event, message);
+            return;
+        }
+
+        AudienceMode mode = SettingsAccess.mode(this.plugin, source, SettingsProperties.DEATH_MESSAGE_MODE);
+        if (mode == AudienceMode.EVERYONE) {
+            EventUtils.getAdapter().setDeathMessage(event, message);
+            return;
+        }
+
+        // The event adapter only carries one message, so suppress it and deliver
+        // per viewer when the audience is limited.
+        EventUtils.getAdapter().setDeathMessage(event, null);
+        if (mode == AudienceMode.NOBODY) {
+            return;
+        }
+
+        this.plugin.getServer().getOnlinePlayers().forEach(viewer -> {
+            if (!viewer.equals(source) && mode.allows(this.plugin, source, viewer)) {
+                Players.sendMessage(viewer, message);
+            }
+        });
     }
 
     public void trackAnvilPlacement(Location location, Player player) {

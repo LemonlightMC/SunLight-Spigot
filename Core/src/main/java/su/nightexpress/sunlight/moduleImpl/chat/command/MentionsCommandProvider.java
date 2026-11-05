@@ -14,6 +14,8 @@ import su.nightexpress.sunlight.moduleImpl.chat.ChatModule;
 import su.nightexpress.sunlight.moduleImpl.chat.ChatProperties;
 import su.nightexpress.sunlight.moduleImpl.chat.core.ChatLang;
 import su.nightexpress.sunlight.moduleImpl.chat.core.ChatPerms;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 
 public class MentionsCommandProvider extends CommandProvider<ChatModule> {
 
@@ -72,6 +74,9 @@ public class MentionsCommandProvider extends CommandProvider<ChatModule> {
 
                     user.setProperty(ChatProperties.MENTIONS, state);
                     user.markDirty();
+                    if (SettingsAccess.isEnabled(this.module.plugin())) {
+                        SettingsAccess.setEnabled(user, SettingsProperties.MENTIONS_MODE, state);
+                    }
 
                     if (sender != targetPlayer) {
                         this.module.sendPrefixed(ChatLang.MENTIONS_TOGGLE_FEEDBACK, sender, builder -> builder

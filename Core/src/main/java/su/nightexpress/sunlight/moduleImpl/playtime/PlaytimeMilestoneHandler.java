@@ -18,6 +18,7 @@ import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimeGoal;
 import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimeMilestone;
 import su.nightexpress.sunlight.moduleImpl.playtime.model.PlaytimePeriod;
 import su.nightexpress.sunlight.moduleImpl.playtime.config.PlaytimeLang;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.user.property.UserProperty;
 import su.nightexpress.sunlight.utils.TimeUtil;
@@ -214,7 +215,8 @@ public class PlaytimeMilestoneHandler {
                 user.setProperty(rewardedKey, key);
                 this.giveGoalReward(player, goalName, playtime, goal.rewards());
             }
-        } else if (module.getSettings().isRemindersEnabled()) {
+        } else if (module.getSettings().isRemindersEnabled()
+                && user.getPropertyOrDefault(SettingsProperties.REMINDER_PLAYTIME)) {
             if (goalMs - playtime <= goal.remainderWindow()
                     && user.getPropertyOrDefault(remindedKey) != key) {
                 user.setProperty(remindedKey, key);

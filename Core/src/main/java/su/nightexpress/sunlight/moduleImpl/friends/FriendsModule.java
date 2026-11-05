@@ -32,6 +32,8 @@ import su.nightexpress.sunlight.moduleImpl.friends.menu.FriendsListMenu;
 import su.nightexpress.sunlight.moduleImpl.friends.menu.FriendsPendingMenu;
 import su.nightexpress.sunlight.moduleImpl.friends.menu.FriendsSettingsMenu;
 import su.nightexpress.sunlight.moduleImpl.friends.repository.BlockRecord;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRecord;
 import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequest;
 import su.nightexpress.sunlight.moduleImpl.friends.repository.FriendRequestRepository;
@@ -532,6 +534,14 @@ public class FriendsModule extends Module implements FriendsProvider {
      */
     public void applyToggle(final SunUser user, final FriendToggle toggle, final boolean value) {
         toggle.set(user, value);
+        if (!SettingsAccess.isEnabled(this.plugin)) {
+            return;
+        }
+        if (toggle == FriendToggle.REQUESTS) {
+            SettingsAccess.setEnabled(user, SettingsProperties.FRIEND_REQUEST_MODE, value);
+        } else if (toggle == FriendToggle.TELEPORT) {
+            SettingsAccess.setEnabled(user, SettingsProperties.FRIEND_TELEPORT_MODE, value);
+        }
     }
 
     // Notifications

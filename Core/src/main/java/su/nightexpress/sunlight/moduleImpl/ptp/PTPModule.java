@@ -29,7 +29,10 @@ import su.nightexpress.sunlight.moduleImpl.ptp.config.PTPSettings;
 import su.nightexpress.sunlight.moduleImpl.ptp.listener.PTPListener;
 import su.nightexpress.sunlight.moduleImpl.ptp.request.TeleportMode;
 import su.nightexpress.sunlight.moduleImpl.ptp.request.TeleportRequest;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.teleport.*;
+import su.nightexpress.sunlight.user.property.UserProperty;
 import su.nightexpress.sunlight.user.property.UserPropertyRegistry;
 import su.nightexpress.sunlight.utils.EconomyUtils;
 
@@ -174,7 +177,12 @@ private boolean isFriendOf(Player sender, Player target) {
 
 public boolean sendRequest(Player sender, Player target, TeleportMode mode) {
         // Check if 'accepter' disaled requests so request should be declined.
-        if (!this.isRequestsEnabled(target) && !sender.hasPermission(PTPPerms.BYPASS_REQUESTS_DISABLED)
+        UserProperty<String> audienceProperty = mode == TeleportMode.REQUEST
+                ? SettingsProperties.TPA_REQUEST_MODE
+                : SettingsProperties.TPA_HERE_MODE;
+        if (!SettingsAccess.allows(this.plugin(), target, sender, audienceProperty,
+                PTPProperties.TELEPORT_REQUESTS)
+                && !sender.hasPermission(PTPPerms.BYPASS_REQUESTS_DISABLED)
                 && !this.isFriendOf(sender, target)) {
             this.sendPrefixed(PTPLang.REQUEST_SEND_ERROR_DISABLED, sender,
                     builder -> builder.with(CommonPlaceholders.PLAYER.resolver(target)));
@@ -199,6 +207,14 @@ public boolean sendRequest(Player sender, Player target, TeleportMode mode) {
             return false;
 
         this.getRequests(target).add(request);
+
+        // Auto accept handles the request immediately, so the pending notifications
+        // would only be noise. accept() sends its own feedback instead.
+        boolean autoAccept = SettingsAccess.isEnabled(this.plugin())
+                && SettingsAccess.allows(this.plugin(), target, sender, SettingsProperties.TPA_AUTO_ACCEPT_MODE);
+        if (autoAccept) {
+            return this.accept(target, sender.getName());
+        }
 
         this.sendPrefixed(mode == TeleportMode.REQUEST ? PTPLang.REQUEST_NOTIFY : PTPLang.INVITE_NOTIFY, target,
                 builder -> builder

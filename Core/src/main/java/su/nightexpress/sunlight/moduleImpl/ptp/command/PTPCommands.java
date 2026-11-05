@@ -21,6 +21,8 @@ import su.nightexpress.sunlight.moduleImpl.ptp.config.PTPLang;
 import su.nightexpress.sunlight.moduleImpl.ptp.config.PTPPerms;
 import su.nightexpress.sunlight.moduleImpl.ptp.request.TeleportMode;
 import su.nightexpress.sunlight.moduleImpl.ptp.request.TeleportRequest;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.utils.Utils;
 
 public class PTPCommands extends CommandProvider<PTPModule> {
@@ -179,6 +181,11 @@ public class PTPCommands extends CommandProvider<PTPModule> {
             final boolean state = mode.apply(user.getPropertyOrDefault(PTPProperties.TELEPORT_REQUESTS));
             user.setProperty(PTPProperties.TELEPORT_REQUESTS, state);
             user.markDirty();
+
+            if (SettingsAccess.isEnabled(this.module.plugin())) {
+                SettingsAccess.setEnabled(user, SettingsProperties.TPA_REQUEST_MODE, state);
+                SettingsAccess.setEnabled(user, SettingsProperties.TPA_HERE_MODE, state);
+            }
 
             if (sender != targetPlayer) {
                 this.module.sendPrefixed(PTPLang.REQUESTS_TOGGLE_FEEDBACK, sender, replacer -> replacer

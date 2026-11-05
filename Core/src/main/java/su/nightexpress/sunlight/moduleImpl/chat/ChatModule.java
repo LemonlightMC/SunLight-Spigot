@@ -46,6 +46,7 @@ import su.nightexpress.sunlight.moduleImpl.chat.mail.MailData;
 import su.nightexpress.sunlight.moduleImpl.chat.mail.MailDataManager;
 import su.nightexpress.sunlight.moduleImpl.chat.processor.ChatProcessor;
 import su.nightexpress.sunlight.moduleImpl.chat.processor.chat.ChannelProcessor;
+import su.nightexpress.sunlight.moduleImpl.chat.processor.chat.ChatColorProcessor;
 import su.nightexpress.sunlight.moduleImpl.chat.processor.chat.DiscordProcessor;
 import su.nightexpress.sunlight.moduleImpl.chat.processor.chat.FormatProcessor;
 import su.nightexpress.sunlight.moduleImpl.chat.processor.chat.MentionProcessor;
@@ -59,6 +60,8 @@ import su.nightexpress.sunlight.moduleImpl.chat.rule.WordFilter;
 import su.nightexpress.sunlight.moduleImpl.chat.dialog.SpyDialog;
 import su.nightexpress.sunlight.moduleImpl.chat.spy.SpyLogger;
 import su.nightexpress.sunlight.moduleImpl.chat.spy.SpyType;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.user.property.UserProperty;
 import su.nightexpress.sunlight.user.property.UserPropertyRegistry;
@@ -490,6 +493,7 @@ public class ChatModule extends Module implements ChatProvider {
         List<ChatProcessor<? super MessageContext>> processors = new ArrayList<>();
 
         processors.add(new ColorProcessor());
+        processors.add(new ChatColorProcessor());
 
         processors.add(new ChannelProcessor(this.plugin)); // Check channel cooldown, remove channel prefix from
                                                            // message.
@@ -699,9 +703,8 @@ public class ChatModule extends Module implements ChatProvider {
             return false;
         }
 
-        SunUser targetUser = this.userManager.getOrFetch(target);
-        if (!targetUser.getPropertyOrDefault(ChatProperties.CONVERSATIONS) && !player.hasPermission(
-                ChatPerms.BYPASS_CONVERSATIONS_DISABLED)) {
+        if (!SettingsAccess.allows(this.plugin, target, player, SettingsProperties.PM_MODE,
+                ChatProperties.CONVERSATIONS) && !player.hasPermission(ChatPerms.BYPASS_CONVERSATIONS_DISABLED)) {
             this.sendPrefixed(ChatLang.CONVERSATIONS_SEND_DENIED, player, replacer -> replacer.with(
                     CommonPlaceholders.PLAYER.resolver(target)));
             return false;
@@ -736,6 +739,7 @@ public class ChatModule extends Module implements ChatProvider {
         List<ChatProcessor<? super ConversationContext>> processors = new ArrayList<>();
 
         processors.add(new ColorProcessor());
+        processors.add(new ChatColorProcessor());
 
         if (this.settings.isAntiFloodEnabled() && !player.hasPermission(ChatPerms.BYPASS_ANTI_FLOOD)) {
             processors.add(new AntiFloodProcessor()); // Check message similarity only after all modifications are done.
@@ -873,7 +877,11 @@ public class ChatModule extends Module implements ChatProvider {
 
     @Override
     public void setConversationsEnabled(@NotNull Player player, boolean enabled) {
-        this.userManager.getOrFetch(player).setProperty(ChatProperties.CONVERSATIONS, enabled);
+        SunUser user = this.userManager.getOrFetch(player);
+        user.setProperty(ChatProperties.CONVERSATIONS, enabled);
+        if (SettingsAccess.isEnabled(this.plugin)) {
+            SettingsAccess.setEnabled(user, SettingsProperties.PM_MODE, enabled);
+        }
     }
 
     @Override
@@ -885,6 +893,10 @@ public class ChatModule extends Module implements ChatProvider {
 
     @Override
     public void setMentionsEnabled(@NotNull Player player, boolean enabled) {
-        this.userManager.getOrFetch(player).setProperty(ChatProperties.MENTIONS, enabled);
+        SunUser user = this.userManager.getOrFetch(player);
+        user.setProperty(ChatProperties.MENTIONS, enabled);
+        if (SettingsAccess.isEnabled(this.plugin)) {
+            SettingsAccess.setEnabled(user, SettingsProperties.MENTIONS_MODE, enabled);
+        }
     }
 }

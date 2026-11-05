@@ -24,7 +24,8 @@ import su.nightexpress.sunlight.moduleImpl.chat.core.ChatPerms;
 import su.nightexpress.sunlight.moduleImpl.chat.mention.ChatMention;
 import su.nightexpress.sunlight.moduleImpl.chat.mention.PlayerMention;
 import su.nightexpress.sunlight.moduleImpl.chat.processor.MessageProcessor;
-import su.nightexpress.sunlight.user.SunUser;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.user.UserManager;
 import su.nightexpress.sunlight.utils.PermissionUtils;
 import su.nightexpress.sunlight.utils.Utils;
@@ -112,8 +113,8 @@ public class MentionProcessor implements MessageProcessor {
         this.mentions.forEach((id, mention) -> {
             context.getViewers().forEach(sender -> {
                 if (sender instanceof Player target && mention.isApplicable(target)) {
-                    SunUser targetUser = this.userManager.getOrFetch(target);
-                    if (targetUser.getPropertyOrDefault(ChatProperties.MENTIONS)) {
+                    if (SettingsAccess.allows(module.plugin(), target, player, SettingsProperties.MENTIONS_MODE,
+                            ChatProperties.MENTIONS)) {
                         targets.add(target);
                     }
                 }

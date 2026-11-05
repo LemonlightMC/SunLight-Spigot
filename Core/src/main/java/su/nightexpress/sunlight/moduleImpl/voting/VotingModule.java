@@ -33,6 +33,8 @@ import su.nightexpress.sunlight.api.provider.VoteHandle;
 import su.nightexpress.sunlight.hook.placeholder.PlaceholderRegistry;
 import su.nightexpress.sunlight.module.Module;
 import su.nightexpress.sunlight.module.ModuleDefinition;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
 import su.nightexpress.sunlight.moduleImpl.voting.command.VotingCastCommandProvider;
 import su.nightexpress.sunlight.moduleImpl.voting.command.VotingStaffCommandProvider;
 import su.nightexpress.sunlight.moduleImpl.voting.command.VotingTemplateCommandProvider;
@@ -52,6 +54,7 @@ import su.nightexpress.sunlight.moduleImpl.voting.data.VotingDataManager;
 import su.nightexpress.sunlight.moduleImpl.voting.menu.VoteViewMenu;
 import su.nightexpress.sunlight.moduleImpl.voting.menu.VoteWizardMenu;
 import su.nightexpress.sunlight.moduleImpl.voting.menu.VotesMenu;
+import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.moduleImpl.voting.model.GateType;
 import su.nightexpress.sunlight.moduleImpl.voting.model.OverMaxMode;
 import su.nightexpress.sunlight.moduleImpl.voting.model.Vote;
@@ -266,12 +269,25 @@ public class VotingModule extends Module {
         if (playerId == null) {
             return true;
         }
+        if (SettingsAccess.isEnabled(this.plugin)) {
+            return this.userManager.getRepository().getById(playerId)
+                    .map(user -> user.getPropertyOrDefault(SettingsProperties.REMINDER_VOTING))
+                    .orElse(true);
+        }
         return this.notifyPrefs.getOrDefault(playerId, Boolean.TRUE);
     }
 
     public void setReminderEnabled(final UUID playerId, final boolean enabled) {
         if (playerId == null) {
             return;
+        }
+        if (SettingsAccess.isEnabled(this.plugin)) {
+            Player player = Bukkit.getPlayer(playerId);
+            if (player != null) {
+                SunUser user = this.userManager.getOrFetch(player);
+                user.setProperty(SettingsProperties.REMINDER_VOTING, enabled);
+                user.markDirty();
+            }
         }
         if (enabled) {
             this.notifyPrefs.remove(playerId);

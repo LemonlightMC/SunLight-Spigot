@@ -1,8 +1,10 @@
 package su.nightexpress.sunlight.moduleImpl.greetings.listener;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -15,6 +17,10 @@ import su.nightexpress.nightcore.util.bridge.wrapper.NightComponent;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.api.provider.dto.GreetingMessageType;
 import su.nightexpress.sunlight.moduleImpl.greetings.GreetingsModule;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsAccess;
+import su.nightexpress.sunlight.moduleImpl.settings.SettingsProperties;
+import su.nightexpress.sunlight.moduleImpl.settings.model.AudienceMode;
+import su.nightexpress.sunlight.user.property.UserProperty;
 
 public class GreetingsListener extends AbstractListener<SunLightPlugin> {
 
@@ -46,7 +52,8 @@ public class GreetingsListener extends AbstractListener<SunLightPlugin> {
                 return;
             }
         }
-        EventUtils.getAdapter().setJoinMessage(event, message);
+        this.broadcast(event.getPlayer(), message, SettingsProperties.JOIN_MESSAGE_MODE,
+                component -> EventUtils.getAdapter().setJoinMessage(event, component));
 
         Bukkit.getScheduler().runTaskAsynchronously(module.plugin(), () -> {
             if (!module.settings.isJoinCommandsEnabled())
@@ -65,6 +72,37 @@ public class GreetingsListener extends AbstractListener<SunLightPlugin> {
         if (message == null) {
             return;
         }
-        EventUtils.getAdapter().setQuitMessage(event, message);
+        this.broadcast(event.getPlayer(), message, SettingsProperties.QUIT_MESSAGE_MODE,
+                component -> EventUtils.getAdapter().setQuitMessage(event, component));
+    }
+
+    private void broadcast(Player source, NightComponent message, UserProperty<String> property,
+            Consumer<NightComponent> eventMessage) {
+        if (!SettingsAccess.isEnabled(this.plugin)) {
+            eventMessage.accept(message);
+            return;
+        }
+
+        AudienceMode mode = SettingsAccess.mode(this.plugin, source, property);
+        if (mode == AudienceMode.EVERYONE) {
+            eventMessage.accept(message);
+            return;
+        }
+
+        // Suppress the server-wide message and deliver it only to the audience the
+        // player picked. The source never needs to see their own join/quit line.
+        eventMessage.accept(null);
+        if (mode == AudienceMode.NOBODY) {
+            return;
+        }
+
+        for (Player viewer : Bukkit.getOnlinePlayers()) {
+            if (viewer.equals(source)) {
+                continue;
+            }
+            if (mode.allows(this.plugin, source, viewer)) {
+                Players.sendMessage(viewer, message);
+            }
+        }
     }
 }
