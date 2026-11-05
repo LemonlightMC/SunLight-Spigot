@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.command.mode;
+package su.nightexpress.sunlight.api.provider.mode;
 
 import java.util.function.Function;
 

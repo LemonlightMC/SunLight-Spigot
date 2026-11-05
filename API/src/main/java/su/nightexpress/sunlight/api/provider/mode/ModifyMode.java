@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.command.mode;
+package su.nightexpress.sunlight.api.provider.mode;
 
 import java.util.function.BiFunction;
 
@@ -6,7 +6,8 @@ public enum ModifyMode {
 
     ADD(Double::sum),
     SET((in, amount) -> amount),
-    REMOVE((in, amount) -> in - amount);
+    REMOVE((in, amount) -> in - amount),
+    RESET((in, amount) -> 0d);
 
     private final BiFunction<Double, Double, Double> function;
 
