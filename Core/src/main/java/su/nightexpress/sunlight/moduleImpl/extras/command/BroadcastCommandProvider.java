@@ -40,14 +40,12 @@ public class BroadcastCommandProvider extends CommandProvider<ExtrasModule> {
     }
 
     private int broadcast(final CommandSender sender, final CommandArguments arguments) {
-        final Object textArg = arguments.get(CommandArgumentConstants.TEXT);
-        if (!(textArg instanceof final String text)) {
+        if (!(arguments.get(CommandArgumentConstants.TEXT) instanceof final String text)) {
             return 0;
         }
 
         final String format = String.join(BR, this.module.settings().broadcastFormat.get());
-        final String message = format.replace(SLPlaceholders.GENERIC_MESSAGE, text);
-        final NightComponent component = NightMessage.parse(message);
+        final NightComponent component = NightMessage.parse(format.replace(SLPlaceholders.GENERIC_MESSAGE, text));
 
         Utils.onlinePlayers().forEach(player -> Players.sendMessage(player, component));
         Players.sendMessage(this.module.plugin().getServer().getConsoleSender(), component);

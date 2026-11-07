@@ -12,7 +12,7 @@ import su.nightexpress.sunlight.moduleImpl.extras.listener.StarterKitListener;
 import su.nightexpress.sunlight.teleport.TeleportManager;
 import su.nightexpress.sunlight.user.property.UserProperty;
 
-public class ExtrasModule extends Module  {
+public class ExtrasModule extends Module {
 
     public static final UserProperty<Boolean> GOD = UserProperty.create("god", Boolean.class, false, true);
 
@@ -56,6 +56,7 @@ public class ExtrasModule extends Module  {
         this.commandRegistry.addProvider(new SkullCommandProvider(this));
         this.commandRegistry.addProvider(new SmiteCommandProvider(this));
         this.commandRegistry.addProvider(new SuicideCommandProvider(this));
+        this.commandRegistry.addProvider(new StaffCommandProvider(this));
 
         if (this.settings.isSignColorsEnabled() || this.settings.isAnvilColorsEnabled()) {
             this.addListener(new ColorsListener(this.plugin, this));

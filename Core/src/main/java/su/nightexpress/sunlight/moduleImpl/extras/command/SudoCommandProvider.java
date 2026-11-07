@@ -45,11 +45,11 @@ public class SudoCommandProvider extends CommandProvider<ExtrasModule> {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return 0;
         }
-        String trimmed = input.trim();
-        if (trimmed.startsWith("/")) {
-            this.module.plugin().getServer().dispatchCommand(target, trimmed.substring(1));
+        input = input.trim();
+        if (input.startsWith("/")) {
+            this.module.plugin().getServer().dispatchCommand(target, input.substring(1));
         } else {
-            target.chat(trimmed);
+            target.chat(input);
         }
         return 1;
     }

@@ -21,8 +21,6 @@ import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY
 
 public class HatCommandProvider extends CommandProvider<ExtrasModule> {
 
-    private static final String COMMAND_HAT = "hat";
-
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Hat.Desc").text("Put item in head.");
 
     private static final String PERMISSION = ExtrasPerms.COMMAND + ".hat";
@@ -41,7 +39,7 @@ public class HatCommandProvider extends CommandProvider<ExtrasModule> {
 
     @Override
     public void setup() {
-        this.register(COMMAND_HAT, command -> command
+        this.register("hat", command -> command
                 .withFullDescription(DESCRIPTION.text())
                 .withPermission(PERMISSION)
                 .withRequirement(sender -> sender instanceof Player)
@@ -62,10 +60,9 @@ public class HatCommandProvider extends CommandProvider<ExtrasModule> {
             return 0;
         }
 
-        final EquipmentSlot slot = EquipmentSlot.HEAD;
         final ItemStack oldItem = EntityUtil.getItemInSlot(player, EquipmentSlot.HEAD);
         player.getInventory().setItemInMainHand(null);
-        player.getInventory().setItem(slot, item);
+        player.getInventory().setItem(EquipmentSlot.HEAD, item);
 
         if (oldItem != null && !oldItem.getType().isAir()) {
             Players.addItem(player, oldItem);

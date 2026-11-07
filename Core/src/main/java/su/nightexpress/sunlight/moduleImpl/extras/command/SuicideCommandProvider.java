@@ -19,8 +19,6 @@ import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.GRAY
 
 public class SuicideCommandProvider extends CommandProvider<ExtrasModule> {
 
-    private static final String COMMAND_SUICIDE = "suicide";
-
     private static final String PERMISSION = ExtrasPerms.COMMAND + ".suicide";
 
     private static final TextLocale DESCRIPTION = LangEntry.builder("Command.Suicide.Desc").text("Commit suicide.");
@@ -34,27 +32,23 @@ public class SuicideCommandProvider extends CommandProvider<ExtrasModule> {
 
     @Override
     public void setup() {
-        this.register(COMMAND_SUICIDE, command -> command
+        this.register("suicide", command -> command
                 .withFullDescription(DESCRIPTION.text())
                 .withPermission(PERMISSION)
                 .withRequirement(sender -> sender instanceof Player)
                 .executes((sender, arguments) -> {
-                    return this.commitSuicide(sender, arguments);
+                    if (!(sender instanceof final Player target)) {
+                        this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
+                        return 0;
+                    }
+
+                    final DamageSource source = DamageSource.builder(DamageType.GENERIC_KILL).withDirectEntity(target)
+                            .withCausingEntity(target).build();
+                    target.damage(Integer.MAX_VALUE, source);
+                    target.setHealth(0);
+                    this.module.sendPrefixed(MESSAGE_SUICIDE_NOTIFY, target,
+                            replacer -> replacer.with(CommonPlaceholders.PLAYER.resolver(target)));
+                    return 1;
                 }));
-    }
-
-    private int commitSuicide(final CommandSender sender, final CommandArguments arguments) {
-        if (!(sender instanceof final Player target)) {
-            this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
-            return 0;
-        }
-
-        final DamageSource source = DamageSource.builder(DamageType.GENERIC_KILL).withDirectEntity(target)
-                .withCausingEntity(target).build();
-        target.damage(Integer.MAX_VALUE, source);
-        target.setHealth(0);
-        this.module.sendPrefixed(MESSAGE_SUICIDE_NOTIFY, target,
-                replacer -> replacer.with(CommonPlaceholders.PLAYER.resolver(target)));
-        return 1;
     }
 }
