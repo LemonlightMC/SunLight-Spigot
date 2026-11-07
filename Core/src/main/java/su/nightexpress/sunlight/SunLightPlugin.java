@@ -43,6 +43,7 @@ import su.nightexpress.sunlight.moduleImpl.rtp.RTPModule;
 import su.nightexpress.sunlight.moduleImpl.reports.ReportsModule;
 import su.nightexpress.sunlight.moduleImpl.scheduler.SchedulerModule;
 import su.nightexpress.sunlight.moduleImpl.settings.SettingsModule;
+import su.nightexpress.sunlight.moduleImpl.sign.SignsModule;
 import su.nightexpress.sunlight.moduleImpl.socials.SocialsModule;
 import su.nightexpress.sunlight.moduleImpl.spawns.SpawnsModule;
 import su.nightexpress.sunlight.moduleImpl.texts.TextsModule;
@@ -298,6 +299,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
         manager.register("vanish", "Vanish", VanishModule::new);
         manager.register("voting", "Voting", VotingModule::new);
         manager.register("settings", "Settings", SettingsModule::new);
+        manager.register("sign", "Sign", SignsModule::new);
         manager.register("warmups", "Warmups", WarmupsModule::new);
         manager.register("warps", "Warps", WarpsModule::new);
     }

@@ -18,6 +18,9 @@ public class EssentialPerms {
     public static final String COMMAND_AGGRO = COMMAND + ".aggro";
     public static final String COMMAND_AGGRO_OTHERS = COMMAND + ".aggro.others";
 
+    public static final String COMMAND_RENAME = COMMAND + ".rename";
+    public static final String COMMAND_RENAME_COLORS = COMMAND + ".rename.colors";
+
     private EssentialPerms() {
     }
 }

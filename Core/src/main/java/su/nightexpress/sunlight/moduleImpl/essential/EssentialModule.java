@@ -69,6 +69,7 @@ public class EssentialModule extends Module implements EssentialProvider {
         this.commandRegistry.addProvider(new PlayerInfoCommandProvider(this));
         this.commandRegistry.addProvider(new JumpCommandProvider(this));
         this.commandRegistry.addProvider(new LookTpCommandProvider(this));
+        this.commandRegistry.addProvider(new RenameCommandProvider(this));
         this.commandRegistry.addProvider(new SpeedCommandProvider(this));
         this.commandRegistry.addProvider(new TeleportCommandsProvider(this));
         this.commandRegistry.addProvider(new TimeCommandProvider(this));
