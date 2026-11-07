@@ -9,6 +9,7 @@ import su.nightexpress.sunlight.module.ModuleDefinition;
 import su.nightexpress.sunlight.moduleImpl.extras.command.*;
 import su.nightexpress.sunlight.moduleImpl.extras.listener.ColorsListener;
 import su.nightexpress.sunlight.moduleImpl.extras.listener.StarterKitListener;
+import su.nightexpress.sunlight.moduleImpl.extras.object.SignHandler;
 import su.nightexpress.sunlight.teleport.TeleportManager;
 import su.nightexpress.sunlight.user.property.UserProperty;
 
@@ -19,12 +20,14 @@ public class ExtrasModule extends Module {
     private final TeleportManager teleportManager;
     private final ExtrasSettings settings;
     private final StarterKitSettings starterKitSettings;
+    private final SignHandler signHandler;
 
     public ExtrasModule(ModuleDefinition<ExtrasModule> definition, SunLightPlugin plugin) {
         super(definition, plugin);
         this.teleportManager = plugin.teleportManager();
         this.settings = new ExtrasSettings();
         this.starterKitSettings = new StarterKitSettings();
+        this.signHandler = new SignHandler(this);
     }
 
     public ExtrasSettings settings() {
@@ -39,10 +42,16 @@ public class ExtrasModule extends Module {
         return this.teleportManager;
     }
 
+    public SignHandler signHandler() {
+        return this.signHandler;
+    }
+
     @Override
     protected void loadModule(FileConfig config) {
         this.settings.load(config);
+        this.plugin.injectLang(SignsLang.class);
 
+        this.commandRegistry.addProvider(new SignsCommandsProvider(this));
         this.starterKitSettings.load(config);
         if (PermissionBridge.hasProvider()) {
             this.commandRegistry.addProvider(new StaffCommandProvider(this));

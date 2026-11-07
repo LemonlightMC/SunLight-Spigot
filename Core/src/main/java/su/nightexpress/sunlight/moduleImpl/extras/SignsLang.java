@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.sign.config;
+package su.nightexpress.sunlight.moduleImpl.extras;
 
 import org.bukkit.Sound;
 import su.nightexpress.nightcore.locale.LangContainer;

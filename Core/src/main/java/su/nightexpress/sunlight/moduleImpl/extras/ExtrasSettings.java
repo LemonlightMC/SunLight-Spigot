@@ -1,5 +1,6 @@
 package su.nightexpress.sunlight.moduleImpl.extras;
 
+import su.nightexpress.nightcore.config.ConfigValue;
 import su.nightexpress.nightcore.configuration.AbstractConfig;
 import su.nightexpress.nightcore.configuration.ConfigProperty;
 import su.nightexpress.nightcore.configuration.ConfigTypes;
@@ -69,6 +70,90 @@ public class ExtrasSettings extends AbstractConfig {
                                                         + PLAYER_SUFFIX),
                         "[*] Text Formations Guide: " + URL_WIKI_TEXT,
                         "[*] Placeholders: '%s', '%s', 'PlaceholderAPI'".formatted(PLAYER_PREFIX, PLAYER_SUFFIX));
+
+        public final ConfigValue<List<String>> SIGN_CONTENT_DEFAULT = ConfigValue.create("Signature.Content.DEFAULT",
+                        List.of(
+                                        "<white>%text%",
+                                        "",
+                                        "<gray>Signed by <green><bold>%player%<reset><gray> on <yellow><bold>%date% <yellow><bold>%time%"),
+                        "Signature lore lines of the '/sign <text>' command.",
+                        "Placeholders: " + "%text%, %player%, %date%, %time%.");
+
+        public final ConfigValue<List<String>> SIGN_CONTENT_SHORT = ConfigValue.create("Signature.Content.SHORT",
+                        List.of(
+                                        "<gray>Signed by <green><bold>%player%<reset><gray> on <yellow><bold>%date% <yellow><bold>%time%"),
+                        "Signature lore lines of the plain '/sign' command.",
+                        "Placeholders: " + "%player%, %date%, %time%.");
+
+        public final ConfigValue<String> SIGN_FORMAT_DATE = ConfigValue.create("Signature.Formats.Date",
+                        "dd/MM/yyyy",
+                        "Date format for the '" + "%date%" + "' placeholder.",
+                        "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html");
+
+        public final ConfigValue<String> SIGN_FORMAT_TIME = ConfigValue.create("Signature.Formats.Time",
+                        "HH:mm:ss",
+                        "Time format for the '" + "%time%" + "' placeholder.",
+                        "https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html");
+
+        public final ConfigValue<Boolean> SIGN_ALLOW_COLORS = ConfigValue.create("Signature.Allow_Colors",
+                        true,
+                        "Sets whether players (with '" + ExtrasPerms.SIGN_COMMAND_COLORS + "' permission) are allowed",
+                        "to use color tags in the signature text.");
+
+        public final ConfigValue<Integer> SIGN_MAX_SIGNATURES = ConfigValue.create("Signature.Max",
+                        0,
+                        "Maximum amount of signatures allowed on a single item.",
+                        "Set to '0' for unlimited.");
+
+        public final ConfigValue<Boolean> SIGN_ADD_TO_TOP = ConfigValue.create("Signature.Add_To.Top",
+                        false,
+                        "Sets whether new signature lore is added on 'top' (above the existing",
+                        "item lore) instead of below it.");
+
+        public final ConfigValue<Integer> SIGN_MAX_STACK_SIZE = ConfigValue.create("Restrictions.Max_Stack_Size",
+                        1,
+                        "Maximum amount of items in a stack that can be signed.");
+
+        public final ConfigValue<List<String>> SIGN_ITEM_BLACKLIST = ConfigValue.create("Restrictions.Item_Blacklist",
+                        List.of(),
+                        "List of materials that can not be signed.",
+                        "https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html");
+
+        public final ConfigValue<Boolean> SIGN_DENY_ITEMS_WITH_LORE = ConfigValue.create(
+                        "Restrictions.Deny_Items_With_Lore",
+                        false,
+                        "Sets whether items with custom lore can not be signed.");
+
+        public final ConfigValue<Boolean> SIGN_AUTO_LOCK = ConfigValue.create("Auto_Lock.Enabled",
+                        false,
+                        "Sets whether new signatures will automatically lock the item.",
+                        "Locked items can not receive more signatures.");
+
+        public final ConfigValue<Boolean> SIGN_AUTO_LOCK_PERMISSION = ConfigValue.create("Auto_Lock.Permission_Based",
+                        true,
+                        "Sets whether auto-locking requires the '" + ExtrasPerms.SIGN_COMMAND_LOCK_AUTO
+                                        + "' permission.");
+
+        public final ConfigValue<Boolean> SIGN_OFFHAND_ENABLED = ConfigValue.create("Requirement.Offhand.Enabled",
+                        false,
+                        "Sets whether players must hold a certain item in the offhand to sign items.");
+
+        public final ConfigValue<String> SIGN_OFFHAND_TYPE = ConfigValue.create("Requirement.Offhand.Type",
+                        "GLOW_INK_SAC",
+                        "The offhand item material.");
+
+        public final ConfigValue<Integer> SIGN_OFFHAND_AMOUNT = ConfigValue.create("Requirement.Offhand.Amount",
+                        1,
+                        "The offhand item amount required.");
+
+        public final ConfigValue<Boolean> SIGN_OFFHAND_CONSUME = ConfigValue.create("Requirement.Offhand.Consume",
+                        true,
+                        "Sets whether the offhand item is consumed on a successful signature.");
+
+        public final ConfigValue<Integer> SIGN_XP_COST = ConfigValue.create("Cost.XP",
+                        0,
+                        "Amount of XP **levels** to charge for a signature.",
+                        "Set to '0' to disable.");
 
         public boolean isSignColorsEnabled() {
                 return this.signColorsEnabled.get();

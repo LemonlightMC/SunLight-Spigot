@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.sign.object;
+package su.nightexpress.sunlight.moduleImpl.extras.object;
 
 import java.util.List;
 import java.util.UUID;
