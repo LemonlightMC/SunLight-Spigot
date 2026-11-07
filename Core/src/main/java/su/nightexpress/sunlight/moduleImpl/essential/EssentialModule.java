@@ -255,7 +255,7 @@ public class EssentialModule extends Module implements EssentialProvider {
                 return null;
             }
             try {
-                return internals.getGameMode();
+                return internals.getGameMode(player);
             } catch (final Exception e) {
                 this.plugin().getLogger()
                         .warning("Failed to get gamemode for offline player " + player.getName());

@@ -48,7 +48,7 @@ subprojects {
         //    optional packet hooks can target.
         //  - The 1.21.11 paper dev bundle is a SNAPSHOT because that is how Paper
         //    publishes dev bundles.
-        compileOnly 'su.nightexpress.nightcore:main:2.16.4'
+        compileOnly 'su.nightexpress.nightcore:main:2.16.6'
         // Pinned, not '26.1.2.build.+': a dynamic version lets an unchanged
         // checkout compile against a different paper-api without a diff.
         compileOnly 'io.papermc.paper:paper-api:26.1.2.build.74-stable'

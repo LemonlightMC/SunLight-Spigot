@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -95,6 +96,20 @@ public class NMSv26p1 implements SunNMS {
         // serverPlayer.loadGameTypes(input); // Save GameMode on load data
 
         return serverPlayer.getBukkitEntity();
+    }
+
+    @Override
+    public GameMode getGameMode(final Player player) {
+        final CraftServer craftServer = (CraftServer) Bukkit.getServer();
+        final NameAndId nameAndId = new NameAndId(player.getUniqueId(), player.getName());
+
+        final CompoundTag playerData = craftServer.getHandle().playerIo.load(nameAndId).orElse(null);
+        if (playerData == null) return null; // No saved data for the player.
+
+        final int gameTypeId = playerData.getIntOr("playerGameType", -1);
+        if (gameTypeId < 0) return null; // No saved gamemode.
+
+        return GameMode.valueOf(GameType.byId(gameTypeId).name());
     }
 
     @Override

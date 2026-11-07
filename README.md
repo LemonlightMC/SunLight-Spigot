@@ -66,11 +66,10 @@ The following versions and platforms are supported:
 
 | **Server Version**  | **Paper** | **Spigot** | **Folia** | **Java Version**
 | :---: | :---: | :---: | :--: | :---: |
+| 26.3 | ✔️ | ✔️ | ❌ | 25 |
+| 26.2 | ✔️ | ✔️ | ❌ | 25 |
 | 26.1.X | ✔️ | ✔️ | ❌ | 25 |
-| 1.21.11 | ✔️ | ✔️ | ❌ | 25 |
-| 1.21.10 | ❌ | ❌ | ❌ | - |
-| 1.21.9 | ❌ | ❌ | ❌ | - |
-| 1.21.8 | ❌ | ❌ | ❌ | - |
+| 1.21 - 1.21.11 | ✔️ | ✔️ | ❌ | 25 |
 
 - Anything not listed in the compatibility table is **NOT** supported.
 - Make sure to check out all known issues and incompatibilities [here](https://nightexpressdev.com/sunlight/faq/).

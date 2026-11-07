@@ -234,7 +234,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
     }
 
     private void setupInternalNMS() {
-        if (Version.isBehind(Version.MC_1_21_11)) {
+        if (Version.isBehind(Version.MC_1_21)) {
             this.error("Your server version is not supported. Some of the features will be disabled.");
             return;
         }

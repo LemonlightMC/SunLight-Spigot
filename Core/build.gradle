@@ -5,12 +5,14 @@ plugins {
 dependencies {
     implementation project(':API')
     implementation project(':NMS')
-    // Both version impls are bundled into the fat jar, but Core does not reference
+    // All version impls are bundled into the fat jar, but Core does not reference
     // them: SunNMSFactory resolves one reflectively, so an impl is only ever
     // class-loaded on the server version it targets. runtimeOnly therefore keeps
     // them out of Core's compile classpath while shadow still packages them.
     runtimeOnly project(":MC_1_21_11")
     runtimeOnly project(":nms-26-1")
+    runtimeOnly project(":nms-26-2")
+    runtimeOnly project(":nms-26-3")
 
     // Bundled and relocated below. Declared here rather than for the whole build
     // because Core is the only module that uses CommandAPI.

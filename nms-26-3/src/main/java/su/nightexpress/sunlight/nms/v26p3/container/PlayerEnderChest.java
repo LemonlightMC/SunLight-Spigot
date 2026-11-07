@@ -1,0 +1,46 @@
+package su.nightexpress.sunlight.nms.v26p3.container;
+
+import org.bukkit.craftbukkit.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
+
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.PlayerEnderChestContainer;
+import su.nightexpress.nightcore.util.Reflex;
+
+public class PlayerEnderChest extends PlayerEnderChestContainer {
+
+    private static final String ITEMS_FIELD = "items"; // 'c'
+
+    private final CraftInventory inventory = new CraftInventory(this);
+    private final CraftPlayer owner;
+
+    public PlayerEnderChest(CraftPlayer owner) {
+        super(owner.getHandle());
+        this.owner = owner;
+        // 'items' is private in SimpleContainer as of 26.2, so alias the live
+        // ender chest list reflectively instead of a direct field access.
+        Reflex.setFieldValue(this, ITEMS_FIELD, owner.getHandle().getEnderChestInventory().getItems());
+    }
+
+    public org.bukkit.inventory.Inventory getInventory() {
+        return this.inventory;
+    }
+
+    private void saveOnExit() {
+        if (!this.transaction.isEmpty())
+            return;
+        this.owner.saveData();
+    }
+
+    @Override
+    public void onClose(CraftHumanEntity who) {
+        super.onClose(who);
+        this.saveOnExit();
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return true;
+    }
+}

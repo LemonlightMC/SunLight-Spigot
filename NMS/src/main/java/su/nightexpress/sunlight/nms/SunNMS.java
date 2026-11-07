@@ -25,7 +25,7 @@ public interface SunNMS {
 
     void setGameMode(Player player, GameMode mode);
 
-    GameMode getGameMode();
+    GameMode getGameMode(Player player);
 
     void teleport(Player player, Location location);
 

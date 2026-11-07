@@ -109,6 +109,21 @@ public class MC_1_21_11 implements SunNMS {
     }
 
     @Override
+    public GameMode getGameMode(Player player) {
+        CraftServer craftServer = (CraftServer) Bukkit.getServer();
+        DedicatedPlayerList playerList = craftServer.getHandle();
+        NameAndId nameAndId = new NameAndId(player.getUniqueId(), player.getName());
+
+        CompoundTag playerData = playerList.playerIo.load(nameAndId).orElse(null);
+        if (playerData == null) return null; // No saved data for the player.
+
+        int gameTypeId = playerData.getIntOr("playerGameType", -1);
+        if (gameTypeId < 0) return null; // No saved gamemode.
+
+        return GameMode.valueOf(GameType.byId(gameTypeId).name());
+    }
+
+    @Override
     public void setGameMode(Player player, GameMode mode) {
         CraftPlayer craftPlayer = (CraftPlayer) player;
         ServerPlayer serverPlayer = craftPlayer.getHandle();

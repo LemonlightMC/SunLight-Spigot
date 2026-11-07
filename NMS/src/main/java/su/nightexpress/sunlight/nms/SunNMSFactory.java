@@ -2,6 +2,8 @@ package su.nightexpress.sunlight.nms;
 
 import java.util.Map;
 
+import static java.util.Map.entry;
+
 import su.nightexpress.nightcore.util.Version;
 
 /**
@@ -18,18 +20,39 @@ import su.nightexpress.nightcore.util.Version;
 public final class SunNMSFactory {
 
     private static final String NMS_1_21_11 = "su.nightexpress.sunlight.nms.mc_1_21_11.MC_1_21_11";
-    private static final String NMS_26_1     = "su.nightexpress.sunlight.nms.v26p1.NMSv26p1";
+    private static final String NMS_26_1    = "su.nightexpress.sunlight.nms.v26p1.NMSv26p1";
+    private static final String NMS_26_2    = "su.nightexpress.sunlight.nms.v26p2.NMSv26p2";
+    private static final String NMS_26_3    = "su.nightexpress.sunlight.nms.v26p3.NMSv26p3";
 
     /**
-     * Version implementations to load. A version that is absent falls back to the
-     * newest implementation, which is how a newer server version keeps working
-     * until an explicit mapping is added.
+     * Version implementations to load. Every implementation is compiled with
+     * Mojang-mapped names, so one implementation can serve a whole minor-release
+     * line: the 1.21 line (1.21 through 1.21.11) maps to the 1.21.11 build, and
+     * each 26.x line gets its own build. A version that is absent stays
+     * unmapped and hits {@link #FALLBACK}, which is how a newer server version
+     * keeps working until an explicit mapping is added.
      */
-    private static final Map<Version, String> IMPLEMENTATIONS = Map.of(
-        Version.MC_1_21_11, NMS_1_21_11
+    private static final Map<Version, String> IMPLEMENTATIONS = Map.ofEntries(
+        entry(Version.MC_1_21_0, NMS_1_21_11),
+        entry(Version.MC_1_21, NMS_1_21_11),
+        entry(Version.MC_1_21_2, NMS_1_21_11),
+        entry(Version.MC_1_21_3, NMS_1_21_11),
+        entry(Version.MC_1_21_4, NMS_1_21_11),
+        entry(Version.MC_1_21_5, NMS_1_21_11),
+        entry(Version.MC_1_21_6, NMS_1_21_11),
+        entry(Version.MC_1_21_7, NMS_1_21_11),
+        entry(Version.MC_1_21_8, NMS_1_21_11),
+        entry(Version.MC_1_21_9, NMS_1_21_11),
+        entry(Version.MC_1_21_10, NMS_1_21_11),
+        entry(Version.MC_1_21_11, NMS_1_21_11),
+        entry(Version.MC_26_1, NMS_26_1),
+        entry(Version.MC_26_1_1, NMS_26_1),
+        entry(Version.MC_26_1_2, NMS_26_1),
+        entry(Version.MC_26_2, NMS_26_2),
+        entry(Version.MC_26_3, NMS_26_3)
     );
 
-    private static final String FALLBACK = NMS_26_1;
+    private static final String FALLBACK = NMS_26_3;
 
     private SunNMSFactory() {
     }
