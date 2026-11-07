@@ -8,15 +8,12 @@ import su.nightexpress.nightcore.configuration.AbstractConfig;
 import su.nightexpress.nightcore.configuration.ConfigProperty;
 import su.nightexpress.nightcore.configuration.ConfigType;
 import su.nightexpress.nightcore.configuration.ConfigTypes;
-import su.nightexpress.nightcore.util.LowerCase;
-import su.nightexpress.nightcore.util.Numbers;
 import su.nightexpress.nightcore.util.bukkit.NightItem;
 import su.nightexpress.sunlight.SLPlaceholders;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -88,7 +85,8 @@ public class StarterKitSettings extends AbstractConfig {
     private final ConfigProperty<String> soundAudience = this.addProperty(ConfigTypes.STRING,
             "StarterKit.SoundsAudience",
             StarterKitSoundAudience.PLAYER.name(),
-            "Who hears the Starter Kit sounds: " + String.join(", ", java.util.Arrays.stream(StarterKitSoundAudience.values()).map(Enum::name).toList()) + ".");
+            "Who hears the Starter Kit sounds: " + String.join(", ",
+                    java.util.Arrays.stream(StarterKitSoundAudience.values()).map(Enum::name).toList()) + ".");
 
     private final ConfigProperty<Boolean> runCommands = this.addProperty(ConfigTypes.BOOLEAN,
             "StarterKit.RunCommands.Enabled",
@@ -99,7 +97,8 @@ public class StarterKitSettings extends AbstractConfig {
             "StarterKit.RunCommands.Commands",
             List.of(),
             "Commands to execute when a player receives the Starter Kit.",
-            "Use '" + su.nightexpress.nightcore.util.Players.PLAYER_COMMAND_PREFIX + "' prefix to run a command as the player.",
+            "Use '" + su.nightexpress.nightcore.util.Players.PLAYER_COMMAND_PREFIX
+                    + "' prefix to run a command as the player.",
             "Commands without that prefix run as the console.",
             "Placeholders from PlaceholderAPI are supported where available.");
 
@@ -119,17 +118,16 @@ public class StarterKitSettings extends AbstractConfig {
                     DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32)),
                     GRAY.wrap("Welcome " + WHITE.wrap(SLPlaceholders.PLAYER_DISPLAY_NAME) + " to the server!"),
                     GRAY.wrap("You have received your Starter Kit!"),
-                    DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32))
-            ),
+                    DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32))),
             "Format for the welcome message.");
 
     private final ConfigProperty<List<String>> globalAnnouncementFormat = this.addProperty(ConfigTypes.STRING_LIST,
             "StarterKit.GlobalAnnouncementFormat",
             List.of(
                     DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32)),
-                    GRAY.wrap(WHITE.wrap(SLPlaceholders.PLAYER_DISPLAY_NAME) + " has joined the server and received their Starter Kit!"),
-                    DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32))
-            ),
+                    GRAY.wrap(WHITE.wrap(SLPlaceholders.PLAYER_DISPLAY_NAME)
+                            + " has joined the server and received their Starter Kit!"),
+                    DARK_GRAY.and(STRIKETHROUGH).wrap("-".repeat(32))),
             "Format for the global announcement.");
 
     private static final ConfigType<List<ItemStack>> STARTER_ITEMS_TYPE = ConfigType.of(
@@ -142,39 +140,37 @@ public class StarterKitSettings extends AbstractConfig {
                     NightItem.fromType(Material.WOODEN_SWORD).getItemStack(),
                     NightItem.fromType(Material.BREAD).setAmount(5).getItemStack(),
                     NightItem.fromType(Material.WOODEN_PICKAXE).getItemStack(),
-                    NightItem.fromType(Material.WOODEN_AXE).getItemStack()
-            ),
+                    NightItem.fromType(Material.WOODEN_AXE).getItemStack()),
             "List of items to give to players with Starter Kit.");
 
-    private static List<ItemStack> readStarterItems(FileConfig config, String path) {
-        List<ItemStack> result = new ArrayList<>();
-        Set<String> keys = config.getSection(path);
+    private static List<ItemStack> readStarterItems(final FileConfig config, final String path) {
+        final List<ItemStack> result = new ArrayList<>();
+        final Set<String> keys = config.getSection(path);
         if (keys != null && !keys.isEmpty()) {
-            List<String> sorted = new ArrayList<>(keys);
+            final List<String> sorted = new ArrayList<>(keys);
             sorted.sort(Comparator.comparingInt(key -> {
                 try {
                     return Integer.parseInt(key);
-                } catch (NumberFormatException e) {
+                } catch (final NumberFormatException e) {
                     return Integer.MAX_VALUE;
                 }
             }));
-            for (String key : sorted) {
+            for (final String key : sorted) {
                 try {
-                    NightItem nightItem = NightItem.read(config, path + "." + key);
-                    ItemStack itemStack = nightItem.getItemStack();
+                    final ItemStack itemStack = NightItem.read(config, path + "." + key).getItemStack();
                     if (itemStack != null && !itemStack.getType().isAir()) {
                         result.add(itemStack);
                     }
-                } catch (Exception ignored) {
+                } catch (final Exception ignored) {
                 }
             }
             return result;
         }
 
-        List<?> list = config.getList(path);
+        final List<?> list = config.getList(path);
         if (list != null) {
-            for (Object entry : list) {
-                if (entry instanceof ItemStack itemStack && !itemStack.getType().isAir()) {
+            for (final Object entry : list) {
+                if (entry instanceof final ItemStack itemStack && !itemStack.getType().isAir()) {
                     result.add(itemStack);
                 }
             }
@@ -182,13 +178,13 @@ public class StarterKitSettings extends AbstractConfig {
         return result;
     }
 
-    private static void writeStarterItems(FileConfig config, String path, List<ItemStack> items) {
+    private static void writeStarterItems(final FileConfig config, final String path, final List<ItemStack> items) {
         config.set(path, null);
         if (items == null) {
             return;
         }
         int index = 0;
-        for (ItemStack item : items) {
+        for (final ItemStack item : items) {
             if (item == null || item.getType().isAir()) {
                 continue;
             }
@@ -205,8 +201,7 @@ public class StarterKitSettings extends AbstractConfig {
             "StarterKit.Effects",
             List.of(
                     new StarterKitEffect(org.bukkit.potion.PotionEffectType.SPEED, 30, 2),
-                    new StarterKitEffect(org.bukkit.potion.PotionEffectType.JUMP_BOOST, 30, 1)
-            ),
+                    new StarterKitEffect(org.bukkit.potion.PotionEffectType.JUMP_BOOST, 30, 1)),
             "Potion effects to give to players with Starter Kit.",
             "Format: 'TYPE:duration_seconds:amplifier' (e.g. 'SPEED:120:1').",
             "Use duration '-1' for an infinite effect. Legacy 'TYPE: amplifier' map format is also read.");
@@ -215,35 +210,33 @@ public class StarterKitSettings extends AbstractConfig {
             ConfigTypes.forMapWithLowerKeys(ConfigTypes.INT),
             "StarterKit.Particles",
             Map.of(
-                    "FLAME", 1
-            ),
+                    "FLAME", 1),
             "List of particles to give to players with Starter Kit.");
 
     private final ConfigProperty<Map<String, Integer>> starterFireworks = this.addProperty(
             ConfigTypes.forMapWithLowerKeys(ConfigTypes.INT),
             "StarterKit.Fireworks",
             Map.of(
-                    "STAR", 1
-            ),
+                    "STAR", 1),
             "List of fireworks to give to players with Starter Kit.");
 
     private final ConfigProperty<Map<String, Integer>> starterSounds = this.addProperty(
             ConfigTypes.forMapWithLowerKeys(ConfigTypes.INT),
             "StarterKit.Sounds",
             Map.of(
-                    "ENTITY_PLAYER_LEVELUP", 1
-            ),
+                    "ENTITY_PLAYER_LEVELUP", 1),
             "List of sounds to give to players with Starter Kit.");
 
     @NotNull
-    private static List<StarterKitEffect> readStarterEffects(@NotNull FileConfig config, @NotNull String path) {
-        List<StarterKitEffect> result = new ArrayList<>();
+    private static List<StarterKitEffect> readStarterEffects(@NotNull final FileConfig config, @NotNull final String path) {
+        final List<StarterKitEffect> result = new ArrayList<>();
 
-        List<String> list = config.getStringList(path);
+        final List<String> list = config.getStringList(path);
         if (!list.isEmpty() || config.contains(path + ".0") || config.get(path) instanceof List<?>) {
-            for (String raw : list) {
-                if (raw == null || raw.isBlank()) continue;
-                StarterKitEffect effect = StarterKitEffect.parse(raw);
+            for (final String raw : list) {
+                if (raw == null || raw.isBlank())
+                    continue;
+                final StarterKitEffect effect = StarterKitEffect.parse(raw);
                 if (effect != null) {
                     result.add(effect);
                 }
@@ -253,11 +246,11 @@ public class StarterKitSettings extends AbstractConfig {
             }
         }
 
-        Set<String> keys = config.getSection(path);
+        final Set<String> keys = config.getSection(path);
         if (keys != null && !keys.isEmpty()) {
-            for (String key : keys) {
-                int amplifier = config.getInt(path + "." + key, 1);
-                StarterKitEffect effect = StarterKitEffect.parse(key + ":-1:" + amplifier);
+            for (final String key : keys) {
+                final int amplifier = config.getInt(path + "." + key, 1);
+                final StarterKitEffect effect = StarterKitEffect.parse(key + ":-1:" + amplifier);
                 if (effect != null) {
                     result.add(effect);
                 }
@@ -267,7 +260,8 @@ public class StarterKitSettings extends AbstractConfig {
         return result;
     }
 
-    private static void writeStarterEffects(@NotNull FileConfig config, @NotNull String path, @NotNull List<StarterKitEffect> effects) {
+    private static void writeStarterEffects(@NotNull final FileConfig config, @NotNull final String path,
+            @NotNull final List<StarterKitEffect> effects) {
         config.set(path, effects.stream().map(StarterKitEffect::serialize).toList());
     }
 
