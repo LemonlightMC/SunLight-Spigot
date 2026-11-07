@@ -45,6 +45,7 @@ import su.nightexpress.sunlight.moduleImpl.settings.SettingsModule;
 import su.nightexpress.sunlight.moduleImpl.socials.SocialsModule;
 import su.nightexpress.sunlight.moduleImpl.spawns.SpawnsModule;
 import su.nightexpress.sunlight.moduleImpl.texts.TextsModule;
+import su.nightexpress.sunlight.moduleImpl.timer.TimerModule;
 import su.nightexpress.sunlight.moduleImpl.vanish.VanishModule;
 import su.nightexpress.sunlight.moduleImpl.voting.VotingModule;
 import su.nightexpress.sunlight.moduleImpl.warmups.WarmupsModule;
@@ -294,6 +295,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
         manager.register("scheduler", "Scheduler", SchedulerModule::new);
         manager.register("socials", "Socials", SocialsModule::new);
         manager.register("spawns", "Spawn", SpawnsModule::new);
+        manager.register("timer", "Timer", TimerModule::new);
         manager.register("vanish", "Vanish", VanishModule::new);
         manager.register("voting", "Voting", VotingModule::new);
         manager.register("settings", "Settings", SettingsModule::new);
@@ -387,6 +389,12 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
 
     public Optional<? extends ProfilesProvider> profilesProvider() {
         return this.moduleManager.getByType(ProfilesModule.class);
+    }
+
+    @Override
+
+    public Optional<? extends TimerProvider> timerProvider() {
+        return this.moduleManager.getByType(TimerModule.class);
     }
 
     @Override

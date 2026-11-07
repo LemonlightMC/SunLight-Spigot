@@ -25,6 +25,7 @@ import su.nightexpress.sunlight.api.provider.RtpProvider;
 import su.nightexpress.sunlight.api.provider.SocialsProvider;
 import su.nightexpress.sunlight.api.provider.SpawnsProvider;
 import su.nightexpress.sunlight.api.provider.TextsProvider;
+import su.nightexpress.sunlight.api.provider.TimerProvider;
 import su.nightexpress.sunlight.api.provider.VanishProvider;
 import su.nightexpress.sunlight.api.provider.VotingProvider;
 import su.nightexpress.sunlight.api.provider.WarpsProvider;
@@ -147,6 +148,10 @@ public interface SunlightAPI {
      }
 
      default Optional<? extends VotingProvider> votingProvider() {
+          return Optional.empty();
+     }
+
+     default Optional<? extends TimerProvider> timerProvider() {
           return Optional.empty();
      }
 }
