@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -63,6 +62,10 @@ public class SignHandler {
         return signatures;
     }
 
+    public boolean hasSignatures(final ItemStack item) {
+        return PDCUtil.getInt(item, this.keyCount).orElse(0) > 0;
+    }
+
     private ItemSignature getSignature(final ItemStack item, final int index) {
         final UUID ownerUuid = PDCUtil.getUUID(item, this.ownerKey(index)).orElse(null);
         if (ownerUuid == null) {
@@ -80,13 +83,11 @@ public class SignHandler {
 
     public void addSignature(final Player player, final ItemStack item, final String text,
             final List<String> loreLines) {
-        final long timestamp = System.currentTimeMillis();
         final int index = this.nextIndex(item);
         final ItemMeta meta = item.getItemMeta();
 
         final List<String> oldLore = meta == null || !meta.hasLore() ? new ArrayList<>()
                 : meta.getLore();
-        final boolean onTop = module.settings().SIGN_ADD_TO_TOP.get();
         final boolean separator = module.settings().SIGN_SEPARATOR_ENABLED.get() && !oldLore.isEmpty();
         final String separatorLine = separator
                 ? su.nightexpress.nightcore.util.text.NightMessage.from(
@@ -95,7 +96,7 @@ public class SignHandler {
                 : null;
 
         final List<String> newLore = new ArrayList<>(oldLore.size() + loreLines.size() + 1);
-        if (onTop) {
+        if (module.settings().SIGN_ADD_TO_TOP.get()) {
             newLore.addAll(loreLines);
             if (separator) {
                 newLore.add(separatorLine);
@@ -113,19 +114,13 @@ public class SignHandler {
             final PersistentDataContainer container = meta.getPersistentDataContainer();
             container.set(this.ownerKey(index), UUID, player.getUniqueId());
             container.set(this.ownerNameKey(index), PersistentDataType.STRING, player.getName());
-            container.set(this.timestampKey(index), PersistentDataType.LONG, timestamp);
+            container.set(this.timestampKey(index), PersistentDataType.LONG, System.currentTimeMillis());
             container.set(this.textKey(index), PersistentDataType.STRING, text == null ? "" : text);
             container.set(this.loreKey(index), PersistentDataType.STRING, String.join("\n", loreLines));
             container.set(this.keyCount, PersistentDataType.INTEGER, index);
 
             meta2.setLore(newLore);
         });
-
-        PDCUtil.set(item, this.ownerKey(index), player.getUniqueId());
-        PDCUtil.set(item, this.ownerNameKey(index), player.getName());
-        PDCUtil.set(item, this.timestampKey(index), timestamp);
-        PDCUtil.set(item, this.textKey(index), text == null ? "" : text);
-        PDCUtil.set(item, this.loreKey(index), String.join("\n", loreLines));
     }
 
     /**
@@ -136,37 +131,23 @@ public class SignHandler {
      */
     public int removeSignatures(final ItemStack item, final Predicate<ItemSignature> filter) {
         final List<ItemSignature> signatures = this.getSignatures(item);
-        final List<ItemSignature> removed = signatures.stream().filter(filter).collect(Collectors.toList());
+        final List<ItemSignature> removed = signatures.stream().filter(filter).toList();
         if (removed.isEmpty()) {
             return 0;
         }
-        final ItemMeta meta = item.getItemMeta();
 
-        final List<String> oldLore = meta == null || !meta.hasLore() ? new ArrayList<>()
-                : meta.getLore();
-        for (final ItemSignature signature : removed) {
-            for (final String line : signature.lore()) {
-                final Iterator<String> iterator = oldLore.iterator();
-                while (iterator.hasNext()) {
-                    final String loreLine = iterator.next();
-                    if (loreLine.equals(line)) {
-                        iterator.remove();
-                        break;
-                    }
-                }
+        ItemUtil.editMeta(item, meta -> {
+            if (meta == null || !meta.hasLore()) {
+                return;
             }
-        }
-
-        ItemUtil.editMeta(item, meta2 -> {
-            if (oldLore.isEmpty()) {
-                meta2.setLore(null);
-            } else {
-                meta2.setLore(oldLore);
+            final List<String> oldLore = meta.getLore();
+            for (final ItemSignature signature : removed) {
+                oldLore.removeAll(signature.lore());
             }
+            meta.setLore(oldLore.isEmpty() ? null : oldLore);
         });
 
-        final List<ItemSignature> kept = signatures.stream().filter(signature -> !removed.contains(signature))
-                .collect(Collectors.toList());
+        final List<ItemSignature> kept = signatures.stream().filter(signature -> !removed.contains(signature)).toList();
         this.rewriteSignatures(item, signatures.size(), kept);
         return removed.size();
     }

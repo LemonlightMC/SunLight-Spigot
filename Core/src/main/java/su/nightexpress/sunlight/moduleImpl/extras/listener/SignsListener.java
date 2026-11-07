@@ -13,7 +13,7 @@ public class SignsListener extends AbstractListener<SunLightPlugin> {
 
     private final ExtrasModule module;
 
-    public SignsListener(SunLightPlugin plugin, ExtrasModule module) {
+    public SignsListener(final SunLightPlugin plugin, final ExtrasModule module) {
         super(plugin);
         this.module = module;
     }
@@ -25,7 +25,7 @@ public class SignsListener extends AbstractListener<SunLightPlugin> {
             return;
         }
 
-        if (!this.module.signHandler().getSignatures(result).isEmpty()) {
+        if (this.module.signHandler().hasSignatures(result)) {
             if (this.module.settings().SIGN_ANVIL_BLOCK_RENAME.get()) {
                 event.setResult(null);
                 return;
@@ -38,16 +38,16 @@ public class SignsListener extends AbstractListener<SunLightPlugin> {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCraftPrepare(final PrepareItemCraftEvent event) {
-        boolean hasSigned = false;
+        boolean isSigned = false;
         for (final ItemStack ingredient : event.getInventory().getMatrix()) {
             if (ingredient != null && !ingredient.getType().isAir()
-                    && !this.module.signHandler().getSignatures(ingredient).isEmpty()) {
-                hasSigned = true;
+                    && this.module.signHandler().hasSignatures(ingredient)) {
+                        isSigned = true;
                 break;
             }
         }
 
-        if (!hasSigned) {
+        if (!isSigned) {
             return;
         }
 

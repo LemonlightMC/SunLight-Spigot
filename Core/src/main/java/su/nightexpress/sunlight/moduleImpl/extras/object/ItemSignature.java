@@ -17,10 +17,10 @@ import java.util.UUID;
  *                  item, used for precise lore restore on removal.
  */
 public record ItemSignature(UUID ownerUuid,
-                            String ownerName,
-                            long timestamp,
-                            String text,
-                            List<String> lore) {
+        String ownerName,
+        long timestamp,
+        String text,
+        List<String> lore) {
 
     public boolean isOwner(final UUID uuid) {
         return this.ownerUuid.equals(uuid);
