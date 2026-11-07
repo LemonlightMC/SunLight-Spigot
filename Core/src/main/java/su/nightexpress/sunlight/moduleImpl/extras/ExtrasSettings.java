@@ -155,6 +155,51 @@ public class ExtrasSettings extends AbstractConfig {
                         "Amount of XP **levels** to charge for a signature.",
                         "Set to '0' to disable.");
 
+        public final ConfigValue<Boolean> SIGN_SEPARATOR_ENABLED = ConfigValue.create("Signature.Separator.Enabled",
+                        true,
+                        "Sets whether a separator line is added between the item lore and signatures.");
+
+        public final ConfigValue<String> SIGN_SEPARATOR_LINE = ConfigValue.create("Signature.Separator.Line",
+                        "<dark_gray>────────────────────",
+                        "The separator line between the item lore and signatures.");
+
+        public final ConfigValue<Boolean> SIGN_SOUNDS_ENABLED = ConfigValue.create("Signature.Sounds.Enabled",
+                        true,
+                        "Sets whether sounds are played on a successful signature.");
+
+        public final ConfigValue<Boolean> SIGN_PARTICLES_ENABLED = ConfigValue.create("Signature.Particles.Enabled",
+                        true,
+                        "Sets whether particles are spawned on a successful signature.");
+
+        public final ConfigValue<String> SIGN_PARTICLE_TYPE = ConfigValue.create("Signature.Particles.Type",
+                        "ENCHANT",
+                        "The particle spawned on a successful signature.",
+                        "https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html");
+
+        public final ConfigValue<Integer> SIGN_PARTICLE_COUNT = ConfigValue.create("Signature.Particles.Count",
+                        15,
+                        "The amount of particles spawned on a successful signature.");
+
+        public final ConfigValue<Boolean> SIGN_ANVIL_BLOCK_RENAME = ConfigValue.create("Anvil.Block_Rename",
+                        false,
+                        "Sets whether signed items can not be renamed in an anvil.");
+
+        public final ConfigValue<Boolean> SIGN_ANVIL_STRIP_ON_RENAME = ConfigValue.create("Anvil.Strip_On_Rename",
+                        false,
+                        "Sets whether renaming a signed item in an anvil strips its signatures.");
+
+        public final ConfigValue<Boolean> SIGN_CRAFTING_KEEP_SIGNATURES = ConfigValue.create("Crafting.Keep_Signatures",
+                        true,
+                        "Sets whether signatures are kept when a signed item is used in a recipe.");
+
+        public final ConfigValue<Boolean> SIGN_CRAFTING_ALLOW_SIGNED = ConfigValue.create("Crafting.Allow_Signed_Items",
+                        true,
+                        "Sets whether signed items may be used as ingredients in crafting.");
+
+        public final ConfigValue<Boolean> SIGN_BOOKS_AUTO_SIGN = ConfigValue.create("Written_Books.Auto_Sign",
+                        false,
+                        "Sets whether signing a written book also sets its author.");
+
         public boolean isSignColorsEnabled() {
                 return this.signColorsEnabled.get();
         }

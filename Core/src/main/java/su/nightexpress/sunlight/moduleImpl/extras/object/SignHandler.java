@@ -87,12 +87,25 @@ public class SignHandler {
         final List<String> oldLore = meta == null || !meta.hasLore() ? new ArrayList<>()
                 : meta.getLore();
         final boolean onTop = module.settings().SIGN_ADD_TO_TOP.get();
-        final List<String> newLore = new ArrayList<>(oldLore.size() + loreLines.size());
+        final boolean separator = module.settings().SIGN_SEPARATOR_ENABLED.get() && !oldLore.isEmpty();
+        final String separatorLine = separator
+                ? su.nightexpress.nightcore.util.text.NightMessage.from(
+                        module.settings().SIGN_SEPARATOR_LINE.get(),
+                        su.nightexpress.nightcore.util.text.tag.TagPool.ALL_COLORS_AND_STYLES).toLegacy()
+                : null;
+
+        final List<String> newLore = new ArrayList<>(oldLore.size() + loreLines.size() + 1);
         if (onTop) {
             newLore.addAll(loreLines);
+            if (separator) {
+                newLore.add(separatorLine);
+            }
             newLore.addAll(oldLore);
         } else {
             newLore.addAll(oldLore);
+            if (separator) {
+                newLore.add(separatorLine);
+            }
             newLore.addAll(loreLines);
         }
 
@@ -156,6 +169,127 @@ public class SignHandler {
                 .collect(Collectors.toList());
         this.rewriteSignatures(item, signatures.size(), kept);
         return removed.size();
+    }
+
+    public void editSignature(final ItemStack item, final int index, final Player player,
+            final String text, final List<String> newLoreLines) {
+        final List<ItemSignature> signatures = this.getSignatures(item);
+        if (index < 1 || index > signatures.size()) {
+            return;
+        }
+
+        final ItemSignature old = signatures.get(index - 1);
+        final ItemMeta meta = item.getItemMeta();
+        final List<String> lore = meta == null || !meta.hasLore() ? new ArrayList<>() : new ArrayList<>(meta.getLore());
+
+        int start = -1;
+        if (!old.lore().isEmpty() && lore.size() >= old.lore().size()) {
+            for (int i = 0; i <= lore.size() - old.lore().size(); i++) {
+                boolean match = true;
+                for (int j = 0; j < old.lore().size(); j++) {
+                    if (!lore.get(i + j).equals(old.lore().get(j))) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) {
+                    start = i;
+                    break;
+                }
+            }
+        }
+
+        if (start >= 0) {
+            for (int j = 0; j < old.lore().size(); j++) {
+                lore.remove(start);
+            }
+            lore.addAll(start, newLoreLines);
+        } else {
+            for (final String line : old.lore()) {
+                final Iterator<String> iterator = lore.iterator();
+                while (iterator.hasNext()) {
+                    if (iterator.next().equals(line)) {
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+            lore.addAll(newLoreLines);
+        }
+
+        ItemUtil.editMeta(item, meta2 -> {
+            if (lore.isEmpty()) {
+                meta2.setLore(null);
+            } else {
+                meta2.setLore(lore);
+            }
+        });
+
+        PDCUtil.set(item, this.textKey(index), text == null ? "" : text);
+        PDCUtil.set(item, this.loreKey(index), String.join("\\n", newLoreLines));
+        PDCUtil.set(item, this.ownerNameKey(index), player.getName());
+    }
+
+    public void moveSignature(final ItemStack item, final int from, final int to) {
+        final List<ItemSignature> signatures = this.getSignatures(item);
+        if (from < 1 || from > signatures.size() || to < 1 || to > signatures.size() || from == to) {
+            return;
+        }
+
+        final ItemSignature moved = signatures.remove(from - 1);
+        signatures.add(to - 1, moved);
+
+        final ItemMeta meta = item.getItemMeta();
+        final List<String> lore = meta == null || !meta.hasLore() ? new ArrayList<>() : new ArrayList<>(meta.getLore());
+        final List<String> baseLore = new ArrayList<>();
+        final String separatorLine = su.nightexpress.nightcore.util.text.NightMessage.from(
+                module.settings().SIGN_SEPARATOR_LINE.get(),
+                su.nightexpress.nightcore.util.text.tag.TagPool.ALL_COLORS_AND_STYLES).toLegacy();
+        for (final String line : lore) {
+            boolean isSignatureLine = false;
+            for (final ItemSignature signature : signatures) {
+                if (signature.lore().contains(line)) {
+                    isSignatureLine = true;
+                    break;
+                }
+            }
+            if (!isSignatureLine && !line.equals(separatorLine)) {
+                baseLore.add(line);
+            }
+        }
+
+        final List<String> newLore = new ArrayList<>(baseLore);
+        if (!baseLore.isEmpty() && !signatures.isEmpty() && module.settings().SIGN_SEPARATOR_ENABLED.get()) {
+            newLore.add(separatorLine);
+        }
+        for (final ItemSignature signature : signatures) {
+            newLore.addAll(signature.lore());
+        }
+
+        ItemUtil.editMeta(item, meta2 -> {
+            if (newLore.isEmpty()) {
+                meta2.setLore(null);
+            } else {
+                meta2.setLore(newLore);
+            }
+        });
+
+        this.rewriteSignatures(item, signatures.size() + 1, signatures);
+    }
+
+    public void spawnSignEffects(final Player player) {
+        if (module.settings().SIGN_SOUNDS_ENABLED.get()) {
+            player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
+        }
+        if (module.settings().SIGN_PARTICLES_ENABLED.get()) {
+            try {
+                final org.bukkit.Particle particle = org.bukkit.Particle.valueOf(
+                        module.settings().SIGN_PARTICLE_TYPE.get().toUpperCase());
+                player.spawnParticle(particle, player.getLocation().add(0, 1, 0),
+                        module.settings().SIGN_PARTICLE_COUNT.get());
+            } catch (final IllegalArgumentException ignored) {
+            }
+        }
     }
 
     private void rewriteSignatures(final ItemStack item, final int oldAmount, final List<ItemSignature> signatures) {

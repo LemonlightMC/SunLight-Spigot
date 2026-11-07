@@ -26,6 +26,15 @@ public class SignsLang implements LangContainer {
     public static final TextLocale COMMAND_INFO_DESC = LangEntry.builder("Command.Sign.Info.Desc")
         .text("Show signatures and the lock state of the item in your main hand.");
 
+    public static final TextLocale COMMAND_EDIT_DESC = LangEntry.builder("Command.Sign.Edit.Desc")
+        .text("Edit the text of one of your signatures.");
+
+    public static final TextLocale COMMAND_MOVE_DESC = LangEntry.builder("Command.Sign.Move.Desc")
+        .text("Move a signature to a new position.");
+
+    public static final TextLocale COMMAND_WIPE_DESC = LangEntry.builder("Command.Sign.Wipe.Desc")
+        .text("Wipe signatures from the item in your main hand.");
+
     public static final MessageLocale COMMAND_SIGN_DONE = LangEntry.builder("Command.Sign.Done").chatMessage(
         Sound.BLOCK_RESPAWN_ANCHOR_CHARGE,
         GRAY.wrap("You have signed " + WHITE.wrap(GENERIC_ITEM) + "."));
@@ -104,4 +113,36 @@ public class SignsLang implements LangContainer {
             .builder("Command.Sign.Error.NoSignatures.Other").chatMessage(
         Sound.ENTITY_VILLAGER_NO,
         GRAY.wrap(WHITE.wrap(GENERIC_NAME) + GRAY.wrap(" has no signature on " + WHITE.wrap(GENERIC_ITEM) + ".")));
+
+    public static final MessageLocale COMMAND_EDIT_DONE = LangEntry.builder("Command.Sign.Edit.Done").chatMessage(
+        Sound.ENTITY_PLAYER_LEVELUP,
+        GRAY.wrap("Signature " + YELLOW.wrap(GENERIC_SLOT) + " on " + WHITE.wrap(GENERIC_ITEM) + " updated."));
+
+    public static final MessageLocale COMMAND_MOVE_DONE = LangEntry.builder("Command.Sign.Move.Done").chatMessage(
+        Sound.ENTITY_PLAYER_LEVELUP,
+        GRAY.wrap("Moved signature " + YELLOW.wrap(GENERIC_SLOT) + " to " + YELLOW.wrap(GENERIC_VALUE) + "."));
+
+    public static final MessageLocale COMMAND_WIPE_DONE = LangEntry.builder("Command.Sign.Wipe.Done").chatMessage(
+        Sound.BLOCK_FIRE_EXTINGUISH,
+        GRAY.wrap("Wiped " + GREEN.wrap(GENERIC_AMOUNT) + " signature(s) from " + WHITE.wrap(GENERIC_ITEM) + "."));
+
+    public static final MessageLocale ERROR_INVALID_INDEX = LangEntry
+            .builder("Command.Sign.Error.InvalidIndex").chatMessage(
+        Sound.ENTITY_VILLAGER_NO,
+        GRAY.wrap("Signature index " + YELLOW.wrap(GENERIC_SLOT) + " does not exist."));
+
+    public static final MessageLocale ERROR_NOT_OWNER = LangEntry
+            .builder("Command.Sign.Error.NotOwner").chatMessage(
+        Sound.ENTITY_VILLAGER_NO,
+        GRAY.wrap("You can only edit your own signatures."));
+
+    public static final MessageLocale ERROR_ANVIL_RENAME = LangEntry
+            .builder("Command.Sign.Error.AnvilRename").chatMessage(
+        Sound.ENTITY_VILLAGER_NO,
+        GRAY.wrap(WHITE.wrap(GENERIC_ITEM) + " is signed and can not be renamed."));
+
+    public static final MessageLocale ERROR_CRAFTING_BLOCKED = LangEntry
+            .builder("Command.Sign.Error.CraftingBlocked").chatMessage(
+        Sound.ENTITY_VILLAGER_NO,
+        GRAY.wrap("Signed items can not be used in crafting."));
 }

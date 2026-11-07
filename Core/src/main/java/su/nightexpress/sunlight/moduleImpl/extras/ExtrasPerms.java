@@ -21,9 +21,13 @@ public class ExtrasPerms {
     public static final String SIGN_COMMAND_UNLOCK = COMMAND + ".unlock";
     public static final String SIGN_COMMAND_INFO = COMMAND + ".info";
     public static final String SIGN_COMMAND_COLORS = COMMAND + ".colors";
+    public static final String SIGN_COMMAND_EDIT = COMMAND + ".edit";
+    public static final String SIGN_COMMAND_MOVE = COMMAND + ".move";
+    public static final String SIGN_COMMAND_WIPE = COMMAND + ".wipe";
 
     public static final String SIGN_BYPASS_LOCKED = BYPASS + ".locked";
     public static final String SIGN_BYPASS_BLACKLIST = BYPASS + ".blacklist";
+    public static final String SIGN_BYPASS_ANVIL = BYPASS + ".anvil";
 
     private ExtrasPerms() {
     }

@@ -8,6 +8,7 @@ import su.nightexpress.sunlight.module.Module;
 import su.nightexpress.sunlight.module.ModuleDefinition;
 import su.nightexpress.sunlight.moduleImpl.extras.command.*;
 import su.nightexpress.sunlight.moduleImpl.extras.listener.ColorsListener;
+import su.nightexpress.sunlight.moduleImpl.extras.listener.SignsListener;
 import su.nightexpress.sunlight.moduleImpl.extras.listener.StarterKitListener;
 import su.nightexpress.sunlight.moduleImpl.extras.object.SignHandler;
 import su.nightexpress.sunlight.teleport.TeleportManager;
@@ -70,6 +71,8 @@ public class ExtrasModule extends Module {
         if (this.settings.isSignColorsEnabled() || this.settings.isAnvilColorsEnabled()) {
             this.addListener(new ColorsListener(this.plugin, this));
         }
+
+        this.addListener(new SignsListener(this.plugin, this));
 
         if (this.starterKitSettings.isEnabled()) {
             this.addListener(new StarterKitListener(this.plugin, this));

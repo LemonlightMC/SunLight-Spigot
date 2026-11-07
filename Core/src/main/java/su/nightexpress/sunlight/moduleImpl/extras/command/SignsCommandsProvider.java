@@ -8,6 +8,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
+import dev.jorel.commandapi.arguments.IntegerArgument;
 import dev.jorel.commandapi.executors.CommandArguments;
 import net.kyori.adventure.text.Component;
 import su.nightexpress.nightcore.core.config.CoreLang;
@@ -21,10 +22,15 @@ import su.nightexpress.sunlight.moduleImpl.extras.SignsLang;
 import su.nightexpress.sunlight.moduleImpl.extras.object.ItemSignature;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SignsCommandsProvider extends CommandProvider<ExtrasModule> {
 
     private static final String COMMAND_ROOT = "sign";
+
+    private final Map<UUID, Long> pendingDelete = new ConcurrentHashMap<>();
 
     public SignsCommandsProvider(final ExtrasModule module) {
         super(module, "sign");
@@ -64,6 +70,32 @@ public class SignsCommandsProvider extends CommandProvider<ExtrasModule> {
                 .withPermission(ExtrasPerms.SIGN_COMMAND_INFO)
                 .withRequirement(sender -> sender instanceof Player)
                 .executes(this::showSignatures))
+                .under(COMMAND_ROOT);
+
+        this.register("edit", command -> command
+                .withFullDescription(SignsLang.COMMAND_EDIT_DESC.text())
+                .withPermission(ExtrasPerms.SIGN_COMMAND_EDIT)
+                .withRequirement(sender -> sender instanceof Player)
+                .withArguments(new IntegerArgument("index"),
+                        new GreedyStringArgument(CommandArgumentConstants.TEXT))
+                .executes(this::editSignature))
+                .under(COMMAND_ROOT);
+
+        this.register("move", command -> command
+                .withFullDescription(SignsLang.COMMAND_MOVE_DESC.text())
+                .withPermission(ExtrasPerms.SIGN_COMMAND_MOVE)
+                .withRequirement(sender -> sender instanceof Player)
+                .withArguments(new IntegerArgument("from"), new IntegerArgument("to"))
+                .executes(this::moveSignatures))
+                .under(COMMAND_ROOT);
+
+        this.register("wipe", command -> command
+                .withFullDescription(SignsLang.COMMAND_WIPE_DESC.text())
+                .withPermission(ExtrasPerms.SIGN_COMMAND_WIPE)
+                .withRequirement(sender -> sender instanceof Player)
+                .withOptionalArguments(CommandArgumentConstants.string(CommandArgumentConstants.NAME,
+                        info -> CommandArgumentConstants.onlinePlayerNames()))
+                .executes(this::wipeSignatures))
                 .under(COMMAND_ROOT);
 
         this.registerRoot(COMMAND_ROOT, command -> command
@@ -186,6 +218,18 @@ public class SignsCommandsProvider extends CommandProvider<ExtrasModule> {
             this.module.signHandler().setLocked(item, true);
         }
 
+        if (module.settings().SIGN_BOOKS_AUTO_SIGN.get() && item.getType().name().equals("WRITTEN_BOOK")) {
+            try {
+                if (item.getItemMeta() instanceof org.bukkit.inventory.meta.BookMeta bm) {
+                    bm.setAuthor(player.getName());
+                    item.setItemMeta(bm);
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+
+        this.module.signHandler().spawnSignEffects(player);
+
         this.module.sendPrefixed(SignsLang.COMMAND_SIGN_DONE, player,
                 builder -> builder.with(SLPlaceholders.GENERIC_ITEM, () -> itemName));
         return 1;
@@ -295,6 +339,118 @@ public class SignsCommandsProvider extends CommandProvider<ExtrasModule> {
         this.module.sendPrefixed(SignsLang.COMMAND_INFO_LOCKED, player, builder -> builder
                 .with(SLPlaceholders.GENERIC_STATE,
                         () -> CoreLang.STATE_ENABLED_DISALBED.get(this.module.signHandler().isLocked(item))));
+        return 1;
+    }
+
+    private int editSignature(final CommandSender sender, final CommandArguments arguments) {
+        if (!(sender instanceof final Player player)) {
+            this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
+            return 0;
+        }
+
+        final Object indexObj = arguments.get("index");
+        final Object textObj = arguments.get(CommandArgumentConstants.TEXT);
+        if (!(indexObj instanceof final Integer index) || !(textObj instanceof final String text) || text.isBlank()) {
+            return 0;
+        }
+
+        final ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir()) {
+            this.module.sendPrefixed(SignsLang.ERROR_EMPTY_HAND, player);
+            return 0;
+        }
+
+        final String itemName = ItemUtil.getNameSerialized(item);
+        final List<ItemSignature> signatures = this.module.signHandler().getSignatures(item);
+        if (index < 1 || index > signatures.size()) {
+            this.module.sendPrefixed(SignsLang.ERROR_INVALID_INDEX, player,
+                    builder -> builder.with(SLPlaceholders.GENERIC_SLOT, () -> String.valueOf(index)));
+            return 0;
+        }
+
+        final ItemSignature signature = signatures.get(index - 1);
+        if (!signature.isOwner(player.getUniqueId()) && !player.hasPermission(ExtrasPerms.SIGN_COMMAND_DELETE_OTHERS)) {
+            this.module.sendPrefixed(SignsLang.ERROR_NOT_OWNER, player);
+            return 0;
+        }
+
+        final List<String> newLore = this.module.signHandler().buildSignatureLore(player, text, item);
+        this.module.signHandler().editSignature(item, index, player, text, newLore);
+
+        this.module.sendPrefixed(SignsLang.COMMAND_EDIT_DONE, player, builder -> builder
+                .with(SLPlaceholders.GENERIC_ITEM, () -> itemName)
+                .with(SLPlaceholders.GENERIC_SLOT, () -> String.valueOf(index)));
+        return 1;
+    }
+
+    private int moveSignatures(final CommandSender sender, final CommandArguments arguments) {
+        if (!(sender instanceof final Player player)) {
+            this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
+            return 0;
+        }
+
+        final Object fromObj = arguments.get("from");
+        final Object toObj = arguments.get("to");
+        if (!(fromObj instanceof final Integer from) || !(toObj instanceof final Integer to)) {
+            return 0;
+        }
+
+        final ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir()) {
+            this.module.sendPrefixed(SignsLang.ERROR_EMPTY_HAND, player);
+            return 0;
+        }
+
+        final List<ItemSignature> signatures = this.module.signHandler().getSignatures(item);
+        if (from < 1 || from > signatures.size() || to < 1 || to > signatures.size()) {
+            this.module.sendPrefixed(SignsLang.ERROR_INVALID_INDEX, player,
+                    builder -> builder.with(SLPlaceholders.GENERIC_SLOT, () -> String.valueOf(from)));
+            return 0;
+        }
+
+        this.module.signHandler().moveSignature(item, from, to);
+
+        this.module.sendPrefixed(SignsLang.COMMAND_MOVE_DONE, player, builder -> builder
+                .with(SLPlaceholders.GENERIC_SLOT, () -> String.valueOf(from))
+                .with(SLPlaceholders.GENERIC_VALUE, () -> String.valueOf(to)));
+        return 1;
+    }
+
+    private int wipeSignatures(final CommandSender sender, final CommandArguments arguments) {
+        if (!(sender instanceof final Player player)) {
+            this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
+            return 0;
+        }
+
+        final ItemStack item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir()) {
+            this.module.sendPrefixed(SignsLang.ERROR_EMPTY_HAND, player);
+            return 0;
+        }
+
+        final String itemName = ItemUtil.getNameSerialized(item);
+        final String targetName = arguments.getOrDefaultUnchecked(CommandArgumentConstants.NAME, (String) null);
+
+        final int amount;
+        if (targetName == null || targetName.isBlank()) {
+            amount = this.module.signHandler().removeSignatures(item, signature -> true);
+        } else {
+            if (!player.hasPermission(ExtrasPerms.SIGN_COMMAND_DELETE_OTHERS)) {
+                this.module.sendPrefixed(CoreLang.ERROR_NO_PERMISSION, sender);
+                return 0;
+            }
+            amount = this.module.signHandler().removeSignatures(item, signature -> signature.isOwnerName(targetName));
+        }
+
+        if (amount == 0) {
+            this.module.sendPrefixed(SignsLang.ERROR_NO_SIGNATURES, player,
+                    builder -> builder.with(SLPlaceholders.GENERIC_ITEM, () -> itemName));
+            return 0;
+        }
+
+        this.module.sendPrefixed(SignsLang.COMMAND_WIPE_DONE, player, builder -> builder
+                .with(SLPlaceholders.GENERIC_ITEM, () -> itemName)
+                .with(SLPlaceholders.GENERIC_AMOUNT, () -> String.valueOf(amount)));
         return 1;
     }
 
