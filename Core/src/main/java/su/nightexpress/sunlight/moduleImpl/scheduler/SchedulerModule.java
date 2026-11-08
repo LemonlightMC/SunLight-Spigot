@@ -106,6 +106,7 @@ public class SchedulerModule extends Module {
 
         Utils.onlinePlayers().forEach(player -> {
             try {
+                if (!announcer.canSee(player)) return;
                 PlaceholderContext context = PlaceholderContext.builder()
                         .with(CommonPlaceholders.PLAYER.resolver(player))
                         .andThen(CommonPlaceholders.forPlaceholderAPI(player))

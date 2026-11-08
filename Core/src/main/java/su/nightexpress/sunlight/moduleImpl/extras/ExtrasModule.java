@@ -66,7 +66,6 @@ public class ExtrasModule extends Module {
         this.commandRegistry.addProvider(new SkullCommandProvider(this));
         this.commandRegistry.addProvider(new SmiteCommandProvider(this));
         this.commandRegistry.addProvider(new SuicideCommandProvider(this));
-        this.commandRegistry.addProvider(new StaffCommandProvider(this));
 
         if (this.settings.isSignColorsEnabled() || this.settings.isAnvilColorsEnabled()) {
             this.addListener(new ColorsListener(this.plugin, this));

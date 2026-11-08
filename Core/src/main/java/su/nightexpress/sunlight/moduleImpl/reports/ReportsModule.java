@@ -102,6 +102,7 @@ public class ReportsModule extends Module implements ReportsProvider {
     private ReportsStatsMenu statsMenu;
 
     private volatile boolean dataLoaded;
+    private final java.util.concurrent.atomic.AtomicInteger loadGeneration = new java.util.concurrent.atomic.AtomicInteger();
 
     public ReportsModule(ModuleDefinition<ReportsModule> definition, SunLightPlugin plugin) {
         super(definition, plugin);
@@ -143,6 +144,7 @@ public class ReportsModule extends Module implements ReportsProvider {
 
     @Override
     protected void unloadModule() {
+        this.loadGeneration.incrementAndGet();
         this.repository.clear();
         this.caseRepository.clear();
         this.categories.clear();
@@ -240,19 +242,39 @@ public class ReportsModule extends Module implements ReportsProvider {
 
     private void loadData() {
         this.dataLoaded = false;
+        final int generation = this.loadGeneration.incrementAndGet();
         this.plugin.runTaskAsync(task -> {
-            for (Report report : this.dataManager.getReports()) {
-                this.stampCategoryDisplay(report);
-                this.repository.upsertReport(report);
+            try {
+                final java.util.List<Report> reports = this.dataManager.getReports();
+                final java.util.List<ReportNote> notes = this.dataManager.getNotes();
+                final java.util.List<ReportCase> cases = this.dataManager.getCases();
+
+                this.plugin.runTask(() -> {
+                    if (generation != this.loadGeneration.get()) {
+                        return;
+                    }
+
+                    this.repository.clear();
+                    this.caseRepository.clear();
+
+                    for (Report report : reports) {
+                        this.stampCategoryDisplay(report);
+                        this.repository.upsertReport(report);
+                    }
+                    for (ReportNote note : notes) {
+                        this.repository.addNote(note);
+                    }
+                    for (ReportCase reportCase : cases) {
+                        this.caseRepository.upsertCase(reportCase);
+                    }
+                    this.rebuildCaseReports();
+                    this.dataLoaded = true;
+                });
             }
-            for (ReportNote note : this.dataManager.getNotes()) {
-                this.repository.addNote(note);
+            catch (Exception exception) {
+                this.error("Failed to load reports data: " + exception.getMessage());
+                exception.printStackTrace();
             }
-            for (ReportCase reportCase : this.dataManager.getCases()) {
-                this.caseRepository.upsertCase(reportCase);
-            }
-            this.rebuildCaseReports();
-            this.dataLoaded = true;
         });
     }
 
@@ -551,6 +573,9 @@ public class ReportsModule extends Module implements ReportsProvider {
 
         report.setStatus(ReportStatus.CLAIMED);
         report.setStaff(staffId, staff.getName());
+        if (report.getClaimedDate() <= 0L) {
+            report.setClaimedDate(System.currentTimeMillis());
+        }
         this.commit(report, before);
 
         this.addSystemNote(report, ReportsLang.SYSTEM_CLAIMED, staff.getName());
@@ -572,6 +597,7 @@ public class ReportsModule extends Module implements ReportsProvider {
 
         report.setStatus(ReportStatus.OPEN);
         report.setStaff(null, null);
+        report.setClaimedDate(0L);
         this.commit(report, before);
 
         this.addSystemNote(report, ReportsLang.SYSTEM_RELEASED, staff.getName());
@@ -1351,7 +1377,10 @@ public class ReportsModule extends Module implements ReportsProvider {
             byStatus.merge(report.getStatus(), 1, Integer::sum);
 
             if (report.getClaimedDate() > 0L) {
-                claimDelays.add(report.getClaimedDate() - report.getCreateDate());
+                claimDelays.add(Math.max(0L, report.getClaimedDate() - report.getCreateDate()));
+            }
+            if (report.isTerminal() && report.getStatus() != ReportStatus.EXPIRED && report.getUpdateDate() > 0L) {
+                resolveDelays.add(Math.max(0L, report.getUpdateDate() - report.getCreateDate()));
             }
             if (report.getStaffId() != null) {
                 staffNames.putIfAbsent(report.getStaffId(), report.getStaffName());

@@ -33,13 +33,7 @@ public class GreetingsListener extends AbstractListener<SunLightPlugin> {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onJoin(final PlayerJoinEvent event) {
-        boolean isFirstJoin;
-        if (module.userManager().getOrFetch(event.getPlayer()).isFirstTimeJoined()
-                && module.getAvailableMessage(event.getPlayer(), GreetingMessageType.FIRST_JOIN) != null) {
-            isFirstJoin = true;
-        } else {
-            isFirstJoin = false;
-        }
+        final boolean isFirstJoin = module.userManager().getOrFetch(event.getPlayer()).isFirstTimeJoined();
 
         NightComponent message = module.getMessage(event.getPlayer(),
                 isFirstJoin ? GreetingMessageType.FIRST_JOIN : GreetingMessageType.JOIN);
@@ -55,15 +49,16 @@ public class GreetingsListener extends AbstractListener<SunLightPlugin> {
         this.broadcast(event.getPlayer(), message, SettingsProperties.JOIN_MESSAGE_MODE,
                 component -> EventUtils.getAdapter().setJoinMessage(event, component));
 
-        Bukkit.getScheduler().runTaskAsynchronously(module.plugin(), () -> {
-            if (!module.settings.isJoinCommandsEnabled())
-                return;
-
-            final List<String> commands = isFirstJoin ? module.settings.getJoinCommandsFirst()
-                    : module.settings.getJoinCommandsDefault();
-            Players.dispatchCommands(event.getPlayer(), commands);
+        if (!module.settings.isJoinCommandsEnabled()) return;
+        final List<String> commands = isFirstJoin ? module.settings.getJoinCommandsFirst()
+                : module.settings.getJoinCommandsDefault();
+        if (commands == null || commands.isEmpty()) return;
+        // Command dispatch touches Bukkit state and must run on the main thread.
+        this.plugin.runTask(() -> {
+            if (event.getPlayer().isOnline()) {
+                Players.dispatchCommands(event.getPlayer(), commands);
+            }
         });
-
     }
 
     @EventHandler(priority = EventPriority.HIGH)

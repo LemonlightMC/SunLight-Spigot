@@ -22,12 +22,12 @@ public class Report implements PlaceholderResolvable {
     private String categoryDisplay;
 
     private String details;
-    private ReportStatus status;
-    private UUID staffId;
-    private String staffName;
+    private volatile ReportStatus status;
+    private volatile UUID staffId;
+    private volatile String staffName;
 
     private final long createDate;
-    private long updateDate;
+    private volatile long updateDate;
 
     private volatile boolean rewarded;
 
@@ -36,11 +36,11 @@ public class Report implements PlaceholderResolvable {
     private double lastY;
     private double lastZ;
 
-    private int noteCount;
+    private volatile int noteCount;
 
-    private boolean reminded;
-    private long claimedDate;
-    private UUID caseId;
+    private volatile boolean reminded;
+    private volatile long claimedDate;
+    private volatile UUID caseId;
 
     /**
      * Guards the reward payout against two success paths racing on this server. The database

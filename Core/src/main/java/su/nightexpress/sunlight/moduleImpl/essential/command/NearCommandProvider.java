@@ -102,19 +102,19 @@ public class NearCommandProvider extends CommandProvider<EssentialModule> {
             for (final Player other : Utils.onlinePlayers()) {
                 if (other == source || other.getWorld() != source.getWorld()
                         || other.hasPermission(PERMISSION_EXCLUDE)) {
-                    return;
+                    continue;
                 }
                 if (executor != null && !executor.canSee(other)) {
-                    return;
+                    continue;
                 }
 
                 final Location location = other.getLocation();
                 if (location == null) {
-                    return;
+                    continue;
                 }
                 final int delta = (int) location.distanceSquared(source.getLocation());
                 if (delta > distanceLookup) {
-                    return;
+                    continue;
                 }
 
                 nearbyPlayers.add(new NearbyPlayer(other,

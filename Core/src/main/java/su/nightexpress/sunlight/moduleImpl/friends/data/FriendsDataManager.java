@@ -65,7 +65,7 @@ public class FriendsDataManager {
                 return null;
             }
             final SunUser owner = module.userManager().getRepository().getById(ownerId).orElse(null);
-            final SunUser friend = module.userManager().getRepository().getById(ownerId).orElse(null);
+            final SunUser friend = module.userManager().getRepository().getById(friendId).orElse(null);
             if (owner == null || friend == null) {
                 return null;
             }

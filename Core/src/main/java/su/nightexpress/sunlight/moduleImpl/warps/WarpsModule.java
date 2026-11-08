@@ -30,6 +30,7 @@ import su.nightexpress.sunlight.moduleImpl.warps.dialog.impl.WarpNameDialog;
 import su.nightexpress.sunlight.moduleImpl.warps.dialog.impl.WarpSlotsDialog;
 import su.nightexpress.sunlight.moduleImpl.warps.event.WarpTeleportEvent;
 import su.nightexpress.sunlight.moduleImpl.warps.exception.WarpLoadException;
+import su.nightexpress.sunlight.moduleImpl.warps.listener.WarpsListener;
 import su.nightexpress.sunlight.moduleImpl.warps.menu.WarpListMenu;
 import su.nightexpress.sunlight.moduleImpl.warps.menu.WarpOptionsMenu;
 import su.nightexpress.sunlight.teleport.TeleportContext;
@@ -94,6 +95,7 @@ public class WarpsModule extends Module implements su.nightexpress.sunlight.api.
         this.updateWarpCommands();
 
         this.addAsyncTask(this::saveDirtyWarps, this.getSettings().getSaveInterval());
+        this.addListener(new WarpsListener(this.plugin, this));
 
         this.commandRegistry.addProvider(new WarpsCommandProvider(this));
     }

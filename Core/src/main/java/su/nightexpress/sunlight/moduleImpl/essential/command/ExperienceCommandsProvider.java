@@ -248,12 +248,18 @@ public class ExperienceCommandsProvider extends CommandProvider<EssentialModule>
                         return 0;
                 }
 
-                if (!(arguments.get(CommandArgumentConstants.AMOUNT) instanceof final Integer amount)) {
-                        return 0;
+                final int amount;
+                if (mode == ModifyMode.RESET) {
+                        amount = 0;
+                } else {
+                        if (!(arguments.get(CommandArgumentConstants.AMOUNT) instanceof final Integer amountValue)) {
+                                return 0;
+                        }
+                        amount = amountValue;
                 }
 
                 return target.runAs(this.module, sender, PERMISSION_XP_OTHERS, (user, player) -> {
-                        final int oldXP = player.getExperiencePointsNeededForNextLevel();
+                        final int oldXP = player.getTotalExperience();
                         final MessageLocale feedbackMessage = switch (mode) {
                                 case SET -> MESSAGE_XP_SET_FEEDBACK;
                                 case REMOVE -> MESSAGE_XP_REMOVE_FEEDBACK;
@@ -315,9 +321,15 @@ public class ExperienceCommandsProvider extends CommandProvider<EssentialModule>
                         return 0;
                 }
 
-                final Object amountArg = arguments.get(CommandArgumentConstants.AMOUNT);
-                if (!(amountArg instanceof final Integer amount)) {
-                        return 0;
+                final int amount;
+                if (mode == ModifyMode.RESET) {
+                        amount = 0;
+                } else {
+                        final Object amountArg = arguments.get(CommandArgumentConstants.AMOUNT);
+                        if (!(amountArg instanceof final Integer amountValue)) {
+                                return 0;
+                        }
+                        amount = amountValue;
                 }
 
                 return target.runAs(this.module, sender, PERMISSION_LEVEL_OTHERS, (user, player) -> {
@@ -345,8 +357,6 @@ public class ExperienceCommandsProvider extends CommandProvider<EssentialModule>
                                 }
                                 case REMOVE -> {
                                         module.removeLevel(player, amount);
-
-                                        player.giveExpLevels(-amount);
                                 }
                                 case RESET -> {
                                         module.resetLevel(player);

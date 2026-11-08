@@ -83,6 +83,9 @@ public class VotingModule extends Module {
     private VoteWizardMenu wizardMenu;
 
     private volatile boolean dataLoaded;
+    private final java.util.concurrent.atomic.AtomicInteger loadGeneration = new java.util.concurrent.atomic.AtomicInteger();
+    private final java.util.concurrent.ConcurrentHashMap<java.util.UUID, VoteTally> tallyCache = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.concurrent.ConcurrentHashMap<java.util.UUID, Object> voteLocks = new java.util.concurrent.ConcurrentHashMap<>();
 
     public VotingModule(final ModuleDefinition<VotingModule> definition, final SunLightPlugin plugin) {
         super(definition, plugin);
@@ -116,10 +119,13 @@ public class VotingModule extends Module {
 
     @Override
     protected void unloadModule() {
+        this.loadGeneration.incrementAndGet();
         this.repository.clear();
         this.ballotRepository.clear();
         this.notifyPrefs.clear();
         this.wizardDrafts.clear();
+        this.tallyCache.clear();
+        this.voteLocks.clear();
         this.dataLoaded = false;
         this.menu = null;
         this.viewMenu = null;
@@ -156,13 +162,35 @@ public class VotingModule extends Module {
      */
     private void loadData() {
         this.dataLoaded = false;
+        final int generation = this.loadGeneration.incrementAndGet();
         this.plugin.runTaskAsync(task -> {
-            this.dataManager.getVotes().forEach(this.repository::upsertVote);
-            this.dataManager.getOptions().forEach(row -> this.repository.upsertOption(row.option(), row.voteId()));
-            this.dataManager.getBallots().forEach(this.ballotRepository::upsert);
-            this.notifyPrefs.clear();
-            this.notifyPrefs.putAll(this.dataManager.getNotifyPrefs());
-            this.dataLoaded = true;
+            try {
+                final var votes = this.dataManager.getVotes();
+                final var options = this.dataManager.getOptions();
+                final var ballots = this.dataManager.getBallots();
+                final var prefs = this.dataManager.getNotifyPrefs();
+
+                this.plugin.runTask(() -> {
+                    if (generation != this.loadGeneration.get()) {
+                        return;
+                    }
+
+                    this.repository.clear();
+                    this.ballotRepository.clear();
+                    this.tallyCache.clear();
+                    this.notifyPrefs.clear();
+
+                    votes.forEach(this.repository::upsertVote);
+                    options.forEach(row -> this.repository.upsertOption(row.option(), row.voteId()));
+                    ballots.forEach(this.ballotRepository::upsert);
+                    this.notifyPrefs.putAll(prefs);
+                    this.dataLoaded = true;
+                });
+            }
+            catch (Exception exception) {
+                this.error("Failed to load voting data: " + exception.getMessage());
+                exception.printStackTrace();
+            }
         });
     }
 
@@ -320,12 +348,25 @@ public class VotingModule extends Module {
         return this.dataLoaded;
     }
 
+    private Object voteLock(final Vote vote) {
+        return this.voteLocks.computeIfAbsent(vote.getId(), id -> new Object());
+    }
+
+    private void invalidateTally(final Vote vote) {
+        if (vote != null) {
+            this.tallyCache.remove(vote.getId());
+        }
+    }
+
     /**
-     * Recomputed on demand; nothing here is worth caching against a poll that can
-     * change at any time.
+     * Cached per vote and invalidated on ballot/option changes.
      */
     public VoteTally tally(final Vote vote) {
-        return new VoteTally(this.ballotRepository.getBallots(vote.getId()), vote.getRules());
+        if (vote == null) {
+            return new VoteTally(java.util.List.of(), null);
+        }
+        return this.tallyCache.compute(vote.getId(),
+                (id, cached) -> cached != null ? cached : new VoteTally(this.ballotRepository.getBallots(vote.getId()), vote.getRules()));
     }
 
     public @Nullable Vote findVote(final String key) {
@@ -908,6 +949,7 @@ public class VotingModule extends Module {
             this.dataManager.insertBallot(moved);
             this.ballotRepository.upsert(moved);
         }
+        this.invalidateTally(vote);
     }
 
     private void reportUnknownOption(final CommandSender sender, final Vote vote, final String optionKeyRaw) {
@@ -964,6 +1006,7 @@ public class VotingModule extends Module {
             return;
         }
         this.dataManager.updateVote(vote);
+        this.invalidateTally(vote);
         this.sendPrefixed(VotingLang.RULES_SET, sender, b -> b.with(vote.placeholders()));
     }
 
@@ -1031,6 +1074,8 @@ public class VotingModule extends Module {
         this.dataManager.deleteVote(vote);
         this.repository.removeVote(vote);
         this.ballotRepository.removeVote(vote.getId());
+        this.invalidateTally(vote);
+        this.voteLocks.remove(vote.getId());
         this.sendPrefixed(VotingLang.DELETED, sender, b -> b.with(vote.placeholders()));
         return true;
     }
@@ -1785,111 +1830,128 @@ public class VotingModule extends Module {
             this.sendPrefixed(VotingLang.ERROR_DATA_NOT_LOADED, player);
             return false;
         }
-        // The menus hold the live object, so a poll deleted while a menu is open would
-        // otherwise
-        // pass the isOpen() check below on an orphan and mint ghost ballots for a poll
-        // that no
-        // longer exists.
         if (this.repository.getVote(vote.getId()) == null) {
             this.sendPrefixed(VotingLang.ERROR_UNKNOWN_VOTE, player,
                     b -> b.with(SLPlaceholders.GENERIC_TARGET, () -> vote.getKey()));
             return false;
         }
-        if (!vote.isOpen()) {
-            if (vote.isScheduled()) {
-                this.sendPrefixed(VotingLang.ERROR_NOT_STARTED, player, b -> b.with(vote.placeholders()));
-            } else {
-                this.sendPrefixed(VotingLang.ERROR_NOT_OPEN, player, b -> b.with(vote.placeholders()));
-            }
-            return false;
-        }
-
-        final VoteOption option = vote.getOption(optionKeyRaw);
-        if (option == null) {
-            if (VoteOption.isBuiltInKey(optionKeyRaw)) {
-                // Same situation as /yes on a poll without yes: the owner switched the
-                // built-ins
-                // off, which deserves its own message rather than a generic unknown-choice one.
-                this.sendPrefixed(VotingLang.ERROR_BUILTIN_DISABLED, player, b -> b
-                        .with(vote.placeholders())
-                        .with(SLPlaceholders.GENERIC_TARGET, () -> optionKeyRaw)
-                        .with(SLPlaceholders.GENERIC_LIST, () -> String.join(", ", vote.getOptionKeys())));
-            } else {
-                this.reportUnknownOption(player, vote, optionKeyRaw);
-            }
-            return false;
-        }
-
-        // Voting for the choice you already hold takes it back, which makes a click on
-        // a chosen
-        // option a complete undo without needing a separate command.
-        final VoteBallot existing = this.findBallot(vote, player, option);
-        if (existing != null) {
-            if (!this.checkChangeAllowed(player, vote)) {
+        synchronized (this.voteLock(vote)) {
+            if (this.repository.getVote(vote.getId()) == null) {
+                this.sendPrefixed(VotingLang.ERROR_UNKNOWN_VOTE, player,
+                        b -> b.with(SLPlaceholders.GENERIC_TARGET, () -> vote.getKey()));
                 return false;
             }
-            return this.withdraw(player, vote, option, existing);
-        }
+            if (!vote.isOpen()) {
+                if (vote.isScheduled()) {
+                    this.sendPrefixed(VotingLang.ERROR_NOT_STARTED, player, b -> b.with(vote.placeholders()));
+                } else {
+                    this.sendPrefixed(VotingLang.ERROR_NOT_OPEN, player, b -> b.with(vote.placeholders()));
+                }
+                return false;
+            }
 
-        if (!this.checkEligibility(player, vote)) {
-            return false;
-        }
-        // Every ballot this cast gives up is refunded first, so affordability is judged
-        // on the
-        // net cost rather than the gross: a player whose balance covers
-        // charge-minus-refund must
-        // not be refused for not covering the charge alone.
-        final List<VoteBallot> replaced = this.findReplacedBallots(vote, player, option);
-        if (!replaced.isEmpty() && !this.checkChangeAllowed(player, vote)) {
-            return false;
-        }
-        final double refundable = replaced.stream().mapToDouble(VoteBallot::costPaid).sum();
-        if (!this.checkOptionGate(player, vote, option, refundable)) {
-            return false;
-        }
-        if (!this.checkVoteLimit(player, vote)) {
-            return false;
-        }
+            final VoteOption option = vote.getOption(optionKeyRaw);
+            if (option == null) {
+                if (VoteOption.isBuiltInKey(optionKeyRaw)) {
+                    this.sendPrefixed(VotingLang.ERROR_BUILTIN_DISABLED, player, b -> b
+                            .with(vote.placeholders())
+                            .with(SLPlaceholders.GENERIC_TARGET, () -> optionKeyRaw)
+                            .with(SLPlaceholders.GENERIC_LIST, () -> String.join(", ", vote.getOptionKeys())));
+                } else {
+                    this.reportUnknownOption(player, vote, optionKeyRaw);
+                }
+                return false;
+            }
 
-        final double weight = this.resolveWeight(player, vote);
-        final double cost = this.resolveCost(option, player);
-        final VoteOption replacedOption = replaced.stream()
-                .map(ballot -> vote.getOption(ballot.optionKey()))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+            final VoteBallot existing = this.findBallot(vote, player, option);
+            if (existing != null) {
+                if (!this.checkChangeAllowed(player, vote)) {
+                    return false;
+                }
+                return this.withdrawLocked(player, vote, option, existing);
+            }
 
-        final VoteCastEvent event = new VoteCastEvent(vote, option, replacedOption, player.getUniqueId(),
-                player.getName(), weight, cost, false);
-        this.plugin.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
+            if (!this.checkEligibility(player, vote)) {
+                return false;
+            }
+            final List<VoteBallot> replaced = this.findReplacedBallots(vote, player, option);
+            if (!replaced.isEmpty() && !this.checkChangeAllowed(player, vote)) {
+                return false;
+            }
+            final double refundable = replaced.stream().mapToDouble(VoteBallot::costPaid).sum();
+            if (!this.checkOptionGate(player, vote, option, refundable)) {
+                return false;
+            }
+            if (!this.checkVoteLimit(player, vote)) {
+                return false;
+            }
+
+            final double weight = this.resolveWeight(player, vote);
+            final double cost = this.resolveCost(option, player);
+            final VoteOption replacedOption = replaced.stream()
+                    .map(ballot -> vote.getOption(ballot.optionKey()))
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+
+            final VoteCastEvent event = new VoteCastEvent(vote, option, replacedOption, player.getUniqueId(),
+                    player.getName(), weight, cost, false);
+            this.plugin.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return false;
+            }
+
+            for (final VoteBallot old : replaced) {
+                this.refund(old);
+                this.dropBallot(vote, player.getUniqueId(), old.optionKey());
+            }
+            if (cost > 0D) {
+                EconomyUtils.withdraw(player, cost);
+            }
+
+            final VoteBallot ballot = VoteBallot.create(vote.getId(), option.getKey(), player.getUniqueId(),
+                    player.getName(), weight, cost);
+            try {
+                this.dataManager.insertBallot(ballot);
+                this.ballotRepository.upsert(ballot);
+                this.invalidateTally(vote);
+            }
+            catch (Exception exception) {
+                this.error("Failed to persist ballot for vote '" + vote.getKey() + "': " + exception.getMessage());
+                exception.printStackTrace();
+                if (cost > 0D) {
+                    try {
+                        EconomyUtils.deposit(player, cost);
+                        this.sendPrefixed(VotingLang.VOTE_REFUNDED, player,
+                                b -> b.with(SLPlaceholders.GENERIC_AMOUNT, () -> EconomyUtils.format(cost)));
+                    }
+                    catch (Exception refundError) {
+                        this.error("Failed to refund new ballot cost for vote '" + vote.getKey() + "': " + refundError.getMessage());
+                    }
+                }
+                // Best-effort rollback: restore replaced ballots that were removed before the insert failed.
+                for (final VoteBallot old : replaced) {
+                    try {
+                        this.dataManager.insertBallot(old);
+                        this.ballotRepository.upsert(old);
+                    }
+                    catch (Exception restoreError) {
+                        this.error("Failed to restore replaced ballot for vote '" + vote.getKey() + "': " + restoreError.getMessage());
+                    }
+                }
+                if (!replaced.isEmpty()) {
+                    this.invalidateTally(vote);
+                }
+                return false;
+            }
+
+            this.sendPrefixed(replaced.isEmpty() ? VotingLang.VOTE_CAST : VotingLang.VOTE_CHANGED, player, b -> b
+                    .with(vote.placeholders())
+                    .with(option.placeholders())
+                    .with(VotingPlaceholders.SCORE, () -> format(weight)));
+            this.dispatchParticipation(player, vote, option, weight);
+            return true;
         }
-
-        // Refunded before the new charge lands, so the balance the charge sees already
-        // includes
-        // what the player is owed back. Charged only after the event, so a veto can
-        // never leave
-        // somebody out of pocket for a vote that did not happen.
-        for (final VoteBallot old : replaced) {
-            this.refund(old);
-            this.dropBallot(vote, player.getUniqueId(), old.optionKey());
-        }
-        if (cost > 0D) {
-            EconomyUtils.withdraw(player, cost);
-        }
-
-        final VoteBallot ballot = VoteBallot.create(vote.getId(), option.getKey(), player.getUniqueId(),
-                player.getName(), weight, cost);
-        this.dataManager.insertBallot(ballot);
-        this.ballotRepository.upsert(ballot);
-
-        this.sendPrefixed(replaced.isEmpty() ? VotingLang.VOTE_CAST : VotingLang.VOTE_CHANGED, player, b -> b
-                .with(vote.placeholders())
-                .with(option.placeholders())
-                .with(VotingPlaceholders.SCORE, () -> format(weight)));
-        this.dispatchParticipation(player, vote, option, weight);
-        return true;
     }
 
     /**
@@ -1960,6 +2022,13 @@ public class VotingModule extends Module {
 
     private boolean withdraw(final Player player, final Vote vote, final VoteOption option,
             final VoteBallot ballot) {
+        synchronized (this.voteLock(vote)) {
+            return this.withdrawLocked(player, vote, option, ballot);
+        }
+    }
+
+    private boolean withdrawLocked(final Player player, final Vote vote, final VoteOption option,
+            final VoteBallot ballot) {
         final VoteCastEvent event = new VoteCastEvent(vote, option, null, player.getUniqueId(), player.getName(),
                 ballot.weight(), ballot.costPaid(), true);
         this.plugin.getPluginManager().callEvent(event);
@@ -1967,18 +2036,31 @@ public class VotingModule extends Module {
             return false;
         }
 
-        // Paid back before the ballot is dropped, matching the replacement path.
-        // Neither order is
-        // transactional across a crash, but money-first means a failure leaves the
-        // player still
-        // holding the vote (retryable) rather than holding neither the vote nor the
-        // money.
-        if (ballot.costPaid() > 0D) {
-            EconomyUtils.deposit(player, ballot.costPaid());
+        final double refundAmount = ballot.costPaid();
+        if (refundAmount > 0D) {
+            EconomyUtils.deposit(player, refundAmount);
             this.sendPrefixed(VotingLang.VOTE_REFUNDED, player,
-                    b -> b.with(SLPlaceholders.GENERIC_AMOUNT, () -> EconomyUtils.format(ballot.costPaid())));
+                    b -> b.with(SLPlaceholders.GENERIC_AMOUNT, () -> EconomyUtils.format(refundAmount)));
         }
-        this.dropBallot(vote, player.getUniqueId(), option.getKey());
+        try {
+            this.dropBallot(vote, player.getUniqueId(), option.getKey());
+        }
+        catch (Exception exception) {
+            this.error("Failed to withdraw ballot for vote '" + vote.getKey() + "': " + exception.getMessage());
+            exception.printStackTrace();
+            if (refundAmount > 0D) {
+                try {
+                    // Best-effort compensation: avoid leaving the player with both money and an active ballot.
+                    if (EconomyUtils.canAfford(player, refundAmount)) {
+                        EconomyUtils.withdraw(player, refundAmount);
+                    }
+                }
+                catch (Exception compensationError) {
+                    this.error("Failed to compensate ballot withdrawal refund for vote '" + vote.getKey() + "': " + compensationError.getMessage());
+                }
+            }
+            return false;
+        }
 
         this.sendPrefixed(VotingLang.VOTE_WITHDRAWN, player, b -> b
                 .with(vote.placeholders())
@@ -1989,6 +2071,7 @@ public class VotingModule extends Module {
     private void dropBallot(final Vote vote, final UUID playerId, final String optionKey) {
         this.dataManager.deleteBallot(vote.getId(), playerId, optionKey);
         this.ballotRepository.remove(vote.getId(), playerId, optionKey);
+        this.invalidateTally(vote);
     }
 
     private @Nullable VoteBallot findBallot(final Vote vote, final Player player, final VoteOption option) {

@@ -286,7 +286,7 @@ public boolean sendRequest(Player sender, Player target, TeleportMode mode) {
     public boolean decline(Player player, String name) {
         TeleportRequest request = name == null ? this.getLatest(player) : this.getPlayerRequest(player, name);
         if (request == null) {
-            this.sendPrefixed(PTPLang.REQUEST_ACCEPT_NOTHING, player);
+            this.sendPrefixed(PTPLang.REQUEST_DECLINE_NOTHING, player);
             return false;
         }
 

@@ -54,6 +54,7 @@ import su.nightexpress.sunlight.moduleImpl.playerwarps.event.PlayerWarpTeleportE
 import su.nightexpress.sunlight.moduleImpl.playerwarps.exception.PlayerWarpLoadException;
 import su.nightexpress.sunlight.moduleImpl.playerwarps.featuring.FeaturedData;
 import su.nightexpress.sunlight.moduleImpl.playerwarps.featuring.FeaturedSlot;
+import su.nightexpress.sunlight.moduleImpl.playerwarps.listener.PlayerWarpsListener;
 import su.nightexpress.sunlight.moduleImpl.playerwarps.menu.PlayerWarpOptionsMenu;
 import su.nightexpress.sunlight.moduleImpl.playerwarps.menu.PlayerWarpSortType;
 import su.nightexpress.sunlight.moduleImpl.playerwarps.menu.PlayerWarpsListMenu;
@@ -118,6 +119,7 @@ public class PlayerWarpsModule extends Module implements PlayerWarpsProvider {
         }
 
         this.addAsyncTask(this::saveDirtyWarps, this.getSettings().getSaveInterval());
+        this.addListener(new PlayerWarpsListener(this.plugin, this));
 
         this.commandRegistry.addProvider(new PlayerWarpsCommands(this));
     }

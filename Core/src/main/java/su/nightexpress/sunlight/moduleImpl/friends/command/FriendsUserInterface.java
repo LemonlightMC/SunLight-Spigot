@@ -246,21 +246,20 @@ public class FriendsUserInterface {
     return true;
   }
 
-  /** Refuses when the sender is already at their own cap. */
+  /** Refuses when the sender is already at their own friend cap. */
   private boolean checkAddLimit(final Player player) {
     if (module.canAddMore(player)) {
       return true;
     }
     module.sendPrefixed(FriendsLang.REQUEST_ERROR_LIMIT, player,
         builder -> builder.with(SLPlaceholders.GENERIC_MAX,
-            () -> String.valueOf(module.getRequestLimit(player))));
+            () -> String.valueOf(module.getFriendLimit(player))));
     return false;
   }
 
   /**
-   * Refuses when the target is already at their cap, which would otherwise only
-   * be discovered
-   * when they accepted and silently could not.
+   * Refuses when the target is already at their own friend cap, which would otherwise only
+   * be discovered when they accepted and silently could not.
    */
   private boolean checkTargetLimit(final Player sender, final Player target) {
     if (module.canAddMore(target)) {
@@ -334,8 +333,18 @@ public class FriendsUserInterface {
       return false;
     }
 
-    module.requestRepository().remove(request);
-    module.addFriend(player.getUniqueId(), request.getSenderId());
+    if (!module.addFriend(player.getUniqueId(), request.getSenderId())) {
+      if (module.isFriend(player.getUniqueId(), request.getSenderId())) {
+        module.requestRepository().remove(request);
+      }
+      else {
+        module.sendPrefixed(CoreLang.ERROR_COMMAND_EXECUTION, player);
+        return false;
+      }
+    }
+    else {
+      module.requestRepository().remove(request);
+    }
 
     final String requestSenderName = request.getSenderName();
     module.sendPrefixed(FriendsLang.REQUEST_ACCEPT_FEEDBACK, player,

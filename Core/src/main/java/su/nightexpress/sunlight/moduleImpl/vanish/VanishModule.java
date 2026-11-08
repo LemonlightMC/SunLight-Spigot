@@ -146,6 +146,8 @@ public class VanishModule extends Module implements VanishProvider {
             return;
 
         for (final Player recipient : this.plugin.getServer().getOnlinePlayers()) {
+            if (recipient.getUniqueId().equals(player.getUniqueId()))
+                continue;
             if (recipient.hasPermission(VanishPerms.BYPASS_SEE))
                 continue;
             Players.sendMessage(recipient, component);

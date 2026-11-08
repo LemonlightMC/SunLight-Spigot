@@ -16,6 +16,7 @@ public class TrieNode {
     }
 
     public void add(String word) {
+        if (word == null || word.isBlank()) return;
         String lowered = LowerCase.USER_LOCALE.apply(word);
         TrieNode node = this;
 

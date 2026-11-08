@@ -20,6 +20,7 @@ public class BackLocationListener extends AbstractListener<SunLightPlugin> {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBackLocationSave(PlayerTeleportEvent event) {
+        if (event.getTo() == null) return;
         this.module.handleTeleport(event.getPlayer(), event);
     }
 

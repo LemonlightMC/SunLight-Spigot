@@ -169,6 +169,18 @@ public class PlaytimeModule extends Module {
      * calls it, so the join path keeps the database work off the main thread.
      */
     public PlaytimeHistory loadHistory(final UUID playerId) {
+        return this.loadHistory(playerId, true);
+    }
+
+    public PlaytimeHistory historyForRead(final UUID playerId) {
+        final PlaytimeHistory cached = this.histories.get(playerId);
+        if (cached != null) {
+            return cached;
+        }
+        return this.loadHistory(playerId, false);
+    }
+
+    private PlaytimeHistory loadHistory(final UUID playerId, final boolean maintenance) {
         final PlaytimeHistory existing = this.histories.get(playerId);
         if (existing != null) {
             return existing;
@@ -185,7 +197,9 @@ public class PlaytimeModule extends Module {
                 history.setArchivedTotal(user.getPropertyOrDefault(PlaytimeProperties.TOTAL));
             }
         }
-        this.prune(history, user);
+        if (maintenance) {
+            this.prune(history, user);
+        }
 
         final PlaytimeHistory raced = this.histories.putIfAbsent(playerId, history);
         return raced == null ? history : raced;
@@ -248,14 +262,17 @@ public class PlaytimeModule extends Module {
             }
 
             final boolean excludeAfk = this.settings.isExcludeAfkEnabled();
-            final var afkProvider = this.plugin.afkProvider();
-            if (excludeAfk && afkProvider.isPresent()) {
+            if (excludeAfk) {
+                // Quit path: trust the AFK state captured on the main thread to avoid Bukkit/AFK API calls from async context.
                 if (wasAfkAtQuit) {
                     return;
                 }
                 final Player player = Bukkit.getPlayer(playerId);
-                if (player != null && afkProvider.get().isAfk(player)) {
-                    return;
+                if (player != null) {
+                    final var afkProvider = this.plugin.afkProvider();
+                    if (afkProvider.isPresent() && afkProvider.get().isAfk(player)) {
+                        return;
+                    }
                 }
             }
 

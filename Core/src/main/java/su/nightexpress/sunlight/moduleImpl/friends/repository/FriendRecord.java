@@ -63,11 +63,11 @@ public class FriendRecord implements PlaceholderResolvable, su.nightexpress.sunl
     }
 
     public boolean isOwnerOnline() {
-        return Utils.isOnline(this.friend.getId());
+        return Utils.isOnline(this.owner.getId());
     }
 
     public long ownerLastOnline() {
-        return friend.getLastOnline();
+        return owner.getLastOnline();
     }
 
     public UUID getFriendId() {

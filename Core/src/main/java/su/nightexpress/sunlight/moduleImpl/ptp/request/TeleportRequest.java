@@ -12,17 +12,25 @@ public class TeleportRequest {
 
     private final UUID targetId;
     private final UUID senderId;
+    private final String senderName;
+    private final String targetName;
     private final TeleportMode mode;
 
     private long expireDate;
 
     public TeleportRequest(Player sender, Player target, TeleportMode mode, int timeOut) {
-        this(sender.getUniqueId(), target.getUniqueId(), mode, timeOut);
+        this(sender.getUniqueId(), sender.getName(), target.getUniqueId(), target.getName(), mode, timeOut);
     }
 
     public TeleportRequest(UUID senderId, UUID targetId, TeleportMode mode, int timeOut) {
+        this(senderId, null, targetId, null, mode, timeOut);
+    }
+
+    public TeleportRequest(UUID senderId, String senderName, UUID targetId, String targetName, TeleportMode mode, int timeOut) {
         this.senderId = senderId;
+        this.senderName = senderName;
         this.targetId = targetId;
+        this.targetName = targetName;
         this.mode = mode;
         this.expireDate = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeOut, TimeUnit.SECONDS);
     }
@@ -36,13 +44,33 @@ public class TeleportRequest {
     }
 
     public boolean isSender(String name) {
-        return Utils.getPlayer(name) == this.getSender();
-        // return this.senderInfo.getName().equalsIgnoreCase(name);
+        if (name == null) return false;
+        Player online = Utils.getPlayer(name);
+        if (online != null) return online.getUniqueId().equals(this.senderId);
+        if (this.senderName != null) return this.senderName.equalsIgnoreCase(name.trim());
+        Player sender = this.getSender();
+        return sender != null && sender.getName().equalsIgnoreCase(name.trim());
     }
 
     public boolean isTarget(String name) {
-        return Utils.getPlayer(name) == this.getTarget();
-        // return this.targetInfo.getName().equalsIgnoreCase(name);
+        if (name == null) return false;
+        Player online = Utils.getPlayer(name);
+        if (online != null) return online.getUniqueId().equals(this.targetId);
+        if (this.targetName != null) return this.targetName.equalsIgnoreCase(name.trim());
+        Player target = this.getTarget();
+        return target != null && target.getName().equalsIgnoreCase(name.trim());
+    }
+
+    public String getSenderName() {
+        if (this.senderName != null) return this.senderName;
+        Player sender = this.getSender();
+        return sender == null ? "" : sender.getName();
+    }
+
+    public String getTargetName() {
+        if (this.targetName != null) return this.targetName;
+        Player target = this.getTarget();
+        return target == null ? "" : target.getName();
     }
 
     public Player getSender() {

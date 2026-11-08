@@ -32,7 +32,7 @@ public class PhantomsModule extends Module implements PhantomsProvider {
 
         this.addListener(new PhantomsListener(this.plugin, this));
         this.commandRegistry.addProvider(new PhantomsCommandProvider(this));
-        this.addAsyncTask(this::resetRestTime, 600); // TODO Config
+        this.addTask(this::resetRestTime, 600); // Bukkit statistic/player APIs require main thread. TODO Config
     }
 
     @Override
@@ -65,11 +65,16 @@ public class PhantomsModule extends Module implements PhantomsProvider {
 
     private void resetRestTime() {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            SunUser user = plugin.userManager().getOrFetch(player);
-            if (!user.getPropertyOrDefault(PhantomsProperties.ANTI_PHANTOM))
-                continue;
+            try {
+                SunUser user = plugin.userManager().getOrFetch(player);
+                if (!user.getPropertyOrDefault(PhantomsProperties.ANTI_PHANTOM))
+                    continue;
 
-            player.setStatistic(Statistic.TIME_SINCE_REST, 0);
+                player.setStatistic(Statistic.TIME_SINCE_REST, 0);
+            }
+            catch (Exception ignored) {
+                // Keep processing other players.
+            }
         }
     }
 }

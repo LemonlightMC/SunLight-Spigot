@@ -28,17 +28,20 @@ public class WordFilter {
         this.ruleHandlers.add(new RuleHandler(RuleValidator.forSuffix('+'), RuleResult.BLOCK));
 
         for (String rule : rules) {
-            if (rule.isBlank())
+            if (rule == null || rule.isBlank())
                 continue;
 
             RuleHandler handler = this.ruleHandlers.stream().filter(ruleHandler -> ruleHandler.canHandle(rule))
                     .findFirst().orElse(null);
             if (handler == null) {
-                this.exactWords.add(rule);
+                String normalized = rule.trim().toLowerCase(java.util.Locale.ROOT);
+                if (!normalized.isBlank()) this.exactWords.add(normalized);
                 continue;
             }
 
-            handler.addWord(handler.clean(rule));
+            String cleaned = handler.clean(rule);
+            if (cleaned == null || cleaned.isBlank()) continue;
+            handler.addWord(cleaned);
         }
     }
 

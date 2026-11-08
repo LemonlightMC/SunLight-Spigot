@@ -105,6 +105,7 @@ public class BackLocationModule extends Module implements BackLocationProvider {
             return;
 
         Location destination = event.getTo();
+        if (destination == null) return;
         World world = player.getWorld();
 
         if (!player.hasPermission(BackLocationPerms.BYPASS_PREVIOUS_CAUSES) && this.isDisabledCause(event.getCause())) {
@@ -251,12 +252,30 @@ public class BackLocationModule extends Module implements BackLocationProvider {
         TeleportContext teleportContext = TeleportContext.builder(this, player, location)
                 .withFlag(TeleportFlag.KEEP_DIRECTION)
                 .callback(() -> {
-                    if (charge)
-                        EconomyUtils.withdraw(player, cost);
+                    boolean paid = true;
+                    if (charge) {
+                        if (EconomyUtils.canAfford(player, cost)) {
+                            EconomyUtils.withdraw(player, cost);
+                        }
+                        else {
+                            paid = false;
+                        }
+                    }
 
-                    if (!silent)
-                        this.sendPrefixed(isPrevious ? BackLocationLang.PREVIOUS_TELEPORT_NOTIFY
-                                : BackLocationLang.DEATH_TELEPORT_NOTIFY, player);
+                    if (paid && type == LocationType.DEATH && this.settings.resetDeathCacheOnUse.get()) {
+                        this.getLocationMap(player.getUniqueId()).remove(LocationType.DEATH);
+                    }
+
+                    if (!silent) {
+                        if (!paid) {
+                            this.sendPrefixed(Lang.COST_ERROR_NOT_ENOUGH_FUNDS, player, builder -> builder
+                                    .with(SLPlaceholders.GENERIC_AMOUNT, () -> EconomyUtils.format(cost)));
+                        }
+                        else {
+                            this.sendPrefixed(isPrevious ? BackLocationLang.PREVIOUS_TELEPORT_NOTIFY
+                                    : BackLocationLang.DEATH_TELEPORT_NOTIFY, player);
+                        }
+                    }
                 })
                 .build();
 

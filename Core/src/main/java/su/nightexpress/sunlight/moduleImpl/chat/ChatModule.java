@@ -485,6 +485,11 @@ public class ChatModule extends Module implements ChatProvider {
         Player player = event.getPlayer();
         String originalMessage = event.message();
 
+        if (originalMessage == null || originalMessage.isEmpty()) {
+            event.setCancelled(true);
+            return;
+        }
+
         UserChatCache data = this.getChatCache(player);
         String format = this.getEffectiveChatFormat(player);
         ChatChannel channel = this.getEffectiveChannel(player, originalMessage.charAt(0));
@@ -645,7 +650,9 @@ public class ChatModule extends Module implements ChatProvider {
                         return;
                     }
                     this.printMails(player, mails);
-                    this.mailDataManager.deleteMails(player.getUniqueId());
+                    CompletableFuture.runAsync(() -> {
+                        if (this.mailDataManager != null) this.mailDataManager.deleteMails(player.getUniqueId());
+                    }).whenComplete(Utils::printStacktrace);
                 }, this.plugin::runTask).whenComplete(Utils::printStacktrace);
         return true;
     }
@@ -671,7 +678,9 @@ public class ChatModule extends Module implements ChatProvider {
                     this.printMails(player, mails);
                     this.sendPrefixed(ChatLang.MAIL_NOTIFY, player,
                             builder -> builder.with(SLPlaceholders.GENERIC_AMOUNT, () -> String.valueOf(mails.size())));
-                    this.mailDataManager.deleteMails(player.getUniqueId());
+                    CompletableFuture.runAsync(() -> {
+                        if (this.mailDataManager != null) this.mailDataManager.deleteMails(player.getUniqueId());
+                    }).whenComplete(Utils::printStacktrace);
                 }, this.plugin::runTask).whenComplete(Utils::printStacktrace);
     }
 

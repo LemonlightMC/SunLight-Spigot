@@ -1,5 +1,7 @@
 package su.nightexpress.sunlight.moduleImpl.playtime.listener;
 
+import java.util.UUID;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -54,6 +56,7 @@ public class PlaytimeListener extends AbstractListener<SunLightPlugin> {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(final PlayerQuitEvent event) {
         final Player player = event.getPlayer();
+        final UUID playerId = player.getUniqueId();
         final boolean wasAfk = this.module.getSettings().isExcludeAfkEnabled()
                 && this.plugin.afkProvider().map(provider -> provider.isAfk(player)).orElse(false);
         try {
@@ -64,6 +67,6 @@ public class PlaytimeListener extends AbstractListener<SunLightPlugin> {
         } catch (final Exception ignored) {
         }
         // Flush and drop the cached history off the main thread.
-        this.plugin.runTaskAsync(() -> this.module.closeSession(player.getUniqueId(), wasAfk));
+        this.plugin.runTaskAsync(() -> this.module.closeSession(playerId, wasAfk));
     }
 }

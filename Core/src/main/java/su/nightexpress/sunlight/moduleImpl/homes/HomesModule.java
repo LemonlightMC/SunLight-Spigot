@@ -166,10 +166,17 @@ public class HomesModule extends Module implements su.nightexpress.sunlight.api.
     }
 
     public void saveHomes() {
-        Set<Home> homes = this.repository.getAll(Home::isDirty).stream().peek(Home::markClean).collect(Collectors
-                .toSet());
+        Set<Home> homes = this.repository.getAll(Home::isDirty);
+        if (homes.isEmpty()) return;
 
-        this.dataManager.saveHomes(homes);
+        try {
+            this.dataManager.saveHomes(homes);
+            homes.forEach(Home::markClean);
+        }
+        catch (Exception exception) {
+            this.error("Failed to save homes: " + exception.getMessage());
+            exception.printStackTrace();
+        }
     }
 
     public void deleteHome(Home home) {
@@ -427,12 +434,30 @@ public class HomesModule extends Module implements su.nightexpress.sunlight.api.
         }
 
         if (currentHome == null) {
+            boolean firstHome = this.countHomes(player) == 0;
             Home created = this.createHome(id, UserInfo.of(player), location);
             if (created == null) return false;
-            if (chargeCreation)
-                EconomyUtils.withdraw(player, creationCost);
-            if (this.countHomes(player) == 0) {
+            if (chargeCreation) {
+                try {
+                    EconomyUtils.withdraw(player, creationCost);
+                }
+                catch (Exception exception) {
+                    this.deleteHome(created);
+                    this.sendPrefixed(Lang.COST_ERROR_NOT_ENOUGH_FUNDS, player, builder -> builder
+                            .with(SLPlaceholders.GENERIC_AMOUNT, () -> EconomyUtils.format(creationCost)));
+                    return false;
+                }
+            }
+            if (firstHome || !this.getHomes(player).stream().anyMatch(Home::isFavorite)) {
+                // Clear stale favorites defensively, then pin the first/only home.
+                for (Home existing : this.getHomes(player)) {
+                    if (existing.isFavorite() && !existing.getId().equalsIgnoreCase(created.getId())) {
+                        existing.setFavorite(false);
+                        existing.markDirty();
+                    }
+                }
                 created.setFavorite(true);
+                created.markDirty();
             }
             this.sendPrefixed(HomesLang.HOME_SET_CREATED, player, builder -> builder.with(created.placeholders()));
         } else {
@@ -528,19 +553,25 @@ public class HomesModule extends Module implements su.nightexpress.sunlight.api.
             this.sendPrefixed(HomesLang.HOME_INVITE_ERROR_YOURSELF, player);
             return false;
         }
+        if (home.isInvited(profile.id())) {
+            this.sendPrefixed(HomesLang.HOME_INVITE_SUCCESS_FEEDBACK, player, builder -> builder
+                    .with(CommonPlaceholders.PLAYER_NAME, profile::name)
+                    .with(home.placeholders()));
+            return true;
+        }
 
         home.addInvitedPlayer(profile);
         home.markDirty();
 
         Player target = Utils.getPlayer(profile.id());
         if (target != null) {
-            this.sendPrefixed(HomesLang.HOME_INVITE_SUCCESS_NOTIFY, player, builder -> builder
+            this.sendPrefixed(HomesLang.HOME_INVITE_SUCCESS_NOTIFY, target, builder -> builder
                     .with(CommonPlaceholders.PLAYER.resolver(player))
                     .with(home.placeholders()));
         }
 
         this.sendPrefixed(HomesLang.HOME_INVITE_SUCCESS_FEEDBACK, player, builder -> builder
-                .with(CommonPlaceholders.PLAYER_NAME, () -> target == null ? profile.name() : target.getName())
+                .with(CommonPlaceholders.PLAYER_NAME, () -> target == null ? profile.name() : target.getDisplayName() != null ? target.getDisplayName() : target.getName())
                 .with(home.placeholders()));
 
         return true;

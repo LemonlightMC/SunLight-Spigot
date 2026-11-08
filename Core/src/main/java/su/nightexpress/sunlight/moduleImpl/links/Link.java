@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Link implements PlaceholderResolvable {
 
@@ -35,7 +37,6 @@ public class Link implements PlaceholderResolvable {
     private NightItem icon;
     private int priority;
     private boolean enabled;
-    private long clicks;
 
     private int cooldown;
     private double cost;
@@ -54,7 +55,8 @@ public class Link implements PlaceholderResolvable {
      */
     private final Set<String> seenPlayers;
 
-    private volatile boolean dirty;
+    private final AtomicLong clicksCounter = new AtomicLong();
+    private final AtomicInteger dirtyVersion = new AtomicInteger();
 
     public Link(@NotNull String id, @NotNull String display, @NotNull String url) {
         this.id = id;
@@ -67,7 +69,7 @@ public class Link implements PlaceholderResolvable {
         this.icon = NightItem.fromType(Material.PAPER);
         this.priority = 0;
         this.enabled = true;
-        this.clicks = 0L;
+        this.clicksCounter.set(0L);
         this.cooldown = 0;
         this.cost = 0D;
         this.sound = "";
@@ -118,7 +120,7 @@ public class Link implements PlaceholderResolvable {
         config.set(path + ".Use-Permission", this.usePermission);
         config.set(path + ".Icon", this.icon);
         config.set(path + ".Priority", this.priority);
-        config.set(path + ".Clicks", this.clicks);
+        config.set(path + ".Clicks", this.getClicks());
         config.set(path + ".Cooldown", this.cooldown);
         config.set(path + ".Cost", this.cost);
         config.set(path + ".Sound", this.sound);
@@ -220,16 +222,24 @@ public class Link implements PlaceholderResolvable {
         return !this.hasUsePermission() || sender.hasPermission(this.usePermission);
     }
 
+    public int getDirtyVersion() {
+        return this.dirtyVersion.get();
+    }
+
     public boolean isDirty() {
-        return this.dirty;
+        return this.dirtyVersion.get() != 0;
     }
 
     public void markDirty() {
-        this.dirty = true;
+        this.dirtyVersion.incrementAndGet();
     }
 
     public void markClean() {
-        this.dirty = false;
+        this.dirtyVersion.set(0);
+    }
+
+    public void clearDirtyIfVersion(int version) {
+        this.dirtyVersion.compareAndSet(version, 0);
     }
 
     public @NotNull String getId() {
@@ -440,20 +450,20 @@ public class Link implements PlaceholderResolvable {
     }
 
     public long getClicks() {
-        return this.clicks;
+        return this.clicksCounter.get();
     }
 
     public void setClicks(long clicks) {
-        this.clicks = Math.max(0L, clicks);
+        this.clicksCounter.set(Math.max(0L, clicks));
     }
 
     public void addClick() {
-        this.clicks++;
+        this.clicksCounter.incrementAndGet();
         this.markDirty();
     }
 
     public void resetClicks() {
-        this.clicks = 0L;
+        this.clicksCounter.set(0L);
         this.clearSeen();
         this.markDirty();
     }

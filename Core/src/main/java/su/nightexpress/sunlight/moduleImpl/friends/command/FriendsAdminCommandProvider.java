@@ -123,7 +123,15 @@ public class FriendsAdminCommandProvider extends CommandProvider<FriendsModule> 
             return 0;
         }
 
-        this.module.addFriend(first.getId(), second.getId());
+        if (!this.module.addFriend(first.getId(), second.getId())) {
+            if (this.module.isFriend(first.getId(), second.getId())) {
+                this.module.sendPrefixed(FriendsLang.ADMIN_ADD_ERROR_ALREADY, sender);
+            }
+            else {
+                this.module.sendPrefixed(CoreLang.ERROR_COMMAND_EXECUTION, sender);
+            }
+            return 0;
+        }
 
         this.module.sendPrefixed(FriendsLang.ADMIN_ADD_FEEDBACK, sender, builder -> builder
                 .with(CommonPlaceholders.PLAYER_NAME, first::getName)

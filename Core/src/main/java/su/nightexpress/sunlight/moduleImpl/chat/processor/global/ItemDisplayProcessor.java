@@ -19,13 +19,15 @@ public class ItemDisplayProcessor implements ChatProcessor<FormattedContext> {
         String format = context.getFormat();
 
         String placeholder = module.getSettings().getItemShowPlaceholder();
+        if (placeholder == null || placeholder.isEmpty()) return;
         int index = format.indexOf(placeholder);
         if (index == -1)
             return;
 
         ItemStack itemStack = context.getPlayer().getInventory().getItemInMainHand();
-        if (itemStack.isEmpty()) {
+        if (itemStack == null || itemStack.getType().isAir() || itemStack.getAmount() <= 0) {
             module.sendPrefixed(ChatLang.ITEM_SHOW_NOTHING, context.getPlayer());
+            context.setFormat(format.replace(placeholder, ""));
             return;
         }
 

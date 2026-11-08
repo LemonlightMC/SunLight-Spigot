@@ -50,6 +50,7 @@ public class PlaytimeTopMenu extends AbstractMenu {
     private final PlaytimeModule module;
     private final PlaytimePeriod period;
     private final int initialPage;
+    private boolean initialPageApplied;
 
     public PlaytimeTopMenu(final PlaytimeModule module, final PlaytimePeriod period) {
         this(module, period, 1);
@@ -106,8 +107,9 @@ public class PlaytimeTopMenu extends AbstractMenu {
 
         final List<TopEntry> entries = new ArrayList<>(this.module.topHandler().getTop(this.period));
         menuViewer.setTotalPages(Math.max(1, (entries.size() + PAGE_SIZE - 1) / PAGE_SIZE));
-        if (this.initialPage > 1) {
+        if (!this.initialPageApplied && this.initialPage > 1) {
             menuViewer.setCurrentPage(Math.min(this.initialPage, menuViewer.getTotalPages()));
+            this.initialPageApplied = true;
         }
 
         this.addPeriodButton(list, PlaytimePeriod.ALLTIME, Material.NETHER_STAR, 1);

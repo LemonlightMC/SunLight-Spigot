@@ -224,6 +224,7 @@ public class EssentialModule extends Module implements EssentialProvider {
 
     @Override
     public boolean setGamemode(final Player player, final GameMode mode) {
+        if (player == null || mode == null) return false;
         if (player.isOnline()) {
             player.setGameMode(mode);
         } else {
@@ -231,6 +232,7 @@ public class EssentialModule extends Module implements EssentialProvider {
             if (internals == null) {
                 this.plugin().getLogger()
                         .warning(su.nightexpress.sunlight.config.Lang.ERROR_NO_INTERNALS_HANDLER.value().getText());
+                return false;
             }
             try {
                 internals.setGameMode(player, mode);
@@ -500,12 +502,12 @@ public class EssentialModule extends Module implements EssentialProvider {
 
     @Override
     public double addHealth(final Player player, double amount) {
-        return setHealth(player, getHealth(player), ModifyMode.ADD);
+        return setHealth(player, amount, ModifyMode.ADD);
     }
 
     @Override
     public double removeHealth(final Player player, double amount) {
-        return setHealth(player, getHealth(player), ModifyMode.REMOVE);
+        return setHealth(player, amount, ModifyMode.REMOVE);
     }
 
     @Override

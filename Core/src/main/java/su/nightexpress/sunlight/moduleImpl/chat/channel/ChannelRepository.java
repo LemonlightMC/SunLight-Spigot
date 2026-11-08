@@ -28,8 +28,13 @@ public class ChannelRepository {
         this.channelByPrefixMap.clear();
     }
 
+    private static String normalizeId(String id) {
+        return id == null ? null : Utils.lowercase(id);
+    }
+
     public void add(ChatChannel channel) {
-        this.channelByIdMap.put(channel.getId(), channel);
+        if (channel == null) return;
+        this.channelByIdMap.put(normalizeId(channel.getId()), channel);
 
         if (channel.hasPrefix()) {
             this.channelByPrefixMap.put(channel.getPrefixChar(), channel);
@@ -37,7 +42,8 @@ public class ChannelRepository {
     }
 
     public void remove(ChatChannel channel) {
-        this.channelByIdMap.remove(channel.getId());
+        if (channel == null) return;
+        this.channelByIdMap.remove(normalizeId(channel.getId()));
 
         if (channel.hasPrefix()) {
             this.channelByPrefixMap.remove(channel.getPrefixChar());
@@ -45,7 +51,8 @@ public class ChannelRepository {
     }
 
     public ChatChannel getById(String id) {
-        return this.channelByIdMap.get(Utils.lowercase(id));
+        if (id == null) return null;
+        return this.channelByIdMap.get(normalizeId(id));
     }
 
     public ChatChannel getByPrefix(char prefix) {

@@ -129,7 +129,7 @@ public class PlaytimeCalendarMenu extends AbstractMenu {
 
         /** The day grid of one month, keyed by epoch day. Empty days are absent. */
         public Map<Long, Long> monthGrid(final UUID playerId, final YearMonth month) {
-                final PlaytimeHistory history = this.module.historyOrLoad(playerId);
+                final PlaytimeHistory history = this.module.historyForRead(playerId);
                 synchronized (history) {
                         return history.monthGrid(month);
                 }

@@ -44,7 +44,10 @@ public class GlobalHomeRepository {
     }
 
     public Set<Home> getAll(Predicate<Home> predicate) {
-        return this.homesByOwnerMap.values().stream().flatMap(repository -> repository.getAll().stream())
+        if (predicate == null) return this.getAll();
+        return this.homesByOwnerMap.values().stream()
+                .flatMap(repository -> repository.getAll().stream())
+                .filter(predicate)
                 .collect(Collectors.toSet());
     }
 

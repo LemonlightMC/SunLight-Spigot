@@ -329,22 +329,32 @@ public class LinksModule extends Module implements LinksProvider {
             return;
         }
 
-        link.write(config, LinksConfig.PATH_LINKS + "." + link.getId());
-        config.saveChanges();
-        link.markClean();
+        int version = link.getDirtyVersion();
+        synchronized (link) {
+            link.write(config, LinksConfig.PATH_LINKS + "." + link.getId());
+        }
+        try {
+            config.saveChanges();
+            link.clearDirtyIfVersion(version);
+        }
+        catch (Exception exception) {
+            this.error("Failed to save link '" + link.getId() + "': " + exception.getMessage());
+        }
     }
 
     private void saveDirtyLinks() {
-        // Snapshot under lock: the async saver iterates off the main thread while
-        // commands and menus
-        // mutate the map on it. saveLink() also clears the dirty flag, so the snapshot
-        // must be taken
-        // before any writes happen.
         List<Link> dirty;
         synchronized (this.links) {
             dirty = this.links.values().stream().filter(Link::isDirty).toList();
         }
-        dirty.forEach(this::saveLink);
+        for (Link link : dirty) {
+            try {
+                this.saveLink(link);
+            }
+            catch (Exception exception) {
+                this.error("Failed to save dirty link '" + link.getId() + "': " + exception.getMessage());
+            }
+        }
     }
 
     // Activation

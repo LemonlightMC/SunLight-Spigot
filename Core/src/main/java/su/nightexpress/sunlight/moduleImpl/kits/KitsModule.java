@@ -120,8 +120,9 @@ public class KitsModule extends Module implements su.nightexpress.sunlight.api.p
         });
 
         registry.register("kits_is_available", (player, payload) -> {
-            return CoreLang.STATE_YES_NO.get(this.dataRepository.kitData(player.getUniqueId(), payload).map(
-                    KitData::hasCooldown).orElse(false));
+            return CoreLang.STATE_YES_NO.get(this.dataRepository.kitData(player.getUniqueId(), payload)
+                    .map(data -> !data.hasCooldown())
+                    .orElse(true));
         });
 
         registry.register("kits_cooldown_raw", (player, payload) -> {

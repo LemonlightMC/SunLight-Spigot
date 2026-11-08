@@ -101,8 +101,8 @@ public class WarmupsModule extends Module implements WarmupsProvider {
         warmup.onTick();
 
         if (warmup.isCompleted()) {
-            warmup.complete(); // Already on the main thread.
             this.warmupByIdMap.remove(warmup.getPlayer().getUniqueId());
+            warmup.complete(); // Already on the main thread; remove first to avoid self-cancel on completion teleport.
         }
     }
 

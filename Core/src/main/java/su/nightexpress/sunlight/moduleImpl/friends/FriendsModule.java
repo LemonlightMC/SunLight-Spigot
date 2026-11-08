@@ -46,6 +46,7 @@ import su.nightexpress.sunlight.utils.Utils;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The Friends module.
@@ -75,6 +76,7 @@ public class FriendsModule extends Module implements FriendsProvider {
     private FriendOptionsMenu optionsMenu;
 
     public volatile boolean dataLoaded;
+    private final AtomicInteger loadGeneration = new AtomicInteger();
 
     public FriendsModule(final ModuleDefinition<FriendsModule> definition, final SunLightPlugin plugin) {
         super(definition, plugin);
@@ -135,6 +137,7 @@ public class FriendsModule extends Module implements FriendsProvider {
 
     @Override
     protected void unloadModule() {
+        this.loadGeneration.incrementAndGet();
         this.repository.clear();
         this.requestRepository.clear();
         this.dataLoaded = false;
@@ -170,15 +173,34 @@ public class FriendsModule extends Module implements FriendsProvider {
 
     private void loadData() {
         this.dataLoaded = false;
+        final int generation = this.loadGeneration.incrementAndGet();
         this.plugin.runTaskAsync(() -> {
-            for (final FriendRecord record : this.dataManager.getFriends()) {
-                this.repository.upsert(record);
+            try {
+                final var friends = this.dataManager.getFriends();
+                final var blocks = this.dataManager.getBlocks();
+                if (generation != this.loadGeneration.get() || !this.plugin.isEnabled()) {
+                    return;
+                }
+                this.plugin.runTask(() -> {
+                    if (generation != this.loadGeneration.get() || !this.plugin.isEnabled()) {
+                        return;
+                    }
+                    this.repository.clear();
+                    for (final FriendRecord record : friends) {
+                        this.repository.upsert(record);
+                    }
+                    for (final BlockRecord block : blocks) {
+                        this.repository.upsertBlock(block);
+                    }
+                    this.dataLoaded = true;
+                    this.info("Loaded and cached " + this.repository.size() + " friendship rows.");
+                });
             }
-            for (final BlockRecord block : this.dataManager.getBlocks()) {
-                this.repository.upsertBlock(block);
+            catch (Exception exception) {
+                this.error("Failed to load friends data: " + exception.getMessage());
+                exception.printStackTrace();
+                // Keep dataLoaded false on failure to avoid operating on partial/stale cache.
             }
-            this.dataLoaded = true;
-            this.info("Loaded and cached " + this.repository.size() + " friendship rows.");
         });
     }
 
@@ -275,8 +297,8 @@ public class FriendsModule extends Module implements FriendsProvider {
     }
 
     public boolean canAddMore(final Player player) {
-        final int limit = this.getRequestLimit(player);
-        return limit < 0 || this.getFriends(player.getUniqueId()).size() < limit;
+        final int limit = this.getFriendLimit(player);
+        return limit < 0 || this.getFriendsCount(player.getUniqueId()) < limit;
     }
 
     /** Human-readable last-seen text, shared by the menus and the placeholder. */
@@ -306,26 +328,57 @@ public class FriendsModule extends Module implements FriendsProvider {
 
     @Override
     public boolean addFriend(final UUID playerId, final UUID otherId) {
-        final SunUser owner = this.infoOf(playerId);
-        final SunUser friend = this.infoOf(otherId);
-        if (owner == null || friend == null || owner.getId().equals(friend.getId())) {
+        if (!this.dataLoaded || playerId == null || otherId == null || playerId.equals(otherId)) {
             return false;
         }
+        final SunUser owner = this.infoOf(playerId);
+        final SunUser friend = this.infoOf(otherId);
+        if (owner == null || friend == null) {
+            return false;
+        }
+        if (this.isFriend(owner.getId(), friend.getId())) {
+            return false;
+        }
+
+        final FriendRecord first = FriendRecord.create(owner, friend);
+        final FriendRecord second = FriendRecord.create(friend, owner);
+        final PreFriendChangeEvent preFirst = new PreFriendChangeEvent(first, false);
+        final PreFriendChangeEvent preSecond = new PreFriendChangeEvent(second, false);
+        this.plugin.getPluginManager().callEvent(preFirst);
+        this.plugin.getPluginManager().callEvent(preSecond);
+        if (preFirst.isCancelled() || preSecond.isCancelled()) {
+            return false;
+        }
+
+        this.repository.upsert(first);
+        this.repository.upsert(second);
+        this.plugin.getPluginManager().callEvent(new PlayerFriendChangeEvent(first, true));
+        this.plugin.getPluginManager().callEvent(new PlayerFriendChangeEvent(second, true));
+
         this.plugin.runTaskAsync(() -> {
-            this.addRow(owner, friend);
-            this.addRow(friend, owner);
+            try {
+                if (!this.dataManager.existsInDatabase(owner.getId(), friend.getId())) {
+                    this.dataManager.insertFriend(first);
+                }
+                if (!this.dataManager.existsInDatabase(friend.getId(), owner.getId())) {
+                    this.dataManager.insertFriend(second);
+                }
+            }
+            catch (Exception exception) {
+                this.error("Failed to persist friendship between " + owner.getId() + " and " + friend.getId() + ": " + exception.getMessage());
+            }
         });
 
         return true;
     }
 
     protected boolean addRow(final SunUser owner, final SunUser friend) {
-        // Another server in the same sync window may already have written this row, in
-        // which case this one would be a duplicate rather than an update.
-        if (this.dataManager.existsInDatabase(owner.getId(), friend.getId())) {
+        if (owner == null || friend == null || owner.getId().equals(friend.getId())) {
             return false;
         }
-
+        if (this.isFriend(owner.getId(), friend.getId())) {
+            return false;
+        }
         final FriendRecord record = FriendRecord.create(owner, friend);
         final PreFriendChangeEvent pre = new PreFriendChangeEvent(record, false);
         this.plugin.getPluginManager().callEvent(pre);
@@ -334,21 +387,38 @@ public class FriendsModule extends Module implements FriendsProvider {
         }
 
         this.repository.upsert(record);
-        this.dataManager.insertFriend(record);
-
         this.plugin.getPluginManager().callEvent(new PlayerFriendChangeEvent(record, true));
+        this.plugin.runTaskAsync(() -> {
+            try {
+                if (!this.dataManager.existsInDatabase(record.getOwnerId(), record.getFriendId())) {
+                    this.dataManager.insertFriend(record);
+                }
+            }
+            catch (Exception exception) {
+                this.error("Failed to persist friend row for " + record.getOwnerId() + ": " + exception.getMessage());
+            }
+        });
         return true;
     }
 
     @Override
     public boolean removeFriend(final UUID playerId, final UUID otherId) {
+        if (playerId == null || otherId == null) return false;
         final FriendRecord owned = this.getFriend(playerId, otherId);
         final FriendRecord reversed = this.getFriend(otherId, playerId);
 
-        return owned != null && removeRow(owned) || reversed != null && removeRow(reversed);
+        boolean removed = false;
+        if (owned != null) {
+            removed |= this.removeRow(owned);
+        }
+        if (reversed != null) {
+            removed |= this.removeRow(reversed);
+        }
+        return removed;
     }
 
     protected boolean removeRow(final FriendRecord record) {
+        if (record == null) return false;
         final PreFriendChangeEvent pre = new PreFriendChangeEvent(record, true);
         this.plugin.getPluginManager().callEvent(pre);
         if (pre.isCancelled()) {
