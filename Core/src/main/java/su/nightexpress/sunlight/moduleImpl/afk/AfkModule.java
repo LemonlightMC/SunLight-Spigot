@@ -1,6 +1,9 @@
 package su.nightexpress.sunlight.moduleImpl.afk;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 
@@ -33,7 +36,10 @@ import su.nightexpress.sunlight.module.ModuleDefinition;
 import su.nightexpress.sunlight.moduleImpl.afk.command.AfkCommandProvider;
 import su.nightexpress.sunlight.moduleImpl.afk.core.AfkLang;
 import su.nightexpress.sunlight.moduleImpl.afk.core.AfkSettings;
+import su.nightexpress.sunlight.moduleImpl.afk.hook.AfkContextHook;
+import su.nightexpress.sunlight.moduleImpl.afk.hook.AfkDiscordHook;
 import su.nightexpress.sunlight.moduleImpl.afk.listener.AfkListener;
+import su.nightexpress.sunlight.moduleImpl.afk.menu.AfkAdminMenu;
 import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.user.property.UserProperty;
 import su.nightexpress.sunlight.user.property.UserPropertyRegistry;
@@ -43,6 +49,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import org.bukkit.Particle;
 
 public class AfkModule extends Module implements AfkProvider {
 
@@ -54,6 +63,12 @@ public class AfkModule extends Module implements AfkProvider {
     private final AfkSettings settings;
 
     private UniversalChatEventHandler chatEventHandler;
+    private AfkContextHook luckPermsHook;
+    private AfkDiscordHook discordHook;
+    private AfkAdminMenu adminMenu;
+
+    private long statisticsSessions;
+    private long statisticsTotalAfkTime;
 
     public AfkModule(final ModuleDefinition<AfkModule> definition, final SunLightPlugin plugin) {
         super(definition, plugin);
@@ -66,6 +81,7 @@ public class AfkModule extends Module implements AfkProvider {
     protected void loadModule(final FileConfig config) {
         this.settings.load(config);
         this.plugin.injectLang(AfkLang.class);
+        this.discordHook = new AfkDiscordHook(this.settings);
         UserPropertyRegistry.register(AFK_TOTAL_TIME);
         UserPropertyRegistry.register(AFK_COUNT);
 
@@ -78,6 +94,16 @@ public class AfkModule extends Module implements AfkProvider {
 
         this.addTask(this::tickTrackers, 20L);
 
+        this.adminMenu = new AfkAdminMenu(this.plugin, this);
+
+        if (this.settings.luckPermsContextEnabled.get() && HookId.hasLuckPerms()) {
+            this.luckPermsHook = new AfkContextHook(this);
+            this.luckPermsHook.register();
+            if (this.luckPermsHook.isAvailable()) {
+                this.info("LuckPerms context 'afkstate' registered.");
+            }
+        }
+
         Utils.onlinePlayers().forEach(this::track);
         this.commandRegistry.addProvider(new AfkCommandProvider(this));
     }
@@ -87,6 +113,11 @@ public class AfkModule extends Module implements AfkProvider {
         if (this.chatEventHandler != null) {
             this.plugin.removeChatHandler(this.chatEventHandler);
             this.chatEventHandler = null;
+        }
+
+        if (this.luckPermsHook != null) {
+            this.luckPermsHook.unregister();
+            this.luckPermsHook = null;
         }
 
         Utils.onlinePlayers().forEach(player -> this.exitAfk(player, true));
@@ -137,10 +168,65 @@ public class AfkModule extends Module implements AfkProvider {
             final long entered = this.getAfkEnterTimestamp(player);
             return entered <= 0L ? "0s" : TimeFormats.formatSince(entered, TimeFormatType.LITERAL);
         });
+
+        registry.register("afk_duration", (player, payload) -> String.valueOf(this.getAfkDuration(player)));
+        registry.register("afk_duration_formatted", (player, payload) -> TimeFormats.formatAmount(TimeUnit.MILLISECONDS.convert(this.getAfkDuration(player), TimeUnit.SECONDS), TimeFormatType.LITERAL));
+        registry.register("afk_time_until_afk", (player, payload) -> String.valueOf(Math.max(0, this.getTimeToAfk(player) - this.getIdleTime(player))));
+        registry.register("afk_time_until_kick", (player, payload) -> {
+            int remaining = -1;
+            int totalKick = this.getTimeToKick(player);
+            if (totalKick > 0) remaining = Math.max(0, totalKick - this.getIdleTime(player));
+            int afkKick = this.getAfkKickTime(player);
+            if (afkKick > 0 && this.isAfk(player)) {
+                int afkRemaining = Math.max(0, afkKick - (int) this.getAfkDuration(player));
+                remaining = remaining < 0 ? afkRemaining : Math.min(remaining, afkRemaining);
+            }
+            return String.valueOf(Math.max(0, remaining));
+        });
+        registry.register("afk_online_count", (player, payload) -> String.valueOf(this.getAfkPlayers().size()));
+        registry.register("afk_online", (player, payload) -> this.getAfkPlayers().stream().map(Player::getName).collect(Collectors.joining(", ")));
+        registry.register("afk_stats_sessions", (player, payload) -> String.valueOf(this.getStatisticsSessions()));
+        registry.register("afk_stats_total_time", (player, payload) -> String.valueOf(this.getStatisticsTotalAfkTime()));
+        registry.register("afk_stats_total_time_formatted", (player, payload) -> TimeFormats.formatAmount(this.getStatisticsTotalAfkTime(), TimeFormatType.LITERAL));
+        registry.register("afk_stats_average_time", (player, payload) -> String.valueOf(this.getStatisticsAverageAfkTime()));
+        registry.register("afk_stats_average_time_formatted", (player, payload) -> TimeFormats.formatAmount(this.getStatisticsAverageAfkTime(), TimeFormatType.LITERAL));
+    }
+
+    public boolean openAdminGui(final Player player) {
+        return this.adminMenu != null && this.adminMenu.open(player);
     }
 
     public AfkSettings getSettings() {
         return this.settings;
+    }
+
+    private void playAfkEffects(final Player player, final boolean enter) {
+        (enter ? this.settings.soundEnter.get() : this.settings.soundExit.get()).play(player);
+
+        final boolean enabled = enter ? this.settings.particlesEnterEnabled.get() : this.settings.particlesExitEnabled.get();
+        if (!enabled) return;
+
+        final String typeName = enter ? this.settings.particlesEnterType.get() : this.settings.particlesExitType.get();
+        if (typeName == null || typeName.isBlank() || "NONE".equalsIgnoreCase(typeName.trim())) return;
+
+        Particle particle;
+        try {
+            particle = Particle.valueOf(typeName.trim().toUpperCase(Locale.ROOT));
+        }
+        catch (IllegalArgumentException exception) {
+            return;
+        }
+
+        final int count = Math.max(1, enter ? this.settings.particlesEnterCount.get() : this.settings.particlesExitCount.get());
+        final double offset = Math.max(0D, enter ? this.settings.particlesEnterOffset.get() : this.settings.particlesExitOffset.get());
+        final Location location = player.getLocation().clone().add(0D, 1D, 0D);
+
+        try {
+            player.getWorld().spawnParticle(particle, location, count, offset, 0.45D, offset, 0D);
+        }
+        catch (Exception ignored) {
+            // Some particles require extra data; ignore misconfiguration safely.
+        }
     }
 
     public void kickForIdling(final Player player) {
@@ -157,6 +243,10 @@ public class AfkModule extends Module implements AfkProvider {
             this.kickedForIdling.put(player.getUniqueId(), System.currentTimeMillis());
         }
 
+        if (this.discordHook != null) {
+            this.discordHook.sendKick(player, TimeFormats.formatAmount(
+                    TimeUnit.MILLISECONDS.convert(this.getIdleTime(player), TimeUnit.SECONDS), TimeFormatType.LITERAL));
+        }
         Players.kick(player, reason);
     }
 
@@ -216,6 +306,9 @@ public class AfkModule extends Module implements AfkProvider {
     }
 
     public boolean isExempt(final Player player) {
+        if (this.settings.vanishIgnorePlayers.get() && this.isVanishedPlayer(player))
+            return true;
+
         if (this.isExemptWorld(player.getWorld().getName()))
             return true;
 
@@ -225,6 +318,52 @@ public class AfkModule extends Module implements AfkProvider {
             return false;
 
         return this.isInExemptRegion(player);
+    }
+
+    private boolean isVanishedPlayer(final Player player) {
+        return this.plugin.vanishProvider().map(provider -> provider.isVanished(player)).orElseGet(() -> su.nightexpress.sunlight.SLUtils.isVanished(player));
+    }
+
+    private void updateSleepingIgnored(final Player player, final boolean afk) {
+        if (!this.settings.ignoreSleeping.get()) return;
+        try {
+            player.setSleepingIgnored(afk);
+        }
+        catch (Exception ignored) {
+        }
+    }
+
+    private boolean shouldIgnoreBypassMovement(final Player player, final Location location) {
+        if (!this.settings.bypassDetectionEnabled.get()) return false;
+
+        if (this.settings.bypassIgnoreVehicle.get() && player.isInsideVehicle()) {
+            return true;
+        }
+
+        if (this.settings.bypassIgnoreWaterFlow.get() && this.isInFlowingWater(location)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isInFlowingWater(final Location location) {
+        final Block block = location.getBlock();
+        if (!block.isLiquid()) return false;
+        final Material type = block.getType();
+        if (type != Material.WATER && type != Material.BUBBLE_COLUMN) return false;
+
+        final BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
+        for (final BlockFace face : faces) {
+            final Block adjacent = block.getRelative(face);
+            if (adjacent.getType() == Material.WATER || adjacent.getType() == Material.BUBBLE_COLUMN) {
+                final Block beyond = adjacent.getRelative(face);
+                if (beyond.getType() == Material.WATER || beyond.getType() == Material.BUBBLE_COLUMN) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean isExemptWorld(final String worldName) {
@@ -269,7 +408,9 @@ public class AfkModule extends Module implements AfkProvider {
             }
 
             final Location location = player.getLocation();
-            tracker.updatePosition(BlockPos.from(location), location.getYaw(), location.getPitch());
+            final boolean bypassMovement = this.shouldIgnoreBypassMovement(player, location);
+            final boolean trackRotation = !bypassMovement && this.settings.movementTrackRotation.get();
+            tracker.updatePosition(BlockPos.from(location), location.getYaw(), location.getPitch(), !bypassMovement, trackRotation);
             tracker.tick();
 
             if (tracker.isAfk()) {
@@ -348,6 +489,7 @@ public class AfkModule extends Module implements AfkProvider {
 
         tracker.resetCounters();
         tracker.setAfkTimestamp();
+        this.updateSleepingIgnored(player, true);
 
         final PlaceholderContext context = PlaceholderContext.builder()
                 .with(CommonPlaceholders.PLAYER.resolver(player))
@@ -359,10 +501,14 @@ public class AfkModule extends Module implements AfkProvider {
 
         this.plugin.getPluginManager().callEvent(new AfkEnterEvent(player, idleTime));
 
-        this.settings.soundEnter.get().play(player);
+        this.playAfkEffects(player, true);
+        if (this.luckPermsHook != null) this.luckPermsHook.signalUpdate(player);
 
-        if (!silent)
+        final boolean announce = !silent && !(this.settings.vanishSuppressBroadcasts.get() && this.isVanishedPlayer(player));
+        if (announce) {
             this.broadcastPrefixed(AfkLang.AFK_ENTER_BROADCAST, context);
+            if (this.discordHook != null) this.discordHook.sendEnter(player, idleTime);
+        }
 
         return true;
     }
@@ -376,6 +522,8 @@ public class AfkModule extends Module implements AfkProvider {
         this.plugin.getPluginManager().callEvent(changeEvent);
         if (changeEvent.isCancelled())
             return false;
+
+        this.updateSleepingIgnored(player, false);
 
         if (afkDuration > 0L) {
             this.recordAfkSession(player, afkDuration);
@@ -393,10 +541,14 @@ public class AfkModule extends Module implements AfkProvider {
 
         this.plugin.getPluginManager().callEvent(new AfkLeaveEvent(player, afkDuration));
 
-        this.settings.soundExit.get().play(player);
+        this.playAfkEffects(player, false);
+        if (this.luckPermsHook != null) this.luckPermsHook.signalUpdate(player);
 
-        if (!silent)
+        final boolean announce = !silent && !(this.settings.vanishSuppressBroadcasts.get() && this.isVanishedPlayer(player));
+        if (announce) {
             this.broadcastPrefixed(AfkLang.AFK_EXIT_BROADCAST, context);
+            if (this.discordHook != null) this.discordHook.sendExit(player, afkDuration);
+        }
 
         tracker.resetCounters();
         return true;
@@ -406,6 +558,20 @@ public class AfkModule extends Module implements AfkProvider {
         final SunUser user = this.userManager.getOrFetch(player);
         user.setProperty(AFK_TOTAL_TIME, user.getPropertyOrDefault(AFK_TOTAL_TIME) + durationMs);
         user.setProperty(AFK_COUNT, user.getPropertyOrDefault(AFK_COUNT) + 1);
+        this.statisticsSessions++;
+        this.statisticsTotalAfkTime += Math.max(0L, durationMs);
+    }
+
+    public long getStatisticsSessions() {
+        return this.statisticsSessions;
+    }
+
+    public long getStatisticsTotalAfkTime() {
+        return this.statisticsTotalAfkTime;
+    }
+
+    public long getStatisticsAverageAfkTime() {
+        return this.statisticsSessions <= 0L ? 0L : this.statisticsTotalAfkTime / this.statisticsSessions;
     }
 
     private void sendKickWarning(final Player player, final ActivityTracker tracker, final int timeToKick,

@@ -51,6 +51,10 @@ public class ActivityTracker {
     }
 
     public void updatePosition(BlockPos newPos, float yaw, float pitch) {
+        this.updatePosition(newPos, yaw, pitch, true, this.settings.movementTrackRotation.get());
+    }
+
+    public void updatePosition(BlockPos newPos, float yaw, float pitch, boolean allowMovement, boolean allowRotation) {
         if (this.lastPos == null) {
             this.lastPos = newPos;
             this.lastYaw = yaw;
@@ -59,14 +63,28 @@ public class ActivityTracker {
         }
 
         boolean blockChanged = !newPos.equals(this.lastPos);
-        boolean rotationChanged = this.lastYaw != yaw || this.lastPitch != pitch;
+        float yawDelta = Math.abs(this.lastYaw - yaw);
+        float pitchDelta = Math.abs(this.lastPitch - pitch);
+        boolean rotationChanged = yawDelta > 0F || pitchDelta > 0F;
+
         this.lastPos = newPos;
         this.lastYaw = yaw;
         this.lastPitch = pitch;
 
         if (blockChanged) {
-            this.countActivity(ActivityType.MOVEMENT);
-        } else if (rotationChanged && this.settings.movementTrackRotation.get()) {
+            if (allowMovement) {
+                this.countActivity(ActivityType.MOVEMENT);
+            }
+            return;
+        }
+
+        if (rotationChanged && allowRotation) {
+            if (this.settings.bypassDetectionEnabled.get() && this.settings.bypassIgnoreMicroMovement.get()) {
+                float micro = (float) Math.max(0D, this.settings.bypassMicroRotation.get());
+                if (micro > 0F && yawDelta <= micro && pitchDelta <= micro) {
+                    return;
+                }
+            }
             this.countActivity(ActivityType.ROTATION);
         }
     }

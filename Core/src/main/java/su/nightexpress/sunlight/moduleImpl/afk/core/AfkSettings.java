@@ -1,6 +1,8 @@
 package su.nightexpress.sunlight.moduleImpl.afk.core;
 
+import org.bukkit.Particle;
 import org.bukkit.Sound;
+import org.bukkit.entity.Player;
 
 import su.nightexpress.nightcore.bridge.wrap.NightSound;
 import su.nightexpress.nightcore.configuration.AbstractConfig;
@@ -233,6 +235,144 @@ public class AfkSettings extends AbstractConfig {
                         VanillaSound.of(Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.6f, 1.5f),
                         "Sound played to the player when they leave AFK mode.",
                         "Format: 'sound_name;volume;pitch'. Use volume '0' to mute it.");
+
+        public final ConfigProperty<Boolean> particlesEnterEnabled = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Particles.Enter.Enabled",
+                        true,
+                        "Controls whether particles are shown when a player enters AFK mode.");
+
+        public final ConfigProperty<String> particlesEnterType = this.addProperty(ConfigTypes.STRING,
+                        "Particles.Enter.Type",
+                        "CLOUD",
+                        "Particle type shown when a player enters AFK mode.",
+                        "Use 'NONE' to disable. See: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html");
+
+        public final ConfigProperty<Integer> particlesEnterCount = this.addProperty(ConfigTypes.INT,
+                        "Particles.Enter.Count",
+                        18,
+                        "Amount of particles shown when a player enters AFK mode.");
+
+        public final ConfigProperty<Double> particlesEnterOffset = this.addProperty(ConfigTypes.DOUBLE,
+                        "Particles.Enter.Offset",
+                        0.35D,
+                        "Random offset applied to enter particles around the player.");
+
+        public final ConfigProperty<Boolean> particlesExitEnabled = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Particles.Exit.Enabled",
+                        true,
+                        "Controls whether particles are shown when a player leaves AFK mode.");
+
+        public final ConfigProperty<String> particlesExitType = this.addProperty(ConfigTypes.STRING,
+                        "Particles.Exit.Type",
+                        "HAPPY_VILLAGER",
+                        "Particle type shown when a player leaves AFK mode.",
+                        "Use 'NONE' to disable. See: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html");
+
+        public final ConfigProperty<Integer> particlesExitCount = this.addProperty(ConfigTypes.INT,
+                        "Particles.Exit.Count",
+                        14,
+                        "Amount of particles shown when a player leaves AFK mode.");
+
+        public final ConfigProperty<Double> particlesExitOffset = this.addProperty(ConfigTypes.DOUBLE,
+                        "Particles.Exit.Offset",
+                        0.3D,
+                        "Random offset applied to exit particles around the player.");
+
+        public final ConfigProperty<Boolean> luckPermsContextEnabled = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Integration.LuckPerms-Context",
+                        true,
+                        "Expose the player's AFK state as LuckPerms context 'afkstate' (true/false).");
+
+        public final ConfigProperty<Boolean> discordEnabled = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Integration.DiscordSRV.Enabled",
+                        false,
+                        "Send AFK notifications to Discord via DiscordSRV.");
+
+        public final ConfigProperty<String> discordChannelId = this.addProperty(ConfigTypes.STRING,
+                        "Integration.DiscordSRV.Channel-Id",
+                        "",
+                        "Discord channel ID to send AFK notifications to.",
+                        "Leave empty to use the DiscordSRV main channel.");
+
+        public final ConfigProperty<Boolean> discordUseEmbeds = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Integration.DiscordSRV.Use-Embeds",
+                        true,
+                        "Send Discord notifications as embeds when possible.");
+
+        public final ConfigProperty<Boolean> discordShowDuration = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Integration.DiscordSRV.Show-Duration",
+                        true,
+                        "Include AFK duration/idle time details in Discord notifications where applicable.");
+
+        public final ConfigProperty<String> discordAvatarUrl = this.addProperty(ConfigTypes.STRING,
+                        "Integration.DiscordSRV.Avatar-Url",
+                        "https://mc-heads.net/avatar/%player_name%/64",
+                        "Avatar/image URL used for Discord notifications.",
+                        "Placeholders: %player_name%, %player_uuid%.");
+
+        public final ConfigProperty<String> discordMessageEnter = this.addProperty(ConfigTypes.STRING,
+                        "Integration.DiscordSRV.Messages.Enter",
+                        "**%player_name%** is now AFK.",
+                        "Discord message sent when a player enters AFK mode.",
+                        "Placeholders: %player_name%, %player_uuid%, %idle_time%.");
+
+        public final ConfigProperty<String> discordMessageExit = this.addProperty(ConfigTypes.STRING,
+                        "Integration.DiscordSRV.Messages.Exit",
+                        "**%player_name%** is back after **%afk_time%**.",
+                        "Discord message sent when a player leaves AFK mode.",
+                        "Placeholders: %player_name%, %player_uuid%, %afk_time%.");
+
+        public final ConfigProperty<String> discordMessageKick = this.addProperty(ConfigTypes.STRING,
+                        "Integration.DiscordSRV.Messages.Kick",
+                        "**%player_name%** was kicked for being AFK (**%idle_time%**).",
+                        "Discord message sent when a player is kicked for idling/AFK.",
+                        "Placeholders: %player_name%, %player_uuid%, %idle_time%.");
+
+        public final ConfigProperty<Boolean> vanishIgnorePlayers = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Integration.Vanish.Ignore-Players",
+                        true,
+                        "Treat vanished players as exempt from AFK detection and idle/AFK kicks.");
+
+        public final ConfigProperty<Boolean> vanishSuppressBroadcasts = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Integration.Vanish.Suppress-Broadcasts",
+                        false,
+                        "Do not broadcast AFK enter/exit messages for vanished players.");
+
+        public final ConfigProperty<Boolean> ignoreSleeping = this.addProperty(ConfigTypes.BOOLEAN,
+                        "AFK.Ignore-For-Sleep",
+                        true,
+                        "Mark AFK players as sleeping-ignored so they do not prevent night skipping.",
+                        "The state is restored when they leave AFK mode.");
+
+        public final ConfigProperty<Boolean> bypassDetectionEnabled = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Anti-AFK.Enabled",
+                        true,
+                        "Enable basic anti-AFK-bypass detection to ignore suspicious fake activity.");
+
+        public final ConfigProperty<Boolean> bypassIgnoreVehicle = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Anti-AFK.Ignore-Vehicle-Activity",
+                        true,
+                        "Ignore movement-like activity while the player is inside a vehicle (common AFK machine pattern).");
+
+        public final ConfigProperty<Boolean> bypassIgnoreWaterFlow = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Anti-AFK.Ignore-Water-Flow",
+                        true,
+                        "Ignore micro movement when the player appears to be pushed by flowing water.");
+
+        public final ConfigProperty<Boolean> bypassIgnoreMicroMovement = this.addProperty(ConfigTypes.BOOLEAN,
+                        "Anti-AFK.Ignore-Micro-Movement",
+                        true,
+                        "Ignore tiny repeated movement/rotation changes that do not represent real activity.");
+
+        public final ConfigProperty<Double> bypassMicroMoveDistance = this.addProperty(ConfigTypes.DOUBLE,
+                        "Anti-AFK.Micro-Move-Distance",
+                        0.05D,
+                        "Maximum block-space movement delta treated as micro movement when anti-AFK is enabled.");
+
+        public final ConfigProperty<Double> bypassMicroRotation = this.addProperty(ConfigTypes.DOUBLE,
+                        "Anti-AFK.Micro-Rotation",
+                        1.5D,
+                        "Maximum yaw/pitch delta treated as micro rotation when anti-AFK is enabled.");
 
         public int getActivityPoints(ActivityType type) {
                 return this.wakeUpActivityPoints.get().getOrDefault(type, 0);
