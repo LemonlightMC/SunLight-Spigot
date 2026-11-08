@@ -2,6 +2,7 @@ package su.nightexpress.sunlight.moduleImpl.timer.service;
 
 import su.nightexpress.sunlight.moduleImpl.timer.model.TimerInstance;
 import su.nightexpress.sunlight.moduleImpl.timer.model.TimerSchedule;
+import su.nightexpress.sunlight.moduleImpl.timer.model.TimerStartMode;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,10 +43,17 @@ public class TimerScheduleService {
     }
 
     public boolean shouldAutoStart(TimerInstance instance) {
-        TimerSchedule schedule = instance.getDefinition().getSchedule();
-        if (schedule == null || !schedule.isEnabled() || !schedule.isAutoStart()) return false;
+        TimerStartMode mode = instance.getDefinition().getStartMode();
+        if (mode == TimerStartMode.MANUAL) return false;
         if (instance.isScheduleFired()) return false;
         if (instance.isRunning() || instance.isPaused() || instance.isCompleted()) return false;
+
+        if (mode == TimerStartMode.START_NOW) {
+            return true;
+        }
+
+        TimerSchedule schedule = instance.getDefinition().getSchedule();
+        if (schedule == null || !schedule.isEnabled() || !schedule.isAutoStart()) return false;
         Long epoch = this.resolveStartEpoch(schedule);
         if (epoch == null) return false;
         instance.setScheduledStartEpoch(epoch);

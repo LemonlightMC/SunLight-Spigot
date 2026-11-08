@@ -23,6 +23,7 @@ public final class TimerYamlIO {
         def.setKind(parseEnum(config.getString(path + ".Kind", TimerKind.COUNTDOWN.name()), TimerKind.class, TimerKind.COUNTDOWN));
         def.setDurationSeconds(config.getLong(path + ".DurationSeconds", 60L));
         def.setUseStopwatchTarget(config.getBoolean(path + ".UseStopwatchTarget", false));
+        def.setStartMode(parseEnum(config.getString(path + ".StartMode", def.getSchedule().isEnabled() ? TimerStartMode.SCHEDULED.name() : TimerStartMode.MANUAL.name()), TimerStartMode.class, TimerStartMode.MANUAL));
         def.setRestoreXpOnStop(config.getBoolean(path + ".RestoreXpOnStop", true));
 
         TimerSchedule schedule = new TimerSchedule();
@@ -36,6 +37,9 @@ public final class TimerYamlIO {
         TimerVisibility visibility = new TimerVisibility();
         visibility.setMode(parseEnum(config.getString(path + ".Visibility.Mode", VisibilityMode.ALL.name()), VisibilityMode.class, VisibilityMode.ALL));
         visibility.setPermission(config.getString(path + ".Visibility.Permission", ""));
+        visibility.setStaffPermission(config.getString(path + ".Visibility.StaffPermission", ""));
+        visibility.setBypassPermissionApplies(config.getBoolean(path + ".Visibility.BypassPermissionApplies", true));
+        visibility.setWorlds(config.getStringList(path + ".Visibility.Worlds"));
         def.setVisibility(visibility);
 
         def.setDisplayRules(readRules(config, path + ".DisplayRules"));
@@ -51,6 +55,7 @@ public final class TimerYamlIO {
         config.set(path + ".Kind", def.getKind().name());
         config.set(path + ".DurationSeconds", def.getDurationSeconds());
         config.set(path + ".UseStopwatchTarget", def.isUseStopwatchTarget());
+        config.set(path + ".StartMode", def.getStartMode().name());
         config.set(path + ".RestoreXpOnStop", def.isRestoreXpOnStop());
 
         config.set(path + ".Schedule.Enabled", def.getSchedule().isEnabled());
@@ -61,6 +66,9 @@ public final class TimerYamlIO {
 
         config.set(path + ".Visibility.Mode", def.getVisibility().getMode().name());
         config.set(path + ".Visibility.Permission", def.getVisibility().getPermission());
+        config.set(path + ".Visibility.StaffPermission", def.getVisibility().getStaffPermission());
+        config.set(path + ".Visibility.BypassPermissionApplies", def.getVisibility().isBypassPermissionApplies());
+        config.set(path + ".Visibility.Worlds", def.getVisibility().getWorlds());
 
         writeRules(config, path + ".DisplayRules", def.getDisplayRules());
         writeTriggers(config, path + ".StopEvents", def.getStopEvents());
@@ -106,10 +114,17 @@ public final class TimerYamlIO {
             rule.setTitle(config.getString(p + ".Title", ""));
             rule.setSubtitle(config.getString(p + ".Subtitle", ""));
             rule.setChat(config.getString(p + ".Chat", ""));
+            rule.setScoreboardTitle(config.getString(p + ".ScoreboardTitle", config.getString(p + ".Scoreboard", "")));
+            rule.setScoreboardLines(config.getStringList(p + ".ScoreboardLines"));
+            if (rule.getScoreboardLines().isEmpty()) {
+                String legacy = config.getString(p + ".Scoreboard", "");
+                if (legacy != null && !legacy.isBlank()) rule.setScoreboardLines(java.util.Arrays.asList(legacy.split("\\\\n|\\n")));
+            }
             rule.setChatIntervalSeconds(config.getInt(p + ".ChatIntervalSeconds", 1));
             rule.setUpdateIntervalTicks(config.getInt(p + ".UpdateIntervalTicks", 20));
             rule.setBossBarColor(config.getString(p + ".BossBarColor", "YELLOW"));
             rule.setBossBarOverlay(config.getString(p + ".BossBarOverlay", "PROGRESS"));
+            rule.setViewPermission(config.getString(p + ".ViewPermission", ""));
             rules.add(rule);
         }
         return rules;
@@ -133,10 +148,13 @@ public final class TimerYamlIO {
             config.set(p + ".Title", rule.getTitle());
             config.set(p + ".Subtitle", rule.getSubtitle());
             config.set(p + ".Chat", rule.getChat());
+            config.set(p + ".ScoreboardTitle", rule.getScoreboardTitle());
+            config.set(p + ".ScoreboardLines", rule.getScoreboardLines());
             config.set(p + ".ChatIntervalSeconds", rule.getChatIntervalSeconds());
             config.set(p + ".UpdateIntervalTicks", rule.getUpdateIntervalTicks());
             config.set(p + ".BossBarColor", rule.getBossBarColor());
             config.set(p + ".BossBarOverlay", rule.getBossBarOverlay());
+            config.set(p + ".ViewPermission", rule.getViewPermission());
         }
     }
 

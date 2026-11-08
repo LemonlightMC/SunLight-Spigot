@@ -6,5 +6,6 @@ public enum DisplayChannel {
     TITLE,
     SUBTITLE,
     XP_BAR,
-    CHAT
+    CHAT,
+    SCOREBOARD
 }

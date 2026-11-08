@@ -8,6 +8,7 @@ import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
 import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.SunLightPlugin;
 import su.nightexpress.sunlight.api.provider.TimerProvider;
+import su.nightexpress.sunlight.hook.HookId;
 import su.nightexpress.sunlight.hook.placeholder.PlaceholderRegistry;
 import su.nightexpress.sunlight.module.Module;
 import su.nightexpress.sunlight.module.ModuleDefinition;
@@ -60,9 +61,12 @@ public class TimerModule extends Module implements TimerProvider {
         this.personalService = new PersonalTimerService(this.userManager);
         this.xpBarService = new XpBarService();
         this.actionService = new TimerActionService(this.plugin);
-        this.displayService = new TimerDisplayService(this.plugin, this.xpBarService);
+        TimerScoreboardBackend scoreboardBackend = this.createTabScoreboardBackend();
+        this.displayService = new TimerDisplayService(this.plugin, this.xpBarService, scoreboardBackend);
         this.scheduleService = new TimerScheduleService();
         this.engine = new TimerEngine(this.plugin, this.globalRepository, this.personalService, this.displayService, this.actionService, this.scheduleService);
+        if (scoreboardBackend != null && scoreboardBackend.isAvailable()) this.info("TAB scoreboard display channel enabled.");
+        else this.info("TAB scoreboard display channel unavailable (install TAB to use SCOREBOARD channel).");
 
         this.loadMenus();
         this.registerDialogs();
@@ -120,6 +124,7 @@ public class TimerModule extends Module implements TimerProvider {
 
     @Override
     public void registerPlaceholders(PlaceholderRegistry registry) {
+        // Global timer placeholders: use payload as timer id.
         registry.register("timer_state", (player, payload) -> this.resolveGlobal(payload).map(i -> i.getState().name()).orElse(""));
         registry.register("timer_name", (player, payload) -> this.resolveGlobal(payload).map(i -> i.getDefinition().getName()).orElse(""));
         registry.register("timer_kind", (player, payload) -> this.resolveGlobal(payload).map(i -> i.getDefinition().getKind().name()).orElse(""));
@@ -128,11 +133,47 @@ public class TimerModule extends Module implements TimerProvider {
         registry.register("timer_elapsed", (player, payload) -> this.resolveGlobal(payload).map(i -> String.valueOf(i.getElapsedMillis() / 1000L)).orElse("0"));
         registry.register("timer_seconds", (player, payload) -> this.resolveGlobal(payload).map(i -> String.valueOf((i.getDefinition().getKind() == TimerKind.COUNTDOWN ? i.getRemainingMillis() : i.getElapsedMillis()) / 1000L)).orElse("0"));
         registry.register("timer_progress", (player, payload) -> this.resolveGlobal(payload).map(i -> NumberUtil.format(TimerFormat.progress(i) * 100D)).orElse("0"));
+        registry.register("timer_duration", (player, payload) -> this.resolveGlobal(payload).map(i -> TimerFormat.formatMillis(i.getDurationMillis())).orElse("0"));
+        registry.register("timer_duration_raw", (player, payload) -> this.resolveGlobal(payload).map(i -> String.valueOf(i.getDurationMillis() / 1000L)).orElse("0"));
+        registry.register("timer_max", (player, payload) -> this.resolveGlobal(payload).map(i -> String.valueOf(i.getDurationMillis() / 1000L)).orElse("0"));
+        registry.register("timer_target", (player, payload) -> this.resolveGlobal(payload).map(i -> String.valueOf(i.getDefinition().getDurationSeconds())).orElse("0"));
+        registry.register("timer_start_mode", (player, payload) -> this.resolveGlobal(payload).map(i -> i.getDefinition().getStartMode().name()).orElse(""));
+        registry.register("timer_schedule_start", (player, payload) -> this.resolveGlobal(payload).map(i -> i.getDefinition().getSchedule().getStartAt()).orElse(""));
+
+        // Personal timer placeholders for viewing player: payload = personal timer id.
+        registry.register("timer_personal_state", (player, payload) -> this.resolvePersonal(player, payload).map(i -> i.getState().name()).orElse(""));
+        registry.register("timer_personal_name", (player, payload) -> this.resolvePersonal(player, payload).map(i -> i.getDefinition().getName()).orElse(""));
+        registry.register("timer_personal_kind", (player, payload) -> this.resolvePersonal(player, payload).map(i -> i.getDefinition().getKind().name()).orElse(""));
+        registry.register("timer_personal_formatted", (player, payload) -> this.resolvePersonal(player, payload).map(TimerFormat::format).orElse(""));
+        registry.register("timer_personal_remaining", (player, payload) -> this.resolvePersonal(player, payload).map(i -> String.valueOf(i.getRemainingMillis() / 1000L)).orElse("0"));
+        registry.register("timer_personal_elapsed", (player, payload) -> this.resolvePersonal(player, payload).map(i -> String.valueOf(i.getElapsedMillis() / 1000L)).orElse("0"));
+        registry.register("timer_personal_seconds", (player, payload) -> this.resolvePersonal(player, payload).map(i -> String.valueOf((i.getDefinition().getKind() == TimerKind.COUNTDOWN ? i.getRemainingMillis() : i.getElapsedMillis()) / 1000L)).orElse("0"));
+        registry.register("timer_personal_progress", (player, payload) -> this.resolvePersonal(player, payload).map(i -> NumberUtil.format(TimerFormat.progress(i) * 100D)).orElse("0"));
+        registry.register("timer_personal_duration", (player, payload) -> this.resolvePersonal(player, payload).map(i -> TimerFormat.formatMillis(i.getDurationMillis())).orElse("0"));
+        registry.register("timer_personal_count", (player, payload) -> player == null ? "0" : String.valueOf(this.personalService.getOrLoad(player.getUniqueId()).size()));
     }
 
     private Optional<TimerInstance> resolveGlobal(String payload) {
         if (payload == null || payload.isBlank()) return Optional.empty();
         return this.globalRepository.get(payload);
+    }
+
+    private Optional<TimerInstance> resolvePersonal(Player player, String payload) {
+        if (player == null || payload == null || payload.isBlank()) return Optional.empty();
+        return Optional.ofNullable(this.personalService.getOrLoad(player.getUniqueId()).get(GlobalTimerRepository.normalizeId(payload)));
+    }
+
+    private TimerScoreboardBackend createTabScoreboardBackend() {
+        if (!HookId.hasTAB()) return null;
+        try {
+            Class<?> type = Class.forName("su.nightexpress.sunlight.moduleImpl.timer.hook.TabTimerScoreboardBackend");
+            Object backend = type.getDeclaredConstructor().newInstance();
+            if (backend instanceof TimerScoreboardBackend scoreboard) return scoreboard;
+        }
+        catch (Throwable throwable) {
+            this.warn("Failed to initialize TAB scoreboard backend: " + throwable.getMessage());
+        }
+        return null;
     }
 
     public String formatText(String text, TimerInstance instance, Player player) {

@@ -26,10 +26,23 @@ import java.util.Locale;
 
 public class TimerActionService {
 
+    public record ValidationResult(boolean ok, List<String> errors) {
+        public static ValidationResult success() { return new ValidationResult(true, List.of()); }
+    }
+
     private final SunLightPlugin plugin;
 
     public TimerActionService(SunLightPlugin plugin) {
         this.plugin = plugin;
+    }
+
+    public ValidationResult validate(ActionBundle bundle) {
+        if (bundle == null) return ValidationResult.success();
+        List<String> errors = new ArrayList<>();
+        if (!bundle.getSound().isBlank() && !isValidSound(bundle.getSound())) errors.add("Invalid sound: " + bundle.getSound() + " (use NAME;volume;pitch)");
+        if (!bundle.getParticle().isBlank() && !isValidParticle(bundle.getParticle())) errors.add("Invalid particle: " + bundle.getParticle() + " (use TYPE;count;ox;oy;oz;speed)");
+        if (!bundle.getFirework().isBlank() && !isValidFirework(bundle.getFirework())) errors.add("Invalid firework: " + bundle.getFirework() + " (use power;type;color)");
+        return new ValidationResult(errors.isEmpty(), errors);
     }
 
     public void execute(ActionBundle bundle, TimerInstance instance, Collection<Player> viewers) {
@@ -88,6 +101,38 @@ public class TimerActionService {
         return c.startsWith("/") ? c.substring(1) : c;
     }
 
+    private boolean isValidSound(String raw) {
+        try {
+            String[] parts = raw.split(";");
+            if (parts.length == 0 || parts[0].trim().isBlank()) return false;
+            if (parts.length > 1) Float.parseFloat(parts[1]);
+            if (parts.length > 2) Float.parseFloat(parts[2]);
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
+    private boolean isValidParticle(String raw) {
+        try {
+            String[] parts = raw.split(";");
+            Particle.valueOf(parts[0].trim().toUpperCase(Locale.ROOT));
+            if (parts.length > 1) Integer.parseInt(parts[1]);
+            if (parts.length > 2) Double.parseDouble(parts[2]);
+            if (parts.length > 3) Double.parseDouble(parts[3]);
+            if (parts.length > 4) Double.parseDouble(parts[4]);
+            if (parts.length > 5) Double.parseDouble(parts[5]);
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
+    private boolean isValidFirework(String raw) {
+        try {
+            String[] parts = raw.split(";");
+            if (parts.length > 0 && !parts[0].isBlank()) Integer.parseInt(parts[0].trim());
+            if (parts.length > 1 && !parts[1].isBlank()) FireworkEffect.Type.valueOf(parts[1].trim().toUpperCase(Locale.ROOT));
+            return true;
+        } catch (Exception e) { return false; }
+    }
+
     private void playSound(Player player, String raw) {
         if (raw == null || raw.isBlank()) return;
         try {
@@ -100,8 +145,10 @@ public class TimerActionService {
                 try { sound = org.bukkit.Sound.valueOf(name.toUpperCase(Locale.ROOT).replace('.', '_').replace(' ', '_')); } catch (Exception ignored) {}
             }
             if (sound != null) player.playSound(player.getLocation(), sound, volume, pitch);
+            else this.plugin.warn("[Timer] Invalid/unknown sound: " + raw);
         }
         catch (Exception ignored) {
+            this.plugin.warn("[Timer] Invalid sound spec: " + raw);
         }
     }
 
@@ -118,6 +165,7 @@ public class TimerActionService {
             player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), Math.max(1, count), ox, oy, oz, speed);
         }
         catch (Exception ignored) {
+            this.plugin.warn("[Timer] Invalid particle spec: " + raw);
         }
     }
 
@@ -136,6 +184,7 @@ public class TimerActionService {
             firework.setFireworkMeta(meta);
         }
         catch (Exception ignored) {
+            this.plugin.warn("[Timer] Invalid firework spec: " + raw);
         }
     }
 

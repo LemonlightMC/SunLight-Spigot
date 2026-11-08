@@ -11,6 +11,7 @@ public class TimerDefinition {
     private TimerKind kind = TimerKind.COUNTDOWN;
     private long durationSeconds = 60L; // countdown duration / stopwatch target (0 = no target)
     private boolean useStopwatchTarget = false; // stopwatch ends when reaching durationSeconds
+    private TimerStartMode startMode = TimerStartMode.MANUAL;
     private TimerSchedule schedule = new TimerSchedule();
     private TimerVisibility visibility = new TimerVisibility();
     private List<DisplayRule> displayRules = new ArrayList<>();
@@ -29,6 +30,7 @@ public class TimerDefinition {
         copy.kind = this.kind;
         copy.durationSeconds = this.durationSeconds;
         copy.useStopwatchTarget = this.useStopwatchTarget;
+        copy.startMode = this.startMode;
         copy.schedule = this.schedule; // shallow ok for copy template
         copy.visibility = this.visibility;
         copy.displayRules = new ArrayList<>(this.displayRules);
@@ -50,6 +52,8 @@ public class TimerDefinition {
     public void setDurationSeconds(long durationSeconds) { this.durationSeconds = durationSeconds; }
     public boolean isUseStopwatchTarget() { return this.useStopwatchTarget; }
     public void setUseStopwatchTarget(boolean useStopwatchTarget) { this.useStopwatchTarget = useStopwatchTarget; }
+    public TimerStartMode getStartMode() { if (this.startMode == null) this.startMode = this.getSchedule().isEnabled() ? TimerStartMode.SCHEDULED : TimerStartMode.MANUAL; return this.startMode; }
+    public void setStartMode(TimerStartMode startMode) { this.startMode = startMode == null ? TimerStartMode.MANUAL : startMode; }
     public TimerSchedule getSchedule() { if (this.schedule == null) this.schedule = new TimerSchedule(); return this.schedule; }
     public void setSchedule(TimerSchedule schedule) { this.schedule = schedule; }
     public TimerVisibility getVisibility() { if (this.visibility == null) this.visibility = new TimerVisibility(); return this.visibility; }

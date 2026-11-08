@@ -53,7 +53,16 @@ public final class TimerFormat {
         out = out.replace("%timer_seconds%", String.valueOf(seconds));
         out = out.replace("%timer_progress%", NumberUtil.format(progress * 100D));
         out = out.replace("%timer_progress_raw%", String.valueOf(progress));
-        out = out.replace("%timer_duration%", String.valueOf(Math.max(0L, instance.getDurationMillis() / 1000L)));
+        out = out.replace("%timer_duration%", formatMillis(instance.getDurationMillis()));
+        out = out.replace("%timer_duration_raw%", String.valueOf(Math.max(0L, instance.getDurationMillis() / 1000L)));
+        out = out.replace("%timer_max%", String.valueOf(Math.max(0L, instance.getDurationMillis() / 1000L)));
+        out = out.replace("%timer_target%", String.valueOf(instance.getDefinition().getDurationSeconds()));
+        out = out.replace("%timer_has_target%", String.valueOf(instance.getDefinition().hasStopwatchEndTarget()));
+        out = out.replace("%timer_start_mode%", instance.getDefinition().getStartMode().name());
+        out = out.replace("%timer_owner%", instance.getOwnerId() == null ? "" : instance.getOwnerId().toString());
+        out = out.replace("%timer_schedule_enabled%", String.valueOf(instance.getDefinition().getSchedule().isEnabled()));
+        out = out.replace("%timer_schedule_start%", instance.getDefinition().getSchedule().getStartAt() == null ? "" : instance.getDefinition().getSchedule().getStartAt());
+        out = out.replace("%timer_schedule_zone%", instance.getDefinition().getSchedule().getZoneId() == null ? "UTC" : instance.getDefinition().getSchedule().getZoneId());
         return out;
     }
 

@@ -33,12 +33,22 @@ public class TimerLang implements LangContainer {
             .chatMessage(SOFT_RED.wrap("Invalid timer id. Use letters, numbers, _ or -."));
     public static final MessageLocale COMMAND_INVALID_NUMBER = LangEntry.builder("Command.Timer.Error.InvalidNumber")
             .chatMessage(SOFT_RED.wrap("Invalid number: " + SOFT_YELLOW.wrap(GENERIC_VALUE) + "."));
+    public static final MessageLocale COMMAND_INVALID_TIME = LangEntry.builder("Command.Timer.Error.InvalidTime")
+            .chatMessage(SOFT_RED.wrap("Invalid time: " + SOFT_YELLOW.wrap(GENERIC_VALUE) + ". Use 1h30m, 90s, 10:00, or seconds."));
     public static final MessageLocale COMMAND_INVALID_KIND = LangEntry.builder("Command.Timer.Error.InvalidKind")
             .chatMessage(SOFT_RED.wrap("Invalid kind. Use " + SOFT_YELLOW.wrap("stopwatch") + " or " + SOFT_YELLOW.wrap("countdown") + "."));
+    public static final MessageLocale COMMAND_INVALID_SCHEDULE = LangEntry.builder("Command.Timer.Error.InvalidSchedule")
+            .chatMessage(SOFT_RED.wrap("Invalid schedule: " + SOFT_YELLOW.wrap(GENERIC_VALUE) + ". Example: 2026-12-31 20:00:00 UTC, or +30m."));
+    public static final MessageLocale COMMAND_INVALID_ACTION = LangEntry.builder("Command.Timer.Error.InvalidAction")
+            .chatMessage(SOFT_RED.wrap("Invalid action config: " + SOFT_YELLOW.wrap(GENERIC_VALUE) + "."));
     public static final MessageLocale COMMAND_CANNOT_START = LangEntry.builder("Command.Timer.Error.CannotStart")
             .chatMessage(SOFT_RED.wrap("Cannot start timer " + SOFT_YELLOW.wrap(GENERIC_NAME) + " in state " + SOFT_YELLOW.wrap(GENERIC_STATE) + "."));
     public static final MessageLocale COMMAND_PERSONAL_LIMIT = LangEntry.builder("Command.Timer.Error.PersonalLimit")
             .chatMessage(SOFT_RED.wrap("You reached the personal timer limit (" + SOFT_YELLOW.wrap(GENERIC_AMOUNT) + ")."));
+    public static final MessageLocale COMMAND_CONFIRM_DELETE = LangEntry.builder("Command.Timer.ConfirmDelete")
+            .chatMessage(GRAY.wrap("Confirm delete of " + SOFT_YELLOW.wrap(GENERIC_NAME) + GRAY.wrap(" with " + SOFT_YELLOW.wrap("/" + GENERIC_VALUE) + GRAY.wrap(" confirm")) + "."));
+    public static final MessageLocale COMMAND_TAB_SCOREBOARD_UNAVAILABLE = LangEntry.builder("Command.Timer.Error.TabScoreboardUnavailable")
+            .chatMessage(SOFT_RED.wrap("SCOREBOARD channel requires TAB plugin."));
 
     public static final MessageLocale COMMAND_CREATED = LangEntry.builder("Command.Timer.Created")
             .chatMessage(GRAY.wrap("Created " + SOFT_YELLOW.wrap(GENERIC_TYPE) + " timer " + SOFT_YELLOW.wrap(GENERIC_NAME) + GRAY.wrap(" [" + GENERIC_VALUE + "].")));
@@ -56,6 +66,16 @@ public class TimerLang implements LangContainer {
             .chatMessage(GRAY.wrap("Deleted timer " + SOFT_YELLOW.wrap(GENERIC_NAME) + "."));
     public static final MessageLocale COMMAND_RELOADED = LangEntry.builder("Command.Timer.Reloaded")
             .chatMessage(GRAY.wrap("Reloaded timer module (" + SOFT_YELLOW.wrap(GENERIC_AMOUNT) + " global timers)."));
+    public static final MessageLocale COMMAND_TIME_SET = LangEntry.builder("Command.Timer.TimeSet")
+            .chatMessage(GRAY.wrap("Set timer " + SOFT_YELLOW.wrap(GENERIC_NAME) + " time to " + SOFT_YELLOW.wrap(GENERIC_TIME) + "."));
+    public static final MessageLocale COMMAND_TIME_ADDED = LangEntry.builder("Command.Timer.TimeAdded")
+            .chatMessage(GRAY.wrap("Added " + SOFT_YELLOW.wrap(GENERIC_TIME) + " to timer " + SOFT_YELLOW.wrap(GENERIC_NAME) + "."));
+    public static final MessageLocale COMMAND_TIME_REMOVED = LangEntry.builder("Command.Timer.TimeRemoved")
+            .chatMessage(GRAY.wrap("Removed " + SOFT_YELLOW.wrap(GENERIC_TIME) + " from timer " + SOFT_YELLOW.wrap(GENERIC_NAME) + "."));
+    public static final MessageLocale COMMAND_COPIED = LangEntry.builder("Command.Timer.Copied")
+            .chatMessage(GRAY.wrap("Copied timer " + SOFT_YELLOW.wrap(GENERIC_VALUE) + " to " + SOFT_YELLOW.wrap(GENERIC_NAME) + "."));
+    public static final MessageLocale COMMAND_ALL_AFFECTED = LangEntry.builder("Command.Timer.AllAffected")
+            .chatMessage(GRAY.wrap("Applied " + SOFT_YELLOW.wrap(GENERIC_TYPE) + " to " + SOFT_YELLOW.wrap(GENERIC_AMOUNT) + " global timers."));
 
     public static final MessageLocale TIMER_COMPLETED = LangEntry.builder("Timer.Completed")
             .chatMessage(GRAY.wrap("Timer " + SOFT_YELLOW.wrap(GENERIC_NAME) + " completed."));

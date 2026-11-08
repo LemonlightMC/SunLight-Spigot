@@ -12,6 +12,9 @@ import su.nightexpress.sunlight.moduleImpl.timer.TimerDefaults;
 import su.nightexpress.sunlight.moduleImpl.timer.TimerModule;
 import su.nightexpress.sunlight.moduleImpl.timer.model.*;
 import su.nightexpress.sunlight.moduleImpl.timer.service.GlobalTimerRepository;
+import su.nightexpress.sunlight.moduleImpl.timer.service.TimerInput;
+
+import java.util.OptionalLong;
 
 import java.util.Locale;
 
@@ -21,8 +24,8 @@ public class TimerCreateDialog extends Dialog<TimerScope> {
 
     private static final TextLocale TITLE = LangEntry.builder("Timer.Dialog.Create.Title").text("Create Timer");
     private static final DialogElementLocale BODY = LangEntry.builder("Timer.Dialog.Create.Body").dialogElement(400,
-            GRAY.wrap("Enter timer id, kind (countdown/stopwatch), and duration seconds. Example: " + SOFT_YELLOW.wrap("event_start countdown 60")));
-    private static final TextLocale INPUT = LangEntry.builder("Timer.Dialog.Create.Input").text("id kind seconds");
+            GRAY.wrap("Enter timer id, kind (countdown/stopwatch), and duration. Examples: " + SOFT_YELLOW.wrap("event_start countdown 1h30m") + GRAY.wrap(", ") + SOFT_YELLOW.wrap("dragon stopwatch 10m") + GRAY.wrap(", ") + SOFT_YELLOW.wrap("sale countdown 90s")));
+    private static final TextLocale INPUT = LangEntry.builder("Timer.Dialog.Create.Input").text("id kind duration");
 
     private final TimerModule module;
     private final TimerScope scope;
@@ -43,8 +46,9 @@ public class TimerCreateDialog extends Dialog<TimerScope> {
                     if (parts.length < 3) return;
                     String id = GlobalTimerRepository.normalizeId(parts[0]);
                     TimerKind kind = "stopwatch".equalsIgnoreCase(parts[1]) ? TimerKind.STOPWATCH : TimerKind.COUNTDOWN;
-                    long seconds;
-                    try { seconds = Math.max(1L, Long.parseLong(parts[2])); } catch (Exception e) { return; }
+                    OptionalLong parsed = TimerInput.parsePositiveSeconds(parts[2]);
+                    if (parsed.isEmpty()) return;
+                    long seconds = parsed.getAsLong();
 
                     if (this.scope == TimerScope.GLOBAL) {
                         if (this.module.engine().globals().contains(id)) return;

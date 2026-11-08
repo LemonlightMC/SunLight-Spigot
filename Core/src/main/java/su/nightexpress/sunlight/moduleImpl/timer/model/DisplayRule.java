@@ -19,10 +19,13 @@ public class DisplayRule {
     private String title = "";
     private String subtitle = "";
     private String chat = "";
+    private String scoreboardTitle = "";
+    private List<String> scoreboardLines = new ArrayList<>();
     private int chatIntervalSeconds = 1;
     private int updateIntervalTicks = 20;
     private String bossBarColor = "YELLOW";
     private String bossBarOverlay = "PROGRESS";
+    private String viewPermission = ""; // optional per-rule audience override (empty = use timer visibility)
 
     public DisplayRule() {
     }
@@ -72,6 +75,10 @@ public class DisplayRule {
     public void setSubtitle(String subtitle) { this.subtitle = subtitle; }
     public String getChat() { return this.chat == null ? "" : this.chat; }
     public void setChat(String chat) { this.chat = chat; }
+    public String getScoreboardTitle() { return this.scoreboardTitle == null ? "" : this.scoreboardTitle; }
+    public void setScoreboardTitle(String scoreboardTitle) { this.scoreboardTitle = scoreboardTitle; }
+    public List<String> getScoreboardLines() { if (this.scoreboardLines == null) this.scoreboardLines = new ArrayList<>(); return this.scoreboardLines; }
+    public void setScoreboardLines(List<String> scoreboardLines) { this.scoreboardLines = scoreboardLines == null ? new ArrayList<>() : new ArrayList<>(scoreboardLines); }
     public int getChatIntervalSeconds() { return Math.max(1, this.chatIntervalSeconds); }
     public void setChatIntervalSeconds(int chatIntervalSeconds) { this.chatIntervalSeconds = chatIntervalSeconds; }
     public int getUpdateIntervalTicks() { return Math.max(1, this.updateIntervalTicks); }
@@ -80,4 +87,6 @@ public class DisplayRule {
     public void setBossBarColor(String bossBarColor) { this.bossBarColor = bossBarColor; }
     public String getBossBarOverlay() { return this.bossBarOverlay == null ? "PROGRESS" : this.bossBarOverlay; }
     public void setBossBarOverlay(String bossBarOverlay) { this.bossBarOverlay = bossBarOverlay; }
+    public String getViewPermission() { return this.viewPermission == null ? "" : this.viewPermission; }
+    public void setViewPermission(String viewPermission) { this.viewPermission = viewPermission == null ? "" : viewPermission; }
 }
