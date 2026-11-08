@@ -96,6 +96,19 @@ public class Lang implements LangContainer {
     public static final TextLocale COMMAND_IMPORT_DESC = LangEntry.builder("Command.Import.Desc").text(
             GRAY.wrap("Imports plugin data from a zip file and reloads."));
 
+    public static final TextLocale COMMAND_CLEANUP_DESC = LangEntry.builder("Command.Cleanup.Desc").text(
+            GRAY.wrap("Cleans stale user properties from all stored user data (with confirmation)."));
+
+    public static final MessageLocale COMMAND_CLEANUP_CONSOLE_DENIED = LangEntry.builder("Command.Cleanup.ConsoleDenied")
+            .message(
+                    MessageData.CHAT_NO_PREFIX,
+                    SOFT_RED.wrap("This command cannot be run from console."));
+
+    public static final MessageLocale COMMAND_CLEANUP_FAILED = LangEntry.builder("Command.Cleanup.Failed")
+            .message(
+                    MessageData.CHAT_NO_PREFIX,
+                    SOFT_RED.wrap("User data cleanup failed."));
+
     public static final MessageLocale COST_ERROR_NOT_ENOUGH_FUNDS = LangEntry
             .builder("Generic.Cost.Error.NotEnoughFunds").chatMessage(
                     GRAY.wrap("You don't have enough funds. Required: " + WHITE.wrap(GENERIC_AMOUNT) + "."));

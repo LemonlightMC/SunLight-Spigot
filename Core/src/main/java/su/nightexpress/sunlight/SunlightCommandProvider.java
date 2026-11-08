@@ -5,12 +5,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jspecify.annotations.Nullable;
 
 import dev.jorel.commandapi.CommandAPICommand;
@@ -21,8 +23,10 @@ import su.nightexpress.nightcore.core.config.CoreLang;
 import su.nightexpress.sunlight.command.AbstractCommandProvider;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
+import su.nightexpress.sunlight.command.dialog.SunlightCleanupDialog;
 import su.nightexpress.sunlight.config.Lang;
 import su.nightexpress.sunlight.module.Module;
+import su.nightexpress.sunlight.user.UserDataCleanup;
 import su.nightexpress.sunlight.utils.Utils;
 
 import static su.nightexpress.nightcore.util.Placeholders.GENERIC_COMMAND;
@@ -54,6 +58,8 @@ public class SunlightCommandProvider extends AbstractCommandProvider {
 
     @Override
     public void setup() {
+        this.plugin.dialogRegistry().register(SunlightCleanupDialog.KEY, SunlightCleanupDialog::new);
+
         this.registerRoot("sunlight", command -> {
             this.root = command;
             command
@@ -143,6 +149,16 @@ public class SunlightCommandProvider extends AbstractCommandProvider {
                     final String fileName = name;
                     this.plugin.runTaskAsync(() -> this.importData(sender, fileName));
                     return 1;
+                }))
+                .under("sunlight");
+
+        this.register("cleanup", command -> command
+                .withFullDescription(Lang.COMMAND_CLEANUP_DESC.text())
+                .withPermission("sunlight.admin.cleanup")
+                .withOptionalArguments(CommandArgumentConstants.greedy("flags",
+                        info -> List.of("--dry-run", "--include-safe")))
+                .executes((sender, arguments) -> {
+                    return this.executeCleanup(sender, arguments);
                 }))
                 .under("sunlight");
     }
@@ -335,5 +351,84 @@ public class SunlightCommandProvider extends AbstractCommandProvider {
             return null;
         }
         return value.trim();
+    }
+
+    private int executeCleanup(CommandSender sender, CommandArguments arguments) {
+        if (!(sender instanceof Player player)) {
+            Lang.COMMAND_CLEANUP_CONSOLE_DENIED.message().send(sender);
+            return 0;
+        }
+
+        boolean dryRun = false;
+        boolean includeSafe = false;
+        Object flagsObj = arguments.get("flags");
+        if (flagsObj instanceof String flags && !flags.isBlank()) {
+            for (String token : flags.trim().split("\\s+")) {
+                String normalized = token.toLowerCase(Locale.ROOT);
+                if (normalized.equals("--dry-run") || normalized.equals("--dryrun") || normalized.equals("dry-run")
+                        || normalized.equals("dryrun")) {
+                    dryRun = true;
+                }
+                else if (normalized.equals("--include-safe") || normalized.equals("--includesafe")
+                        || normalized.equals("include-safe") || normalized.equals("includesafe")) {
+                    includeSafe = true;
+                }
+            }
+        }
+
+        final boolean runDry = dryRun;
+        final boolean runIncludeSafe = includeSafe;
+
+        this.plugin.showDialog(player, SunlightCleanupDialog.KEY,
+                new SunlightCleanupDialog.Request(runDry, runIncludeSafe),
+                () -> this.runCleanup(sender, runDry, runIncludeSafe));
+        return 1;
+    }
+
+    private void runCleanup(CommandSender sender, boolean dryRun, boolean includeSafe) {
+        this.plugin.runTaskAsync(() -> {
+            try {
+                UserDataCleanup.Result result = this.plugin.dataHandler().cleanupUserProperties(includeSafe, dryRun);
+
+                if (!dryRun && result.rowsChanged() > 0) {
+                    this.plugin.runTask(() -> this.pruneLoadedUserProperties(includeSafe));
+                }
+
+                this.sendCleanupResult(sender, result);
+            }
+            catch (Exception exception) {
+                exception.printStackTrace();
+                this.plugin.runTask(() -> Lang.COMMAND_CLEANUP_FAILED.message().send(sender));
+            }
+        });
+    }
+
+    private void pruneLoadedUserProperties(boolean includeSafe) {
+        for (su.nightexpress.sunlight.user.SunUser user : this.userManager().getRepository().getAll()) {
+            if (user == null) continue;
+
+            List<String> toRemove = new java.util.ArrayList<>();
+            for (String key : user.getProperties().keySet()) {
+                if (!UserDataCleanup.isRegistered(key)) {
+                    toRemove.add(key);
+                }
+                else if (includeSafe && UserDataCleanup.isSafeRemovable(key)) {
+                    toRemove.add(key);
+                }
+            }
+
+            toRemove.forEach(user::removeProperty);
+        }
+    }
+
+    private void sendCleanupResult(CommandSender sender, UserDataCleanup.Result result) {
+        String state = result.dryRun() ? "dry-run" : "completed";
+        String mode = result.includeSafe() ? "with --include-safe" : "registered-only";
+        String message = "User data cleanup " + state + " (" + mode + "): scanned "
+                + result.rowsScanned() + ", updated " + result.rowsChanged() + ", removed "
+                + result.totalRemoved() + " (unregistered " + result.unregisteredRemoved() + ", safe "
+                + result.safeRemoved() + "), parse errors " + result.parseErrors() + ".";
+
+        this.plugin.runTask(() -> sender.sendMessage(message));
     }
 }
