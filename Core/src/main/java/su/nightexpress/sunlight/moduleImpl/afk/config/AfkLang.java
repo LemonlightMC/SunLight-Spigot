@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.afk.core;
+package su.nightexpress.sunlight.moduleImpl.afk.config;
 
 import su.nightexpress.nightcore.locale.LangContainer;
 import su.nightexpress.nightcore.locale.LangEntry;

@@ -19,7 +19,8 @@ import su.nightexpress.sunlight.api.provider.mode.ToggleMode;
 import su.nightexpress.sunlight.command.CommandArgumentConstants;
 import su.nightexpress.sunlight.command.CommandProvider;
 import su.nightexpress.sunlight.moduleImpl.afk.AfkModule;
-import su.nightexpress.sunlight.moduleImpl.afk.core.AfkLang;
+import su.nightexpress.sunlight.moduleImpl.afk.config.AfkLang;
+import su.nightexpress.sunlight.moduleImpl.afk.config.AfkPerms;
 import su.nightexpress.sunlight.utils.Utils;
 
 import static su.nightexpress.nightcore.util.text.night.wrapper.TagWrappers.*;
@@ -34,9 +35,9 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
     public void setup() {
         this.register("on", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_ON_DESC.text())
-                .withPermission("sunlight.command.afk")
+                .withPermission(AfkPerms.COMMAND)
                 .withOptionalArguments(
-                        CommandArgumentConstants.targetArgument().withPermission("sunlight.command.afk.others"))
+                        CommandArgumentConstants.targetArgument().withPermission(AfkPerms.COMMAND_OTHERS))
                 .executes((sender, arguments) -> {
                     toggleAfkMode(sender, arguments, ToggleMode.ON);
                     return 1;
@@ -46,9 +47,9 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.register("off", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_OFF_DESC.text())
-                .withPermission("sunlight.command.afk")
+                .withPermission(AfkPerms.COMMAND)
                 .withOptionalArguments(
-                        CommandArgumentConstants.targetArgument().withPermission("sunlight.command.afk.others"))
+                        CommandArgumentConstants.targetArgument().withPermission(AfkPerms.COMMAND_OTHERS))
                 .executes((sender, arguments) -> {
                     toggleAfkMode(sender, arguments, ToggleMode.OFF);
                     return 1;
@@ -58,9 +59,9 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.register("toggle", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_TOGGLE_DESC.text())
-                .withPermission("sunlight.command.afk")
+                .withPermission(AfkPerms.COMMAND)
                 .withOptionalArguments(
-                        CommandArgumentConstants.targetArgument().withPermission("sunlight.command.afk.others"))
+                        CommandArgumentConstants.targetArgument().withPermission(AfkPerms.COMMAND_OTHERS))
                 .executes((sender, arguments) -> {
                     toggleAfkMode(sender, arguments, ToggleMode.TOGGLE);
                     return 1;
@@ -69,7 +70,7 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.register("list", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_LIST_DESC.text())
-                .withPermission("sunlight.command.afk.list")
+                .withPermission(AfkPerms.COMMAND_LIST)
                 .executes((sender, arguments) -> {
                     showList(sender);
                     return 1;
@@ -78,8 +79,9 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.register("status", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_STATUS_DESC.text())
-                .withPermission("sunlight.command.afk.status")
-                .withOptionalArguments(CommandArgumentConstants.targetArgument().withPermission("sunlight.command.afk.others"))
+                .withPermission(AfkPerms.COMMAND_STATUS)
+                .withOptionalArguments(
+                        CommandArgumentConstants.targetArgument().withPermission(AfkPerms.COMMAND_OTHERS))
                 .executes((sender, arguments) -> {
                     showStatus(sender, arguments, false);
                     return 1;
@@ -88,8 +90,9 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.register("info", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_INFO_DESC.text())
-                .withPermission("sunlight.command.afk.info")
-                .withOptionalArguments(CommandArgumentConstants.targetArgument().withPermission("sunlight.command.afk.others"))
+                .withPermission(AfkPerms.COMMAND_INFO)
+                .withOptionalArguments(
+                        CommandArgumentConstants.targetArgument().withPermission(AfkPerms.COMMAND_OTHERS))
                 .executes((sender, arguments) -> {
                     showStatus(sender, arguments, true);
                     return 1;
@@ -98,8 +101,9 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.register("kick", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_KICK_DESC.text())
-                .withPermission("sunlight.command.afk.kick")
-                .withArguments(new StringArgument("player").replaceSuggestions(ArgumentSuggestions.stringCollection(info -> CommandArgumentConstants.onlinePlayerNames())))
+                .withPermission(AfkPerms.COMMAND_KICK)
+                .withArguments(new StringArgument("player").replaceSuggestions(
+                        ArgumentSuggestions.stringCollection(info -> CommandArgumentConstants.onlinePlayerNames())))
                 .executes((sender, arguments) -> {
                     kickPlayer(sender, arguments);
                     return 1;
@@ -108,7 +112,7 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.register("gui", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_GUI_DESC.text())
-                .withPermission("sunlight.command.afk.gui")
+                .withPermission(AfkPerms.COMMAND_GUI)
                 .executesPlayer((player, arguments) -> {
                     if (!this.module.openAdminGui(player)) {
                         this.module.sendPrefixed(AfkLang.AFK_GUI_UNAVAILABLE, player);
@@ -119,7 +123,7 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
 
         this.registerRoot("afk", command -> command
                 .withFullDescription(AfkLang.COMMAND_AFK_TOGGLE_DESC.text())
-                .withPermission("sunlight.command.afk")
+                .withPermission(AfkPerms.COMMAND)
                 .executes((sender, arguments) -> {
                     return this.toggleAfkMode(sender, arguments, ToggleMode.TOGGLE);
                 }));
@@ -132,12 +136,12 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
             return 0;
         }
 
-        return target.runAs(this.module, sender, "sunlight.command.afk.others", (user, targetPlayer) -> {
+        return target.runAs(this.module, sender, AfkPerms.COMMAND_OTHERS, (user, targetPlayer) -> {
             final boolean state = mode.apply(this.module.isAfk(targetPlayer));
             if (state) {
-                this.module.enterAfk(targetPlayer, false);
+                this.module.handler().enterAfk(targetPlayer, false);
             } else {
-                this.module.exitAfk(targetPlayer, false);
+                this.module.handler().exitAfk(targetPlayer, false);
             }
 
             if (sender != targetPlayer) {
@@ -155,39 +159,45 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
         }
 
         final String name = target.playerName();
-        final Player player = name == null ? (sender instanceof Player p ? p : null) : Utils.getPlayer(name);
+        final Player player = name == null ? (sender instanceof final Player p ? p : null) : Utils.getPlayer(name);
         if (player == null) {
-            if (name == null) this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
-            else this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
+            if (name == null)
+                this.module.sendPrefixed(CoreLang.COMMAND_EXECUTION_PLAYER_ONLY, sender);
+            else
+                this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return;
         }
-        if (name != null && sender != player && !sender.hasPermission("sunlight.command.afk.others")) {
+        if (name != null && sender != player && !sender.hasPermission(AfkPerms.COMMAND_OTHERS)) {
             this.module.sendPrefixed(CoreLang.ERROR_INVALID_PLAYER, sender);
             return;
         }
 
-        final long durationMs = java.util.concurrent.TimeUnit.MILLISECONDS.convert(this.module.getAfkDuration(player), java.util.concurrent.TimeUnit.SECONDS);
-        final long idleMs = java.util.concurrent.TimeUnit.MILLISECONDS.convert(this.module.getIdleTime(player), java.util.concurrent.TimeUnit.SECONDS);
-        final int untilAfk = Math.max(0, this.module.getTimeToAfk(player) - this.module.getIdleTime(player));
-        int kickRemaining = -1;
-        final int totalKick = this.module.getTimeToKick(player);
-        if (totalKick > 0) kickRemaining = Math.max(0, totalKick - this.module.getIdleTime(player));
-        final int afkKick = this.module.getAfkKickTime(player);
-        if (afkKick > 0 && this.module.isAfk(player)) {
-            final int afkRemaining = Math.max(0, afkKick - (int) this.module.getAfkDuration(player));
-            kickRemaining = kickRemaining < 0 ? afkRemaining : Math.min(kickRemaining, afkRemaining);
-        }
-        final int untilKick = kickRemaining;
+        final int idleSeconds = this.module.handler().getIdleTime(player);
+        final long afkDurationSeconds = this.module.handler().getAfkDuration(player);
+        final long durationMs = java.util.concurrent.TimeUnit.MILLISECONDS
+                .convert(afkDurationSeconds, java.util.concurrent.TimeUnit.SECONDS);
+        final long idleMs = java.util.concurrent.TimeUnit.MILLISECONDS
+                .convert(idleSeconds, java.util.concurrent.TimeUnit.SECONDS);
+        final int untilAfk = Math.max(0, this.module.handler().getTimeToAfk(player) - idleSeconds);
+        final int untilKick = this.module.handler().getSecondsUntilKick(player);
 
         final PlaceholderContext context = PlaceholderContext.builder()
                 .with(CommonPlaceholders.PLAYER.resolver(player))
                 .with(SLPlaceholders.GENERIC_STATE, () -> this.module.isAfk(player) ? "AFK" : "Active")
                 .with("%idle%", () -> TimeFormats.formatAmount(idleMs, TimeFormatType.LITERAL))
                 .with("%afk_time%", () -> TimeFormats.formatAmount(durationMs, TimeFormatType.LITERAL))
-                .with("%total%", () -> TimeFormats.formatAmount(this.module.getTotalAfkTime(player), TimeFormatType.LITERAL))
-                .with("%count%", () -> String.valueOf(this.module.getAfkCount(player)))
-                .with("%until_afk%", () -> untilAfk <= 0 ? "now" : TimeFormats.formatAmount(java.util.concurrent.TimeUnit.MILLISECONDS.convert(untilAfk, java.util.concurrent.TimeUnit.SECONDS), TimeFormatType.LITERAL))
-                .with("%until_kick%", () -> untilKick <= 0 ? "never" : TimeFormats.formatAmount(java.util.concurrent.TimeUnit.MILLISECONDS.convert(untilKick, java.util.concurrent.TimeUnit.SECONDS), TimeFormatType.LITERAL))
+                .with("%total%",
+                        () -> TimeFormats.formatAmount(this.module.handler().getTotalAfkTime(player),
+                                TimeFormatType.LITERAL))
+                .with("%count%", () -> String.valueOf(this.module.handler().getAfkCount(player)))
+                .with("%until_afk%",
+                        () -> untilAfk <= 0 ? "now"
+                                : TimeFormats.formatAmount(java.util.concurrent.TimeUnit.MILLISECONDS.convert(untilAfk,
+                                        java.util.concurrent.TimeUnit.SECONDS), TimeFormatType.LITERAL))
+                .with("%until_kick%",
+                        () -> untilKick < 0 ? "never"
+                                : TimeFormats.formatAmount(java.util.concurrent.TimeUnit.MILLISECONDS.convert(untilKick,
+                                        java.util.concurrent.TimeUnit.SECONDS), TimeFormatType.LITERAL))
                 .build();
 
         this.module.sendPrefixed(detailed ? AfkLang.AFK_INFO : AfkLang.AFK_STATUS, sender, context);
@@ -201,12 +211,13 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
             return;
         }
 
-        this.module.kickForIdling(target);
-        this.module.sendPrefixed(AfkLang.AFK_KICK_FEEDBACK, sender, builder -> builder.with(CommonPlaceholders.PLAYER.resolver(target)));
+        this.module.handler().kickForIdling(target);
+        this.module.sendPrefixed(AfkLang.AFK_KICK_FEEDBACK, sender,
+                builder -> builder.with(CommonPlaceholders.PLAYER.resolver(target)));
     }
 
     private int showList(final CommandSender sender) {
-        final List<Player> afkPlayers = this.module.getAfkPlayers();
+        final List<Player> afkPlayers = this.module.handler().getAfkPlayers();
 
         if (afkPlayers.isEmpty()) {
             this.module.sendPrefixed(AfkLang.AFK_LIST_EMPTY, sender);
@@ -216,7 +227,7 @@ public class AfkCommandProvider extends CommandProvider<AfkModule> {
         final String list = afkPlayers.stream()
                 .map(player -> GREEN.wrap(player.getName()) + " "
                         + DARK_GRAY.wrap("(")
-                        + ORANGE.wrap(TimeFormats.formatSince(this.module.getAfkEnterTimestamp(player),
+                        + ORANGE.wrap(TimeFormats.formatSince(this.module.handler().getAfkEnterTimestamp(player),
                                 TimeFormatType.LITERAL))
                         + DARK_GRAY.wrap(")"))
                 .collect(Collectors.joining(DARK_GRAY.wrap(", ")));

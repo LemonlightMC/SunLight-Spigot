@@ -77,10 +77,11 @@ public class AfkAdminMenu extends AbstractMenu {
     }
 
     @Override
-    public void onPrepare(final ViewerContext context, final InventoryView view, final Inventory inventory, final List<MenuItem> list) {
+    public void onPrepare(final ViewerContext context, final InventoryView view, final Inventory inventory,
+            final List<MenuItem> list) {
         final Player viewerPlayer = context.getPlayer();
         final MenuViewer viewer = context.getViewer();
-        final List<Player> players = this.module.getAfkPlayers();
+        final List<Player> players = this.module.handler().getAfkPlayers();
 
         viewer.setTotalPages(Math.max(1, (players.size() + PAGE_SIZE - 1) / PAGE_SIZE));
         final int from = (viewer.getCurrentPage() - 1) * PAGE_SIZE;
@@ -89,16 +90,20 @@ public class AfkAdminMenu extends AbstractMenu {
             final NightItem empty = NightItem.fromType(Material.BARRIER)
                     .setDisplayName(SOFT_RED.wrap("No AFK players"))
                     .setLore(List.of(GRAY.wrap("There are currently no players in AFK mode.")));
-            list.add(MenuItem.button().defaultState(empty, c -> this.show(this.plugin, c.getPlayer())).slots(22).build());
-        }
-        else if (from < players.size()) {
+            list.add(MenuItem.button().defaultState(empty, c -> this.show(this.plugin, c.getPlayer())).slots(22)
+                    .build());
+        } else if (from < players.size()) {
             final int to = Math.min(players.size(), from + PAGE_SIZE);
             for (int i = from; i < to; i++) {
                 final Player target = players.get(i);
                 final List<String> lore = new ArrayList<>();
-                lore.add(GRAY.wrap("AFK for: ") + ORANGE.wrap(TimeFormats.formatSince(this.module.getAfkEnterTimestamp(target), TimeFormatType.LITERAL)));
-                lore.add(GRAY.wrap("Idle: ") + WHITE.wrap(TimeFormats.formatAmount(TimeUnit.MILLISECONDS.convert(this.module.getIdleTime(target), TimeUnit.SECONDS), TimeFormatType.LITERAL)));
-                lore.add(GRAY.wrap("Total AFK: ") + WHITE.wrap(TimeFormats.formatAmount(this.module.getTotalAfkTime(target), TimeFormatType.LITERAL)));
+                lore.add(GRAY.wrap("AFK for: ") + ORANGE.wrap(TimeFormats
+                        .formatSince(this.module.handler().getAfkEnterTimestamp(target), TimeFormatType.LITERAL)));
+                lore.add(GRAY.wrap("Idle: ")
+                        + WHITE.wrap(TimeFormats.formatAmount(TimeUnit.MILLISECONDS.convert(this.module
+                                .handler().getIdleTime(target), TimeUnit.SECONDS), TimeFormatType.LITERAL)));
+                lore.add(GRAY.wrap("Total AFK: ") + WHITE.wrap(TimeFormats
+                        .formatAmount(this.module.handler().getTotalAfkTime(target), TimeFormatType.LITERAL)));
                 lore.add("");
                 lore.add(GREEN.wrap("Left-click: ") + GRAY.wrap("Wake player"));
                 lore.add(SOFT_RED.wrap("Right-click: ") + GRAY.wrap("Kick for idling"));
@@ -118,27 +123,27 @@ public class AfkAdminMenu extends AbstractMenu {
                     if (action.getEvent() instanceof InventoryClickEvent click) {
                         if (click.isShiftClick()) {
                             admin.teleport(target.getLocation());
+                        } else if (click.isRightClick()) {
+                            this.module.handler().kickForIdling(target);
+                        } else {
+                            this.module.handler().exitAfk(target, false);
                         }
-                        else if (click.isRightClick()) {
-                            this.module.kickForIdling(target);
-                        }
-                        else {
-                            this.module.exitAfk(target, false);
-                        }
-                    }
-                    else {
-                        this.module.exitAfk(target, false);
+                    } else {
+                        this.module.handler().exitAfk(target, false);
                     }
                     this.plugin.runTask(() -> this.show(this.plugin, admin));
                 }).slots(slot).build());
             }
         }
 
-        final NightItem refresh = NightItem.fromType(Material.LIME_DYE).setDisplayName(GREEN.wrap("Refresh")).setLore(List.of(GRAY.wrap("Click to refresh the AFK list.")));
-        list.add(MenuItem.button().defaultState(refresh, action -> this.show(this.plugin, action.getPlayer())).slots(SLOT_REFRESH).build());
+        final NightItem refresh = NightItem.fromType(Material.LIME_DYE).setDisplayName(GREEN.wrap("Refresh"))
+                .setLore(List.of(GRAY.wrap("Click to refresh the AFK list.")));
+        list.add(MenuItem.button().defaultState(refresh, action -> this.show(this.plugin, action.getPlayer()))
+                .slots(SLOT_REFRESH).build());
 
         final NightItem close = NightItem.fromType(Material.BARRIER).setDisplayName(GRAY.wrap("Close"));
-        list.add(MenuItem.button().defaultState(close, action -> action.getViewer().closeMenu()).slots(SLOT_CLOSE).build());
+        list.add(MenuItem.button().defaultState(close, action -> action.getViewer().closeMenu()).slots(SLOT_CLOSE)
+                .build());
     }
 
     @Override

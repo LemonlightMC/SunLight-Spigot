@@ -1,4 +1,4 @@
-package su.nightexpress.sunlight.moduleImpl.afk.core;
+package su.nightexpress.sunlight.moduleImpl.afk.config;
 
 import org.bukkit.Particle;
 import org.bukkit.Sound;
@@ -367,7 +367,7 @@ public class AfkSettings extends AbstractConfig {
         public final ConfigProperty<Double> bypassMicroMoveDistance = this.addProperty(ConfigTypes.DOUBLE,
                         "Anti-AFK.Micro-Move-Distance",
                         0.05D,
-                        "Maximum block-space movement delta treated as micro movement when anti-AFK is enabled.");
+                        "Minimum 3D movement distance treated as real movement when anti-AFK micro-movement filtering is enabled.");
 
         public final ConfigProperty<Double> bypassMicroRotation = this.addProperty(ConfigTypes.DOUBLE,
                         "Anti-AFK.Micro-Rotation",

@@ -1,14 +1,17 @@
 package su.nightexpress.sunlight.moduleImpl.afk;
 
+import su.nightexpress.sunlight.moduleImpl.afk.config.AfkSettings;
 import su.nightexpress.sunlight.utils.TimeUtil;
 import su.nightexpress.nightcore.util.geodata.pos.BlockPos;
-import su.nightexpress.sunlight.moduleImpl.afk.core.AfkSettings;
 
 public class ActivityTracker {
 
     private final AfkSettings settings;
 
     private BlockPos lastPos;
+    private double lastX;
+    private double lastY;
+    private double lastZ;
     private float lastYaw;
     private float lastPitch;
 
@@ -50,37 +53,55 @@ public class ActivityTracker {
         this.countIdleTime();
     }
 
-    public void updatePosition(BlockPos newPos, float yaw, float pitch) {
-        this.updatePosition(newPos, yaw, pitch, true, this.settings.movementTrackRotation.get());
+    public void updatePosition(BlockPos newPos, double x, double y, double z, float yaw, float pitch) {
+        this.updatePosition(newPos, x, y, z, yaw, pitch, true, this.settings.movementTrackRotation.get());
     }
 
-    public void updatePosition(BlockPos newPos, float yaw, float pitch, boolean allowMovement, boolean allowRotation) {
+    public void updatePosition(BlockPos newPos, double x, double y, double z, float yaw, float pitch,
+            boolean allowMovement, boolean allowRotation) {
         if (this.lastPos == null) {
             this.lastPos = newPos;
+            this.lastX = x;
+            this.lastY = y;
+            this.lastZ = z;
             this.lastYaw = yaw;
             this.lastPitch = pitch;
             return;
         }
 
-        boolean blockChanged = !newPos.equals(this.lastPos);
-        float yawDelta = Math.abs(this.lastYaw - yaw);
-        float pitchDelta = Math.abs(this.lastPitch - pitch);
-        boolean rotationChanged = yawDelta > 0F || pitchDelta > 0F;
+        final boolean blockChanged = !newPos.equals(this.lastPos);
+        final double dx = x - this.lastX;
+        final double dy = y - this.lastY;
+        final double dz = z - this.lastZ;
+        final double moveDistance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        final float yawDelta = Math.abs(this.lastYaw - yaw);
+        final float pitchDelta = Math.abs(this.lastPitch - pitch);
+        final boolean rotationChanged = yawDelta > 0F || pitchDelta > 0F;
+        final boolean antiAfk = this.settings.bypassDetectionEnabled.get() && this.settings.bypassIgnoreMicroMovement.get();
 
         this.lastPos = newPos;
+        this.lastX = x;
+        this.lastY = y;
+        this.lastZ = z;
         this.lastYaw = yaw;
         this.lastPitch = pitch;
 
         if (blockChanged) {
             if (allowMovement) {
+                if (antiAfk) {
+                    final double microMove = Math.max(0D, this.settings.bypassMicroMoveDistance.get());
+                    if (microMove > 0D && moveDistance < microMove) {
+                        return;
+                    }
+                }
                 this.countActivity(ActivityType.MOVEMENT);
             }
             return;
         }
 
         if (rotationChanged && allowRotation) {
-            if (this.settings.bypassDetectionEnabled.get() && this.settings.bypassIgnoreMicroMovement.get()) {
-                float micro = (float) Math.max(0D, this.settings.bypassMicroRotation.get());
+            if (antiAfk) {
+                final float micro = (float) Math.max(0D, this.settings.bypassMicroRotation.get());
                 if (micro > 0F && yawDelta <= micro && pitchDelta <= micro) {
                     return;
                 }
@@ -182,5 +203,12 @@ public class ActivityTracker {
 
     public int getIdleTime() {
         return this.idleTime;
+    }
+
+    public long duration() {
+        if (this.afkEnterTimestamp <= 0L) {
+            return 0;
+        }
+        return System.currentTimeMillis() - this.afkEnterTimestamp;
     }
 }

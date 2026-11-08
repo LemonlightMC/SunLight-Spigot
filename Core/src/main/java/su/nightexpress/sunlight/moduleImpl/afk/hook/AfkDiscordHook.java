@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import su.nightexpress.nightcore.util.text.NightMessage;
 import su.nightexpress.sunlight.hook.HookId;
-import su.nightexpress.sunlight.moduleImpl.afk.core.AfkSettings;
+import su.nightexpress.sunlight.moduleImpl.afk.config.AfkSettings;
 
 import java.awt.Color;
 import java.util.Locale;

@@ -1,115 +1,80 @@
 package su.nightexpress.sunlight.moduleImpl.afk;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventPriority;
 
-import com.sk89q.worldedit.bukkit.BukkitAdapter;
-import com.sk89q.worldguard.WorldGuard;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-import com.sk89q.worldguard.protection.regions.RegionContainer;
-
-import su.nightexpress.nightcore.bridge.chat.UniversalChatEvent;
 import su.nightexpress.nightcore.bridge.chat.UniversalChatEventHandler;
 import su.nightexpress.nightcore.config.FileConfig;
-import su.nightexpress.nightcore.core.config.CoreLang;
-import su.nightexpress.nightcore.util.Players;
-import su.nightexpress.nightcore.util.geodata.pos.BlockPos;
-import su.nightexpress.nightcore.util.placeholder.CommonPlaceholders;
-import su.nightexpress.nightcore.util.placeholder.PlaceholderContext;
-import su.nightexpress.nightcore.util.time.TimeFormatType;
-import su.nightexpress.nightcore.util.time.TimeFormats;
-import su.nightexpress.sunlight.SLPlaceholders;
 import su.nightexpress.sunlight.SunLightPlugin;
-import su.nightexpress.sunlight.api.event.AfkChangeEvent;
-import su.nightexpress.sunlight.api.event.AfkEnterEvent;
-import su.nightexpress.sunlight.api.event.AfkLeaveEvent;
 import su.nightexpress.sunlight.api.provider.AfkProvider;
 import su.nightexpress.sunlight.hook.HookId;
 import su.nightexpress.sunlight.hook.placeholder.PlaceholderRegistry;
 import su.nightexpress.sunlight.module.Module;
 import su.nightexpress.sunlight.module.ModuleDefinition;
 import su.nightexpress.sunlight.moduleImpl.afk.command.AfkCommandProvider;
-import su.nightexpress.sunlight.moduleImpl.afk.core.AfkLang;
-import su.nightexpress.sunlight.moduleImpl.afk.core.AfkSettings;
+import su.nightexpress.sunlight.moduleImpl.afk.config.AfkLang;
+import su.nightexpress.sunlight.moduleImpl.afk.config.AfkSettings;
 import su.nightexpress.sunlight.moduleImpl.afk.hook.AfkContextHook;
 import su.nightexpress.sunlight.moduleImpl.afk.hook.AfkDiscordHook;
 import su.nightexpress.sunlight.moduleImpl.afk.listener.AfkListener;
 import su.nightexpress.sunlight.moduleImpl.afk.menu.AfkAdminMenu;
-import su.nightexpress.sunlight.user.SunUser;
 import su.nightexpress.sunlight.user.property.UserProperty;
 import su.nightexpress.sunlight.user.property.UserPropertyRegistry;
 import su.nightexpress.sunlight.utils.Utils;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import org.bukkit.Particle;
 
 public class AfkModule extends Module implements AfkProvider {
 
     public static final UserProperty<Long> AFK_TOTAL_TIME = UserProperty.create("afk_total_time", Long.class, 0L, true);
     public static final UserProperty<Integer> AFK_COUNT = UserProperty.create("afk_count", Integer.class, 0, true);
 
-    private final Map<UUID, ActivityTracker> activityTrackerMap;
-    private final Map<UUID, Long> kickedForIdling;
     private final AfkSettings settings;
 
-    private UniversalChatEventHandler chatEventHandler;
-    private AfkContextHook luckPermsHook;
-    private AfkDiscordHook discordHook;
-    private AfkAdminMenu adminMenu;
-
-    private long statisticsSessions;
-    private long statisticsTotalAfkTime;
+    public AfkHandler handler;
+    public UniversalChatEventHandler chatEventHandler;
+    public AfkContextHook luckPermsHook;
+    public AfkDiscordHook discordHook;
+    public AfkAdminMenu adminMenu;
 
     public AfkModule(final ModuleDefinition<AfkModule> definition, final SunLightPlugin plugin) {
         super(definition, plugin);
-        this.activityTrackerMap = new ConcurrentHashMap<>();
-        this.kickedForIdling = new ConcurrentHashMap<>();
         this.settings = new AfkSettings();
+        this.handler = new AfkHandler(this);
     }
 
     @Override
     protected void loadModule(final FileConfig config) {
         this.settings.load(config);
+        this.handler.rebuildExemptCaches();
         this.plugin.injectLang(AfkLang.class);
-        this.discordHook = new AfkDiscordHook(this.settings);
+
         UserPropertyRegistry.register(AFK_TOTAL_TIME);
         UserPropertyRegistry.register(AFK_COUNT);
 
         this.addListener(new AfkListener(this.plugin, this));
-
-        if (this.settings.getActivityPoints(ActivityType.CHAT) > 0) {
-            this.chatEventHandler = this::handleChatEvent;
-            this.plugin.addChatHandler(EventPriority.MONITOR, this.chatEventHandler);
+        if (this.settings.blockChat.get() || this.settings.getActivityPoints(ActivityType.CHAT) > 0) {
+            this.chatEventHandler = handler::handleChatEvent;
+            this.plugin.addChatHandler(EventPriority.LOWEST, this.chatEventHandler);
         }
 
-        this.addTask(this::tickTrackers, 20L);
-
-        this.adminMenu = new AfkAdminMenu(this.plugin, this);
+        this.addTask(handler::tickTrackers, 20L);
+        Utils.onlinePlayers().forEach(handler::track);
 
         if (this.settings.luckPermsContextEnabled.get() && HookId.hasLuckPerms()) {
             this.luckPermsHook = new AfkContextHook(this);
             this.luckPermsHook.register();
             if (this.luckPermsHook.isAvailable()) {
-                this.info("LuckPerms context 'afkstate' registered.");
+                this.debug("LuckPerms context 'afkstate' registered.");
             }
         }
-
-        Utils.onlinePlayers().forEach(this::track);
+        this.discordHook = new AfkDiscordHook(this.settings);
+        this.adminMenu = new AfkAdminMenu(this.plugin, this);
         this.commandRegistry.addProvider(new AfkCommandProvider(this));
     }
 
     @Override
     protected void unloadModule() {
+        Utils.onlinePlayers().forEach(player -> handler.exitAfk(player, true));
+
         if (this.chatEventHandler != null) {
             this.plugin.removeChatHandler(this.chatEventHandler);
             this.chatEventHandler = null;
@@ -120,76 +85,12 @@ public class AfkModule extends Module implements AfkProvider {
             this.luckPermsHook = null;
         }
 
-        Utils.onlinePlayers().forEach(player -> this.exitAfk(player, true));
-        this.activityTrackerMap.clear();
-        this.kickedForIdling.clear();
+        handler.shutdown();
     }
 
     @Override
     public void registerPlaceholders(final PlaceholderRegistry registry) {
-        registry.register("afk_state", (player, payload) -> {
-            return CoreLang.STATE_YES_NO.get(this.isAfk(player));
-        });
-
-        registry.register("afk_mode", (player, payload) -> {
-            return PlaceholderContext.builder()
-                    .with(SLPlaceholders.GENERIC_TIME,
-                            () -> TimeFormats.formatSince(this.getAfkEnterTimestamp(player), TimeFormatType.LITERAL))
-                    .build()
-                    .apply(AfkLang.PLACEHOLDER_MODE.get(this.isAfk(player)));
-        });
-
-        registry.register("afk_idle_time", (player, payload) -> {
-            return String.valueOf(this.getIdleTime(player));
-        });
-
-        registry.register("afk_idle_time_formatted", (player, payload) -> {
-            return TimeFormats.formatAmount(TimeUnit.MILLISECONDS.convert(this.getIdleTime(player), TimeUnit.SECONDS),
-                    TimeFormatType.LITERAL);
-        });
-
-        registry.register("afk_total_time", (player, payload) -> {
-            return String.valueOf(this.getTotalAfkTime(player));
-        });
-
-        registry.register("afk_total_time_formatted", (player, payload) -> {
-            return TimeFormats.formatAmount(this.getTotalAfkTime(player), TimeFormatType.LITERAL);
-        });
-
-        registry.register("afk_count", (player, payload) -> {
-            return String.valueOf(this.getAfkCount(player));
-        });
-
-        registry.register("afk_enter_timestamp", (player, payload) -> {
-            return String.valueOf(this.getAfkEnterTimestamp(player));
-        });
-
-        registry.register("afk_enter_time", (player, payload) -> {
-            final long entered = this.getAfkEnterTimestamp(player);
-            return entered <= 0L ? "0s" : TimeFormats.formatSince(entered, TimeFormatType.LITERAL);
-        });
-
-        registry.register("afk_duration", (player, payload) -> String.valueOf(this.getAfkDuration(player)));
-        registry.register("afk_duration_formatted", (player, payload) -> TimeFormats.formatAmount(TimeUnit.MILLISECONDS.convert(this.getAfkDuration(player), TimeUnit.SECONDS), TimeFormatType.LITERAL));
-        registry.register("afk_time_until_afk", (player, payload) -> String.valueOf(Math.max(0, this.getTimeToAfk(player) - this.getIdleTime(player))));
-        registry.register("afk_time_until_kick", (player, payload) -> {
-            int remaining = -1;
-            int totalKick = this.getTimeToKick(player);
-            if (totalKick > 0) remaining = Math.max(0, totalKick - this.getIdleTime(player));
-            int afkKick = this.getAfkKickTime(player);
-            if (afkKick > 0 && this.isAfk(player)) {
-                int afkRemaining = Math.max(0, afkKick - (int) this.getAfkDuration(player));
-                remaining = remaining < 0 ? afkRemaining : Math.min(remaining, afkRemaining);
-            }
-            return String.valueOf(Math.max(0, remaining));
-        });
-        registry.register("afk_online_count", (player, payload) -> String.valueOf(this.getAfkPlayers().size()));
-        registry.register("afk_online", (player, payload) -> this.getAfkPlayers().stream().map(Player::getName).collect(Collectors.joining(", ")));
-        registry.register("afk_stats_sessions", (player, payload) -> String.valueOf(this.getStatisticsSessions()));
-        registry.register("afk_stats_total_time", (player, payload) -> String.valueOf(this.getStatisticsTotalAfkTime()));
-        registry.register("afk_stats_total_time_formatted", (player, payload) -> TimeFormats.formatAmount(this.getStatisticsTotalAfkTime(), TimeFormatType.LITERAL));
-        registry.register("afk_stats_average_time", (player, payload) -> String.valueOf(this.getStatisticsAverageAfkTime()));
-        registry.register("afk_stats_average_time_formatted", (player, payload) -> TimeFormats.formatAmount(this.getStatisticsAverageAfkTime(), TimeFormatType.LITERAL));
+        AfkPlaceholders.registerPlaceholders(this, registry);
     }
 
     public boolean openAdminGui(final Player player) {
@@ -200,495 +101,13 @@ public class AfkModule extends Module implements AfkProvider {
         return this.settings;
     }
 
-    private void playAfkEffects(final Player player, final boolean enter) {
-        (enter ? this.settings.soundEnter.get() : this.settings.soundExit.get()).play(player);
-
-        final boolean enabled = enter ? this.settings.particlesEnterEnabled.get() : this.settings.particlesExitEnabled.get();
-        if (!enabled) return;
-
-        final String typeName = enter ? this.settings.particlesEnterType.get() : this.settings.particlesExitType.get();
-        if (typeName == null || typeName.isBlank() || "NONE".equalsIgnoreCase(typeName.trim())) return;
-
-        Particle particle;
-        try {
-            particle = Particle.valueOf(typeName.trim().toUpperCase(Locale.ROOT));
-        }
-        catch (IllegalArgumentException exception) {
-            return;
-        }
-
-        final int count = Math.max(1, enter ? this.settings.particlesEnterCount.get() : this.settings.particlesExitCount.get());
-        final double offset = Math.max(0D, enter ? this.settings.particlesEnterOffset.get() : this.settings.particlesExitOffset.get());
-        final Location location = player.getLocation().clone().add(0D, 1D, 0D);
-
-        try {
-            player.getWorld().spawnParticle(particle, location, count, offset, 0.45D, offset, 0D);
-        }
-        catch (Exception ignored) {
-            // Some particles require extra data; ignore misconfiguration safely.
-        }
-    }
-
-    public void kickForIdling(final Player player) {
-        final String reason = PlaceholderContext.builder()
-                .with(SLPlaceholders.GENERIC_TIME,
-                        () -> TimeFormats.formatAmount(
-                                TimeUnit.MILLISECONDS.convert(this.getIdleTime(player), TimeUnit.SECONDS),
-                                TimeFormatType.LITERAL))
-                .andThen(SLPlaceholders.forPlayerWithPAPI(player))
-                .build()
-                .apply(String.join("\n", this.settings.kickText.get()));
-
-        if (this.settings.rejoinKickAfter.get() != 0) {
-            this.kickedForIdling.put(player.getUniqueId(), System.currentTimeMillis());
-        }
-
-        if (this.discordHook != null) {
-            this.discordHook.sendKick(player, TimeFormats.formatAmount(
-                    TimeUnit.MILLISECONDS.convert(this.getIdleTime(player), TimeUnit.SECONDS), TimeFormatType.LITERAL));
-        }
-        Players.kick(player, reason);
-    }
-
-    public boolean isWithinRejoinKickWindow(final Player player) {
-        final int window = this.settings.rejoinKickAfter.get();
-        if (window == 0)
-            return false;
-
-        final Long kickedAt = this.kickedForIdling.remove(player.getUniqueId());
-        if (kickedAt == null)
-            return false;
-
-        if (window < 0)
-            return true;
-
-        return System.currentTimeMillis() - kickedAt <= window * 1000L;
+    public AfkHandler handler() {
+        return handler;
     }
 
     @Override
     public boolean isAfk(final Player player) {
-        return this.activityTracker(player).map(ActivityTracker::isAfk).orElse(false);
+        return handler.isAfk(player);
     }
 
-    public void track(final Player player) {
-        final ActivityTracker tracker = new ActivityTracker(this.settings);
-        this.activityTrackerMap.put(player.getUniqueId(), tracker);
-    }
-
-    public void untrack(final Player player, final boolean silent) {
-        this.exitAfk(player, silent);
-        this.activityTrackerMap.remove(player.getUniqueId());
-    }
-
-    public void exitAfk(final Player player, final boolean silent) {
-        this.activityTracker(player).filter(ActivityTracker::isAfk).ifPresent(tracker -> {
-            // Only reset the counters if the transition really happened. A listener that cancelled
-            // AfkChangeEvent leaves the player AFK, and wiping their idle time here would restart
-            // the kick timers mid-session.
-            if (this.handleAfkExit(player, tracker, silent)) {
-                tracker.resetCounters();
-            }
-        });
-    }
-
-    public void enterAfk(final Player player, final boolean silent) {
-        this.activityTracker(player).filter(Predicate.not(ActivityTracker::isAfk)).ifPresent(tracker -> {
-            this.handleAfkEnter(player, tracker, silent);
-        });
-    }
-
-    public void trackActivity(final Player player, final ActivityType type) {
-        this.activityTracker(player).ifPresent(tracker -> tracker.countActivity(type));
-    }
-
-    public void trackActivity(final Player player, final int amount) {
-        this.activityTracker(player).ifPresent(tracker -> tracker.countActivity(amount));
-    }
-
-    public boolean isExempt(final Player player) {
-        if (this.settings.vanishIgnorePlayers.get() && this.isVanishedPlayer(player))
-            return true;
-
-        if (this.isExemptWorld(player.getWorld().getName()))
-            return true;
-
-        if (!HookId.hasWorldGuard() || !Utils.isInstalled(HookId.WORLD_GUARD))
-            return false;
-        if (this.settings.exemptRegions.get().isEmpty())
-            return false;
-
-        return this.isInExemptRegion(player);
-    }
-
-    private boolean isVanishedPlayer(final Player player) {
-        return this.plugin.vanishProvider().map(provider -> provider.isVanished(player)).orElseGet(() -> su.nightexpress.sunlight.SLUtils.isVanished(player));
-    }
-
-    private void updateSleepingIgnored(final Player player, final boolean afk) {
-        if (!this.settings.ignoreSleeping.get()) return;
-        try {
-            player.setSleepingIgnored(afk);
-        }
-        catch (Exception ignored) {
-        }
-    }
-
-    private boolean shouldIgnoreBypassMovement(final Player player, final Location location) {
-        if (!this.settings.bypassDetectionEnabled.get()) return false;
-
-        if (this.settings.bypassIgnoreVehicle.get() && player.isInsideVehicle()) {
-            return true;
-        }
-
-        if (this.settings.bypassIgnoreWaterFlow.get() && this.isInFlowingWater(location)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isInFlowingWater(final Location location) {
-        final Block block = location.getBlock();
-        if (!block.isLiquid()) return false;
-        final Material type = block.getType();
-        if (type != Material.WATER && type != Material.BUBBLE_COLUMN) return false;
-
-        final BlockFace[] faces = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
-        for (final BlockFace face : faces) {
-            final Block adjacent = block.getRelative(face);
-            if (adjacent.getType() == Material.WATER || adjacent.getType() == Material.BUBBLE_COLUMN) {
-                final Block beyond = adjacent.getRelative(face);
-                if (beyond.getType() == Material.WATER || beyond.getType() == Material.BUBBLE_COLUMN) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private boolean isExemptWorld(final String worldName) {
-        for (final String world : this.settings.exemptWorlds.get()) {
-            if (world.equalsIgnoreCase(worldName))
-                return true;
-        }
-        return false;
-    }
-
-    private boolean isInExemptRegion(final Player player) {
-        try {
-            final RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
-            final ApplicableRegionSet set = container.createQuery()
-                    .getApplicableRegions(BukkitAdapter.adapt(player.getLocation()));
-            for (final ProtectedRegion region : set) {
-                for (final String exempt : this.settings.exemptRegions.get()) {
-                    if (region.getId().equalsIgnoreCase(exempt))
-                        return true;
-                }
-            }
-        } catch (final Exception exception) {
-            exception.printStackTrace();
-        }
-        return false;
-    }
-
-    private void tickTrackers() {
-        if (this.activityTrackerMap.isEmpty()) return;
-        this.pruneKickRecords();
-
-        Map.copyOf(this.activityTrackerMap).forEach((playerId, tracker) -> {
-            final Player player = Utils.getPlayer(playerId);
-            if (player == null || !player.isOnline())
-                return;
-
-            if (this.isExempt(player)) {
-                if (tracker.isAfk())
-                    this.exitAfk(player, true);
-                tracker.resetCounters();
-                return;
-            }
-
-            final Location location = player.getLocation();
-            final boolean bypassMovement = this.shouldIgnoreBypassMovement(player, location);
-            final boolean trackRotation = !bypassMovement && this.settings.movementTrackRotation.get();
-            tracker.updatePosition(BlockPos.from(location), location.getYaw(), location.getPitch(), !bypassMovement, trackRotation);
-            tracker.tick();
-
-            if (tracker.isAfk()) {
-                if (tracker.isEnoughActivity()) {
-                    this.handleAfkExit(player, tracker, false);
-                    return;
-                }
-
-                final int idleTime = tracker.getIdleTime();
-                final int timeToKick = this.getTimeToKick(player);
-                if (timeToKick > 0 && idleTime >= timeToKick) {
-                    this.kickForIdling(player);
-                    return;
-                }
-
-                final int afkKickTime = this.getAfkKickTime(player);
-                if (afkKickTime > 0 && this.getAfkDuration(player) >= afkKickTime) {
-                    this.kickForIdling(player);
-                    return;
-                }
-
-                this.sendKickWarning(player, tracker, timeToKick, afkKickTime);
-                this.sendStatusBar(player, tracker);
-            } else {
-                final int idleTime = tracker.getIdleTime();
-                final int timeToKick = this.getTimeToKick(player);
-                if (timeToKick > 0 && idleTime >= timeToKick) {
-                    this.kickForIdling(player);
-                    return;
-                }
-
-                final int timeToAfk = this.getTimeToAfk(player);
-                if (timeToAfk > 0 && idleTime >= timeToAfk) {
-                    this.handleAfkEnter(player, tracker, false);
-                }
-            }
-        });
-    }
-
-    private void pruneKickRecords() {
-        final int window = this.settings.rejoinKickAfter.get();
-
-        if (window == 0) {
-            this.kickedForIdling.clear();
-            return;
-        }
-        if (window < 0)
-            return;
-
-        this.kickedForIdling.values().removeIf(kickedAt -> System.currentTimeMillis() - kickedAt > window * 1000L);
-    }
-
-    private void handleChatEvent(final UniversalChatEvent event) {
-        if (event.isCancelled())
-            return;
-
-        final Player player = event.getPlayer();
-        if (this.settings.blockChat.get() && this.isAfk(player)) {
-            event.setCancelled(true);
-            this.sendPrefixed(AfkLang.ERROR_ACTION_BLOCKED, player);
-            return;
-        }
-
-        this.trackActivity(player, this.settings.getActivityPoints(ActivityType.CHAT));
-    }
-
-    private boolean handleAfkEnter(final Player player, final ActivityTracker tracker, final boolean silent) {
-        final int idleTime = tracker.getIdleTime();
-
-        // Fired before anything is applied, so cancelling leaves the player awake and skips every
-        // side effect below (commands, sound, broadcast, AFK session start).
-        final AfkChangeEvent changeEvent = new AfkChangeEvent(player, true);
-        this.plugin.getPluginManager().callEvent(changeEvent);
-        if (changeEvent.isCancelled())
-            return false;
-
-        tracker.resetCounters();
-        tracker.setAfkTimestamp();
-        this.updateSleepingIgnored(player, true);
-
-        final PlaceholderContext context = PlaceholderContext.builder()
-                .with(CommonPlaceholders.PLAYER.resolver(player))
-                .andThen(CommonPlaceholders.forPlaceholderAPI(player))
-                .build();
-
-        final List<String> commands = context.apply(this.settings.afkCommands.get());
-        Players.dispatchCommands(player, commands);
-
-        this.plugin.getPluginManager().callEvent(new AfkEnterEvent(player, idleTime));
-
-        this.playAfkEffects(player, true);
-        if (this.luckPermsHook != null) this.luckPermsHook.signalUpdate(player);
-
-        final boolean announce = !silent && !(this.settings.vanishSuppressBroadcasts.get() && this.isVanishedPlayer(player));
-        if (announce) {
-            this.broadcastPrefixed(AfkLang.AFK_ENTER_BROADCAST, context);
-            if (this.discordHook != null) this.discordHook.sendEnter(player, idleTime);
-        }
-
-        return true;
-    }
-
-    private boolean handleAfkExit(final Player player, final ActivityTracker tracker, final boolean silent) {
-        final long afkDuration = System.currentTimeMillis() - tracker.getAfkEnterTimestamp();
-
-        // Fired before anything is applied, so cancelling leaves the player AFK and skips every
-        // side effect below — notably the AFK session is not recorded and no wake-up commands run.
-        final AfkChangeEvent changeEvent = new AfkChangeEvent(player, false);
-        this.plugin.getPluginManager().callEvent(changeEvent);
-        if (changeEvent.isCancelled())
-            return false;
-
-        this.updateSleepingIgnored(player, false);
-
-        if (afkDuration > 0L) {
-            this.recordAfkSession(player, afkDuration);
-        }
-
-        final PlaceholderContext context = PlaceholderContext.builder()
-                .with(SLPlaceholders.GENERIC_TIME,
-                        () -> TimeFormats.formatSince(tracker.getAfkEnterTimestamp(), TimeFormatType.LITERAL))
-                .with(CommonPlaceholders.PLAYER.resolver(player))
-                .andThen(CommonPlaceholders.forPlaceholderAPI(player))
-                .build();
-
-        final List<String> commands = context.apply(this.settings.wakeUpCommands.get());
-        Players.dispatchCommands(player, commands);
-
-        this.plugin.getPluginManager().callEvent(new AfkLeaveEvent(player, afkDuration));
-
-        this.playAfkEffects(player, false);
-        if (this.luckPermsHook != null) this.luckPermsHook.signalUpdate(player);
-
-        final boolean announce = !silent && !(this.settings.vanishSuppressBroadcasts.get() && this.isVanishedPlayer(player));
-        if (announce) {
-            this.broadcastPrefixed(AfkLang.AFK_EXIT_BROADCAST, context);
-            if (this.discordHook != null) this.discordHook.sendExit(player, afkDuration);
-        }
-
-        tracker.resetCounters();
-        return true;
-    }
-
-    private void recordAfkSession(final Player player, final long durationMs) {
-        final SunUser user = this.userManager.getOrFetch(player);
-        user.setProperty(AFK_TOTAL_TIME, user.getPropertyOrDefault(AFK_TOTAL_TIME) + durationMs);
-        user.setProperty(AFK_COUNT, user.getPropertyOrDefault(AFK_COUNT) + 1);
-        this.statisticsSessions++;
-        this.statisticsTotalAfkTime += Math.max(0L, durationMs);
-    }
-
-    public long getStatisticsSessions() {
-        return this.statisticsSessions;
-    }
-
-    public long getStatisticsTotalAfkTime() {
-        return this.statisticsTotalAfkTime;
-    }
-
-    public long getStatisticsAverageAfkTime() {
-        return this.statisticsSessions <= 0L ? 0L : this.statisticsTotalAfkTime / this.statisticsSessions;
-    }
-
-    private void sendKickWarning(final Player player, final ActivityTracker tracker, final int timeToKick,
-            final int afkKickTime) {
-        final int ahead = this.settings.kickWarningAhead.get();
-        if (ahead <= 0)
-            return;
-
-        final int idleTime = tracker.getIdleTime();
-        final long afkDuration = this.getAfkDuration(player);
-
-        int remaining = -1;
-        if (timeToKick > 0 && idleTime < timeToKick) {
-            remaining = timeToKick - idleTime;
-        }
-        if (afkKickTime > 0 && afkDuration < afkKickTime) {
-            final int afkRemaining = (int) (afkKickTime - afkDuration);
-            remaining = remaining < 0 ? afkRemaining : Math.min(remaining, afkRemaining);
-        }
-        if (remaining <= 0 || remaining > ahead)
-            return;
-
-        final long now = System.currentTimeMillis();
-        final int interval = this.settings.kickWarningInterval.get();
-        if (interval > 0 && now - tracker.getLastKickWarningSent() < interval * 1000L)
-            return;
-
-        tracker.setLastKickWarningSent(now);
-
-        final int timeLeft = remaining;
-        this.sendPrefixed(AfkLang.KICK_WARNING, player, builder -> builder
-                .with(SLPlaceholders.GENERIC_TIME, () -> TimeFormats.formatAmount(
-                        TimeUnit.MILLISECONDS.convert(timeLeft, TimeUnit.SECONDS), TimeFormatType.LITERAL)));
-    }
-
-    private void sendStatusBar(final Player player, final ActivityTracker tracker) {
-        if (tracker.isWakingUp() && this.settings.afkWakeUpBarEnabled.get()) {
-            Players.sendActionBar(player, PlaceholderContext.builder()
-                    .with(SLPlaceholders.GENERIC_REMAIN, () -> String.valueOf(tracker.getWakeUpProgress()))
-                    .with(SLPlaceholders.GENERIC_TIME_LEFT,
-                            () -> TimeFormats.formatAmount(
-                                    TimeUnit.MILLISECONDS.convert(tracker.getWakeUpTimeLeft(), TimeUnit.SECONDS),
-                                    TimeFormatType.LITERAL))
-                    .andThen(SLPlaceholders.forPlayerWithPAPI(player))
-                    .build()
-                    .apply(this.settings.afkWakeUpBarText.get()));
-            return;
-        }
-
-        if (this.settings.afkStatusBarEnabled.get()) {
-            Players.sendActionBar(player, PlaceholderContext.builder()
-                    .with(SLPlaceholders.GENERIC_TIME,
-                            () -> TimeFormats.formatSince(tracker.getAfkEnterTimestamp(), TimeFormatType.LITERAL))
-                    .andThen(SLPlaceholders.forPlayerWithPAPI(player))
-                    .build()
-                    .apply(this.settings.afkStatusBarText.get()));
-        }
-    }
-
-    public Set<ActivityTracker> getActivityTrackers() {
-        return new HashSet<>(this.activityTrackerMap.values());
-    }
-
-    public List<Player> getAfkPlayers() {
-        return this.activityTrackerMap.entrySet().stream()
-                .filter(entry -> entry.getValue().isAfk())
-                .map(entry -> Utils.getPlayer(entry.getKey()))
-                .filter(Objects::nonNull)
-                .sorted(Comparator.comparing(Player::getName, String.CASE_INSENSITIVE_ORDER))
-                .toList();
-    }
-
-    public ActivityTracker getActivityTracker(final Player player) {
-        return this.getActivityTracker(player.getUniqueId());
-    }
-
-    public ActivityTracker getActivityTracker(final UUID playerId) {
-        return this.activityTrackerMap.get(playerId);
-    }
-
-    public Optional<ActivityTracker> activityTracker(final Player player) {
-        return Optional.ofNullable(this.getActivityTracker(player));
-    }
-
-    public int getTimeToAfk(final Player player) {
-        return this.settings.idleAfkTimes.get().getGreatest(player).intValue();
-    }
-
-    public int getTimeToKick(final Player player) {
-        return this.settings.idleKickTimes.get().getGreatest(player).intValue();
-    }
-
-    public int getAfkKickTime(final Player player) {
-        return this.settings.afkKickTimes.get().getGreatest(player).intValue();
-    }
-
-    public int getIdleTime(final Player player) {
-        return this.activityTracker(player).map(ActivityTracker::getIdleTime).orElse(0);
-    }
-
-    public long getAfkEnterTimestamp(final Player player) {
-        return this.activityTracker(player).map(ActivityTracker::getAfkEnterTimestamp).orElse(0L);
-    }
-
-    public long getAfkDuration(final Player player) {
-        return this.activityTracker(player)
-                .filter(ActivityTracker::isAfk)
-                .map(tracker -> TimeUnit.SECONDS.convert(System.currentTimeMillis() - tracker.getAfkEnterTimestamp(),
-                        TimeUnit.MILLISECONDS))
-                .orElse(0L);
-    }
-
-    public long getTotalAfkTime(final Player player) {
-        return this.userManager.getOrFetch(player).getPropertyOrDefault(AFK_TOTAL_TIME);
-    }
-
-    public int getAfkCount(final Player player) {
-        return this.userManager.getOrFetch(player).getPropertyOrDefault(AFK_COUNT);
-    }
 }
