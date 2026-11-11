@@ -51,10 +51,6 @@ Source: `moduleImpl/ptp/config/PTPSettings.java`
 
 - `%ptp_requests_enabled%`
 
-## User property
-
-- `TELEPORT_REQUESTS` (`teleport_requests`, Boolean, default `true`)
-
 ## Behavior notes
 
 - Stores pending requests per target UUID and expires them based on timeout.

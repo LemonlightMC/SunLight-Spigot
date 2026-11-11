@@ -20,24 +20,19 @@ Allows players to set custom nicknames with validation rules, color permissions,
 
 ## Permissions
 
-### Command permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.nick.command.nick.root` | Nick root command |
-| `sunlight.nick.command.nick.change` | Change own nickname |
-| `sunlight.nick.command.nick.set` | Set nickname for others |
-| `sunlight.nick.command.nick.clear` | Clear own nickname |
-| `sunlight.nick.command.nick.clear.others` | Clear nickname for others |
-| `sunlight.nick.command.nick.colors` | Use colors/formatting in nicknames (as enforced by module logic) |
-
-### Bypass permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.nick.bypass.nick.words` | Bypass banned words filter |
-| `sunlight.nick.bypass.nick.regex` | Bypass regex validation |
-| `sunlight.nick.bypass.nick.length` | Bypass length limits |
-| `sunlight.nick.bypass.change.cost` | Bypass nickname change cost |
-| `sunlight.nick.bypass.change.cooldown` | Bypass nickname change cooldown |
+| Permission | Category | Description |
+| --- | --- | --- |
+| `sunlight.nick.command.nick.root` | Command | Nick root command |
+| `sunlight.nick.command.nick.change` | Command | Change own nickname |
+| `sunlight.nick.command.nick.set` | Command | Set nickname for others |
+| `sunlight.nick.command.nick.clear` | Command | Clear own nickname |
+| `sunlight.nick.command.nick.clear.others` | Command | Clear nickname for others |
+| `sunlight.nick.command.nick.colors` | Command | Use colors/formatting in nicknames (as enforced by module logic) |
+| `sunlight.nick.bypass.nick.words` | Bypass | Bypass banned words filter |
+| `sunlight.nick.bypass.nick.regex` | Bypass | Bypass regex validation |
+| `sunlight.nick.bypass.nick.length` | Bypass | Bypass length limits |
+| `sunlight.nick.bypass.change.cost` | Bypass | Bypass nickname change cost |
+| `sunlight.nick.bypass.change.cooldown` | Bypass | Bypass nickname change cooldown |
 
 ## Configuration
 
@@ -59,10 +54,9 @@ Source: `moduleImpl/nick/config/NickConfig.java` (with legacy migration support)
 - `%nick_name%`
 - `%essential_custom_name%` (legacy compatibility placeholder)
 
-## Properties and events
+## Events
 
-- User property: `CUSTOM_NAME`
-- Event: `PlayerNickChangeEvent` (fired on nickname changes)
+- `PlayerNickChangeEvent` (fired on nickname changes)
 
 ## Notes
 

@@ -46,10 +46,6 @@ Source: `moduleImpl/vanish/config/VanishConfig.java`
 
 - `%vanish_state%`
 
-## User property
-
-- `VANISH` (`vanish`, Boolean, default `false`) — persisted vanish state.
-
 ## Behavior notes
 
 - Vanished players are hidden from viewers who do not have bypass permission.

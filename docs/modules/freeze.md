@@ -43,10 +43,6 @@ The Freeze module provides configurable restrictions applied while a player is f
 
 > Check the generated `freeze/settings.yml` for exact keys, defaults, and any additional options in your build.
 
-## User state
-
-- Stores frozen state via a user property (`FROZEN`) managed by the module.
-
 ## Notes
 
 - Targeting other players requires `sunlight.freeze.command.freeze.others`.

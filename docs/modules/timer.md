@@ -48,51 +48,42 @@ Common subcommands:
 
 Source: `moduleImpl/timer/config/TimerPerms.java` (namespace `sunlight.timer.*`)
 
-### Global command permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.timer.command.timer` | Access `/timer` root |
-| `sunlight.timer.command.timer.list` | List timers |
-| `sunlight.timer.command.timer.info` | View timer info |
-| `sunlight.timer.command.timer.start` | Start timer |
-| `sunlight.timer.command.timer.pause` | Pause timer |
-| `sunlight.timer.command.timer.resume` | Resume timer |
-| `sunlight.timer.command.timer.reset` | Reset timer |
-| `sunlight.timer.command.timer.stop` | Stop timer |
-| `sunlight.timer.command.timer.delete` | Delete timer |
-| `sunlight.timer.command.timer.create` | Create timer |
-| `sunlight.timer.command.timer.reload` | Reload timer module/data |
-| `sunlight.timer.command.timer.editor` | Open timer editor |
-| `sunlight.timer.command.timer.set` | Set timer time |
-| `sunlight.timer.command.timer.add` | Add time |
-| `sunlight.timer.command.timer.remove` | Remove time |
-| `sunlight.timer.command.timer.copy` | Copy timer |
-| `sunlight.timer.command.timer.controlall` | Pause/resume/stop all timers |
-| `sunlight.timer.command.timer.others` | Operate on others' timers/contexts where supported |
-| `sunlight.timer.command.timer.viewpersonal` | View personal timers in global/admin contexts where supported |
-
-### Personal timer permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.timer.command.ptimer` | Access `/ptimer` root |
-| `sunlight.timer.command.ptimer.list` | List personal timers |
-| `sunlight.timer.command.ptimer.info` | View personal timer info |
-| `sunlight.timer.command.ptimer.create` | Create personal timer |
-| `sunlight.timer.command.ptimer.start` | Start personal timer |
-| `sunlight.timer.command.ptimer.pause` | Pause personal timer |
-| `sunlight.timer.command.ptimer.resume` | Resume personal timer |
-| `sunlight.timer.command.ptimer.reset` | Reset personal timer |
-| `sunlight.timer.command.ptimer.stop` | Stop personal timer |
-| `sunlight.timer.command.ptimer.delete` | Delete personal timer |
-| `sunlight.timer.command.ptimer.editor` | Edit personal timer |
-| `sunlight.timer.command.ptimer.set` | Set personal timer time |
-| `sunlight.timer.command.ptimer.add` | Add personal timer time |
-| `sunlight.timer.command.ptimer.remove` | Remove personal timer time |
-
-### Bypass
-| Permission | Description |
-| --- | --- |
-| `sunlight.timer.bypass.visibility` | Bypass timer visibility restrictions |
+| Permission | Category | Description |
+| --- | --- | --- |
+| `sunlight.timer.command.timer` | Global Command | Access `/timer` root |
+| `sunlight.timer.command.timer.list` | Global Command | List timers |
+| `sunlight.timer.command.timer.info` | Global Command | View timer info |
+| `sunlight.timer.command.timer.start` | Global Command | Start timer |
+| `sunlight.timer.command.timer.pause` | Global Command | Pause timer |
+| `sunlight.timer.command.timer.resume` | Global Command | Resume timer |
+| `sunlight.timer.command.timer.reset` | Global Command | Reset timer |
+| `sunlight.timer.command.timer.stop` | Global Command | Stop timer |
+| `sunlight.timer.command.timer.delete` | Global Command | Delete timer |
+| `sunlight.timer.command.timer.create` | Global Command | Create timer |
+| `sunlight.timer.command.timer.reload` | Global Command | Reload timer module/data |
+| `sunlight.timer.command.timer.editor` | Global Command | Open timer editor |
+| `sunlight.timer.command.timer.set` | Global Command | Set timer time |
+| `sunlight.timer.command.timer.add` | Global Command | Add time |
+| `sunlight.timer.command.timer.remove` | Global Command | Remove time |
+| `sunlight.timer.command.timer.copy` | Global Command | Copy timer |
+| `sunlight.timer.command.timer.controlall` | Global Command | Pause/resume/stop all timers |
+| `sunlight.timer.command.timer.others` | Global Command | Operate on others' timers/contexts where supported |
+| `sunlight.timer.command.timer.viewpersonal` | Global Command | View personal timers in global/admin contexts where supported |
+| `sunlight.timer.command.ptimer` | Personal Command | Access `/ptimer` root |
+| `sunlight.timer.command.ptimer.list` | Personal Command | List personal timers |
+| `sunlight.timer.command.ptimer.info` | Personal Command | View personal timer info |
+| `sunlight.timer.command.ptimer.create` | Personal Command | Create personal timer |
+| `sunlight.timer.command.ptimer.start` | Personal Command | Start personal timer |
+| `sunlight.timer.command.ptimer.pause` | Personal Command | Pause personal timer |
+| `sunlight.timer.command.ptimer.resume` | Personal Command | Resume personal timer |
+| `sunlight.timer.command.ptimer.reset` | Personal Command | Reset personal timer |
+| `sunlight.timer.command.ptimer.stop` | Personal Command | Stop personal timer |
+| `sunlight.timer.command.ptimer.delete` | Personal Command | Delete personal timer |
+| `sunlight.timer.command.ptimer.editor` | Personal Command | Edit personal timer |
+| `sunlight.timer.command.ptimer.set` | Personal Command | Set personal timer time |
+| `sunlight.timer.command.ptimer.add` | Personal Command | Add personal timer time |
+| `sunlight.timer.command.ptimer.remove` | Personal Command | Remove personal timer time |
+| `sunlight.timer.bypass.visibility` | Bypass | Bypass timer visibility restrictions |
 
 ## Features and configuration
 

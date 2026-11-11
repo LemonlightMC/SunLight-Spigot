@@ -70,52 +70,43 @@ Advanced chat management with channels, formatting, private messages/conversatio
 
 ## Permissions
 
-### Command permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.chat.command.channel.root` | Channel root command |
-| `sunlight.chat.command.channel.join` | Join channels |
-| `sunlight.chat.command.channel.leave` | Leave channels |
-| `sunlight.chat.command.clearchat` | Clear chat command |
-| `sunlight.chat.command.me` | Roleplay `/me` command |
-| `sunlight.chat.command.mentions.root` | Mentions root |
-| `sunlight.chat.command.mentions.toggle` | Toggle mentions (self) |
-| `sunlight.chat.command.mentions.toggle.others` | Toggle mentions for others |
-| `sunlight.chat.command.spy.root` | Spy root |
-| `sunlight.chat.command.spy.logger` | Spy logger access |
-| `sunlight.chat.command.spy.chat` | Spy chat messages |
-| `sunlight.chat.command.spy.chat.others` | Spy chat for others/targets as implemented |
-| `sunlight.chat.command.spy.command` | Spy commands |
-| `sunlight.chat.command.spy.command.others` | Spy commands for others/targets as implemented |
-| `sunlight.chat.command.spy.social` | Spy social/private messages |
-| `sunlight.chat.command.spy.social.others` | Spy social for others/targets as implemented |
-| `sunlight.chat.command.conversations.root` | Conversations root |
-| `sunlight.chat.command.conversations.toggle` | Toggle conversations (self) |
-| `sunlight.chat.command.conversations.toggle.others` | Toggle conversations for others |
-| `sunlight.chat.command.conversations.reply` | Reply to private messages |
-| `sunlight.chat.command.conversations.send` | Send private messages (`/msg`/`/tell`) |
-| `sunlight.chat.command.mail.root` | Mail root |
-| `sunlight.chat.command.mail.send` | Send mail |
-| `sunlight.chat.command.mail.read` | Read mail |
-| `sunlight.chat.command.mail.clear` | Clear mail |
-
-### Channel access permissions
-| Permission pattern | Description |
-| --- | --- |
-| `sunlight.chat.channel.hear.<channelId>` | Permission to hear/read a specific channel |
-| `sunlight.chat.channel.speak.<channelId>` | Permission to speak in a specific channel |
-
-### Bypass permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.chat.bypass.conversations.disabled` | Bypass disabled conversations restrictions |
-| `sunlight.chat.bypass.mention.cooldown` | Bypass mention cooldown |
-| `sunlight.chat.bypass.mention.amount` | Bypass mention amount/limit checks |
-| `sunlight.chat.bypass.channel.cooldown` | Bypass channel cooldown |
-| `sunlight.chat.bypass.moderation.anticaps` | Bypass anti-caps |
-| `sunlight.chat.bypass.moderation.antiflood` | Bypass anti-flood |
-| `sunlight.chat.bypass.moderation.profanity.filter` | Bypass profanity filter |
-| `sunlight.chat.bypass.spy.monitor` | Bypass being monitored by spy (where enforced) |
+| Permission | Category | Description |
+| --- | --- | --- |
+| `sunlight.chat.command.channel.root` | Command | Channel root command |
+| `sunlight.chat.command.channel.join` | Command | Join channels |
+| `sunlight.chat.command.channel.leave` | Command | Leave channels |
+| `sunlight.chat.command.clearchat` | Command | Clear chat command |
+| `sunlight.chat.command.me` | Command | Roleplay `/me` command |
+| `sunlight.chat.command.mentions.root` | Command | Mentions root |
+| `sunlight.chat.command.mentions.toggle` | Command | Toggle mentions (self) |
+| `sunlight.chat.command.mentions.toggle.others` | Command | Toggle mentions for others |
+| `sunlight.chat.command.spy.root` | Command | Spy root |
+| `sunlight.chat.command.spy.logger` | Command | Spy logger access |
+| `sunlight.chat.command.spy.chat` | Command | Spy chat messages |
+| `sunlight.chat.command.spy.chat.others` | Command | Spy chat for others/targets as implemented |
+| `sunlight.chat.command.spy.command` | Command | Spy commands |
+| `sunlight.chat.command.spy.command.others` | Command | Spy commands for others/targets as implemented |
+| `sunlight.chat.command.spy.social` | Command | Spy social/private messages |
+| `sunlight.chat.command.spy.social.others` | Command | Spy social for others/targets as implemented |
+| `sunlight.chat.command.conversations.root` | Command | Conversations root |
+| `sunlight.chat.command.conversations.toggle` | Command | Toggle conversations (self) |
+| `sunlight.chat.command.conversations.toggle.others` | Command | Toggle conversations for others |
+| `sunlight.chat.command.conversations.reply` | Command | Reply to private messages |
+| `sunlight.chat.command.conversations.send` | Command | Send private messages (`/msg`/`/tell`) |
+| `sunlight.chat.command.mail.root` | Command | Mail root |
+| `sunlight.chat.command.mail.send` | Command | Send mail |
+| `sunlight.chat.command.mail.read` | Command | Read mail |
+| `sunlight.chat.command.mail.clear` | Command | Clear mail |
+| `sunlight.chat.channel.hear.<channelId>` | Channel | Permission to hear/read a specific channel |
+| `sunlight.chat.channel.speak.<channelId>` | Channel | Permission to speak in a specific channel |
+| `sunlight.chat.bypass.conversations.disabled` | Bypass | Bypass disabled conversations restrictions |
+| `sunlight.chat.bypass.mention.cooldown` | Bypass | Bypass mention cooldown |
+| `sunlight.chat.bypass.mention.amount` | Bypass | Bypass mention amount/limit checks |
+| `sunlight.chat.bypass.channel.cooldown` | Bypass | Bypass channel cooldown |
+| `sunlight.chat.bypass.moderation.anticaps` | Bypass | Bypass anti-caps |
+| `sunlight.chat.bypass.moderation.antiflood` | Bypass | Bypass anti-flood |
+| `sunlight.chat.bypass.moderation.profanity.filter` | Bypass | Bypass profanity filter |
+| `sunlight.chat.bypass.spy.monitor` | Bypass | Bypass being monitored by spy (where enforced) |
 
 ## Configuration (`settings.yml`)
 

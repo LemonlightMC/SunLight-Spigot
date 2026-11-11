@@ -42,10 +42,6 @@ Source: `moduleImpl/nerfphantoms/config/PhantomsConfig.java`
 
 - `%phantoms_antiphantom_state%` — yes/no state for anti-phantom mode.
 
-## User property
-
-- `ANTI_PHANTOM` (`anti_phantom`, Boolean, default `false`)
-
 ## Behavior notes
 
 - When anti-phantom is enabled for a player, the module periodically resets `Statistic.TIME_SINCE_REST` (task runs on main thread as implemented) to prevent phantom spawning due to insomnia.

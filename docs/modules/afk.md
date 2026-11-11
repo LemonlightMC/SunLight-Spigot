@@ -26,22 +26,17 @@ Tracks player inactivity, places players into AFK mode, and can run actions such
 
 ## Permissions
 
-### Command permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.command.afk` | Base AFK command access (`/afk`, `on`, `off`, `toggle`) |
-| `sunlight.command.afk.others` | Target other players with AFK commands/status/info where supported |
-| `sunlight.command.afk.list` | View AFK player list |
-| `sunlight.command.afk.status` | View AFK status |
-| `sunlight.command.afk.info` | View detailed AFK info |
-| `sunlight.command.afk.kick` | Kick players via AFK module command |
-| `sunlight.command.afk.gui` | Open AFK admin GUI |
-
-### Module/bypass namespace
-| Permission | Description |
-| --- | --- |
-| `sunlight.afk` | Module permission namespace root |
-| `sunlight.afk.bypass` | Bypass namespace root (specific bypass checks are implemented in module logic/hooks where applicable) |
+| Permission | Category | Description |
+| --- | --- | --- |
+| `sunlight.command.afk` | Command | Base AFK command access (`/afk`, `on`, `off`, `toggle`) |
+| `sunlight.command.afk.others` | Command | Target other players with AFK commands/status/info where supported |
+| `sunlight.command.afk.list` | Command | View AFK player list |
+| `sunlight.command.afk.status` | Command | View AFK status |
+| `sunlight.command.afk.info` | Command | View detailed AFK info |
+| `sunlight.command.afk.kick` | Command | Kick players via AFK module command |
+| `sunlight.command.afk.gui` | Command | Open AFK admin GUI |
+| `sunlight.afk` | Module | Module permission namespace root |
+| `sunlight.afk.bypass` | Bypass | Bypass namespace root (specific bypass checks are implemented in module logic/hooks where applicable) |
 
 ## Configuration (`settings.yml`)
 
@@ -123,11 +118,6 @@ Source: `moduleImpl/afk/config/AfkSettings.java`. Key options:
 
 Registered in `AfkPlaceholders`:
 `%afk_state%`, `%afk_mode%`, `%afk_idle_time%`, `%afk_idle_time_formatted%`, `%afk_total_time%`, `%afk_total_time_formatted%`, `%afk_count%`, `%afk_enter_timestamp%`, `%afk_enter_time%`, `%afk_duration%`, `%afk_duration_formatted%`, `%afk_time_until_afk%`, `%afk_time_until_kick%`, `%afk_online_count%`, `%afk_online%`, `%afk_stats_sessions%`, `%afk_stats_total_time%`, `%afk_stats_total_time_formatted%`, `%afk_stats_average_time%`, `%afk_stats_average_time_formatted%`.
-
-## User data properties
-
-- `AFK_TOTAL_TIME`
-- `AFK_COUNT`
 
 ## Notes
 

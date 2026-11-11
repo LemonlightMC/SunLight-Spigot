@@ -26,24 +26,19 @@ Root command: `/kits` (alias `kit`)
 
 ## Permissions
 
-### Command permissions
-| Permission | Description |
-| --- | --- |
-| `sunlight.kits.command.kits.root` (or module command root, if used) | Root access |
-| `sunlight.kits.command.kits.editor` | Kit editor |
-| `sunlight.kits.command.kits.get` | Claim/get kits |
-| `sunlight.kits.command.kits.give` | Give kits to players |
-| `sunlight.kits.command.kits.list` | List kits |
-| `sunlight.kits.command.kits.preview` | Preview kits |
-| `sunlight.kits.command.kits.resetcooldown` | Reset kit cooldowns |
-| `sunlight.kits.command.kits.setcooldown` | Set kit cooldowns |
-
-### Bypass and kit access
-| Permission | Description |
-| --- | --- |
-| `sunlight.kits.bypass.cost` | Bypass kit claim cost |
-| `sunlight.kits.bypass.cooldown` | Bypass kit cooldown |
-| `sunlight.kits.kit.<id>` (namespace pattern) | Access/use a specific kit (as enforced by kit permission checks) |
+| Permission | Category | Description |
+| --- | --- | --- |
+| `sunlight.kits.command.kits.root` (or module command root, if used) | Command | Root access |
+| `sunlight.kits.command.kits.editor` | Command | Kit editor |
+| `sunlight.kits.command.kits.get` | Command | Claim/get kits |
+| `sunlight.kits.command.kits.give` | Command | Give kits to players |
+| `sunlight.kits.command.kits.list` | Command | List kits |
+| `sunlight.kits.command.kits.preview` | Command | Preview kits |
+| `sunlight.kits.command.kits.resetcooldown` | Command | Reset kit cooldowns |
+| `sunlight.kits.command.kits.setcooldown` | Command | Set kit cooldowns |
+| `sunlight.kits.bypass.cost` | Bypass | Bypass kit claim cost |
+| `sunlight.kits.bypass.cooldown` | Bypass | Bypass kit cooldown |
+| `sunlight.kits.kit.<id>` (namespace pattern) | Access | Access/use a specific kit (as enforced by kit permission checks) |
 
 > See `KitsPerms` for the exact node names present in your build.
 
