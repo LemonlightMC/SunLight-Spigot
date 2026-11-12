@@ -1,29 +1,43 @@
 # Core Configuration
 
+This page documents SunLight's global/core behavior: plugin metadata, root admin command, global config, language, module system, and command configuration.
+
+## Plugin metadata
+
+From `Core/src/main/resources/plugin.yml`:
+
+* **Name:** `SunLight`
+* **Main:** `su.nightexpress.sunlight.SunLightPlugin`
+* **API version:** `1.21`
+* **Description:** Advanced, light & modern all-in-one server management plugin.
+* **Required dependency:** `nightcore`
+* **Soft dependencies:** `TAB`, `TAB-Bridge`, `UltimateTeams`, `LuckPerms`, `PlaceholderAPI`, `ProtocolLib`, `packetevents`, `DiscordSRV`, `WorldGuard`, `GriefPrevention`
+* **Bundled library:** `org.apache.commons:commons-text:1.10.0`
+
 ## Global config (`config.yml` / `config/Config.java`)
 
 Global options defined in `su.nightexpress.sunlight.config.Config`:
 
-| Path | Type | Default | Description |
-| --- | --- | --- | --- |
-| `General.Time_Zone` | String | `system` | Global timezone for dates/times and day/week/month rollovers. Use `system` or an IANA ID (e.g. `Europe/Berlin`, `America/New_York`). |
-| `General.Date_Format` | String | `dd/MM/yyyy HH:mm:ss` | Global date format used by plugin modules. |
-| `General.Time_Format` | String | `HH:mm:ss` | Global time format used by plugin modules. |
-| `General.ConsoleName` | String | `Console` | Name used for console sender in relevant messages (e.g. private messages, punishments/actions). |
-| `Combat.Hook` | String | `auto` | Shared combat-tag source for modules: `auto`, `pvpmanager`, `combatlogx`, or `none`. `auto` prefers PvPManager, otherwise CombatLogX. |
+| Path                  | Type   | Default               | Description                                                                                                                                                                                             |
+| --------------------- | ------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `General.Time_Zone`   | String | `system`              | Global timezone for dates/times and day/week/month rollovers. Use `system` or an IANA ID (e.g. `Europe/Berlin`, `America/New_York`). Takes precedence over NightCore's `Time.TimeZone` in `engine.yml`. |
+| `General.Date_Format` | String | `dd/MM/yyyy HH:mm:ss` | Global date format used by plugin modules.                                                                                                                                                              |
+| `General.Time_Format` | String | `HH:mm:ss`            | Global time format used by plugin modules.                                                                                                                                                              |
+| `General.ConsoleName` | String | `Console`             | Name used for console sender in relevant messages (e.g. private messages, punishments/actions).                                                                                                         |
+| `Combat.Hook`         | String | `auto`                | Shared combat-tag source for modules: `auto`, `pvpmanager`, `combatlogx`, or `none`. `auto` prefers PvPManager, otherwise CombatLogX.                                                                   |
 
-## Global language
-   
-SunLight provides language/message files for core text such as:
+## Global language (`lang` / `config/Lang.java`)
 
-- **Command argument labels** (slot, enchant, level, target, type, time, mob type, time, mode, state, ip, radius, text, command, position, x/y/z, owner)
-- **Command cooldown/cost messages** (default cooldown, one-time cooldown, insufficient funds)
-- **Plugin help messages** (`/sunlight` help header/entries)
-- **Root command descriptions** (reload module, dump, export, import, cleanup)
-- **Cleanup messages** (console denied, failed)
-- **Teleport and safety messages** (unsafe location feedback/notify, missing offline data support messages)
-- **Syntax/error messages** (invalid values, missing required item in hand, unsupported actions, etc.)
-- **Common labels** (e.g. free)
+`su.nightexpress.sunlight.config.Lang` defines core message and text keys, including:
+
+* **Command argument labels** (slot, enchant, level, target, type, mob type, time, mode, state, ip, radius, text, command, position, x/y/z, owner)
+* **Command cooldown/cost messages** (default cooldown, one-time cooldown, insufficient funds)
+* **Plugin help messages** (`/sunlight` help header/entries)
+* **Root command descriptions** (reload module, dump, export, import, cleanup)
+* **Cleanup messages** (console denied, failed)
+* **Teleport safety/error messages** (unsafe location feedback/notify, no offline handler)
+* **Syntax/error messages** (invalid slot/ip/entity/type/mode/mob effect, requires item in hand, missing internals handler)
+* **Common labels** (e.g. free)
 
 Language resource files also exist under `Core/src/main/resources/lang/` (e.g. `messages_es.yml`, `messages_ru.yml`, `lang_zh-cn.yml`), with runtime/lang handling managed by the plugin/framework.
 
@@ -36,19 +50,19 @@ Implemented in `SunlightCommandProvider` (`su.nightexpress.sunlight.SunlightComm
 * **Base permission:** `sunlight.admin`
 * **Default behavior:** shows plugin help/subcommand list
 
-> **Note:** Most user-facing commands come from enabled modules. The core `/sunlight` command is mainly for administration.
+> **Note:** SunLight core provides minimal functionality by itself; most user-facing commands come from enabled modules and their command providers.
 
 ### Subcommands
 
-| Subcommand | Description | Notes / Usage |
-| --- | --- | --- |
-| `help` | Lists available subcommands | `/sunlight help` |
-| `reload` | Reloads the plugin | `/sunlight reload` |
-| `reloadmodule <name>` | Reloads a single module | `/sunlight reloadmodule <id>`; module id/name suggestions provided by provider logic |
-| `dump` | Prints diagnostics for support | Outputs plugin, server, Java, and module information to the sender and server logs |
-| `export [name]` | Exports plugin data to a zip file | Async; writes to `exports/<name>.zip` (safe name handling; defaults to timestamped backup name if omitted/unsafe) |
-| `import [name]` | Imports plugin data from a zip and reloads | Async extract from `exports/`, path-safety checks, then reloads plugin |
-| `cleanup [--dry-run --include-safe]` | Cleans stale user properties from stored user data | Permission: `sunlight.admin.cleanup`; player-only confirmation dialog flow; async cleanup/prune |
+| Subcommand                           | Description                                        | Notes / Usage                                                                                                     |
+| ------------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `help`                               | Lists available subcommands                        | `/sunlight help`                                                                                                  |
+| `reload`                             | Reloads the plugin                                 | `/sunlight reload`                                                                                                |
+| `reloadmodule <name>`                | Reloads a single module                            | `/sunlight reloadmodule <id>`; module id/name suggestions provided by provider logic                              |
+| `dump`                               | Prints diagnostics for support                     | Outputs plugin/server/java/online/NMS/modules info to sender and logs `[SunLight dump] ...`                       |
+| `export [name]`                      | Exports plugin data to a zip file                  | Async; writes to `exports/<name>.zip` (safe name handling; defaults to timestamped backup name if omitted/unsafe) |
+| `import [name]`                      | Imports plugin data from a zip and reloads         | Async extract from `exports/`, path-safety checks, then reloads plugin                                            |
+| `cleanup [--dry-run --include-safe]` | Cleans stale user properties from stored user data | Permission: `sunlight.admin.cleanup`; player-only confirmation dialog flow; async cleanup/prune                   |
 
 > **Permission note:** `cleanup` explicitly requires `sunlight.admin.cleanup`. Other subcommands are under the `/sunlight` admin command context in this build. Public docs for other versions may list different core permission names.
 
