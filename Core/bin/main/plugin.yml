@@ -1,7 +1,5 @@
-#
-# Copyright (C) NightExpress, Sverdlovsk, 2025
-#
 name: SunLight
+api-version: 1.21
 main: su.nightexpress.sunlight.SunLightPlugin
 version: '@version@'
 description: Advanced, light & modern all-in-one server management plugin.
@@ -20,4 +18,3 @@ softdepend:
   - DiscordSRV
   - WorldGuard
   - GriefPrevention
-api-version: 1.21

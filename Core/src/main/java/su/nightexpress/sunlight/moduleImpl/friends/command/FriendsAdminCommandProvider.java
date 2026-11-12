@@ -128,7 +128,7 @@ public class FriendsAdminCommandProvider extends CommandProvider<FriendsModule> 
                 this.module.sendPrefixed(FriendsLang.ADMIN_ADD_ERROR_ALREADY, sender);
             }
             else {
-                this.module.sendPrefixed(CoreLang.ERROR_COMMAND_EXECUTION, sender);
+                this.module.sendPrefixed(CoreLang.COMMAND_SYNTAX_GENERIC_ERROR, sender);
             }
             return 0;
         }

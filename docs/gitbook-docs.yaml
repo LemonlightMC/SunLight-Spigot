@@ -5,6 +5,8 @@ site:
     - type: section
       key: main
       title: Documentation
+      path: /
+      default: true
       children:
         - type: space
           key: space-getting-started

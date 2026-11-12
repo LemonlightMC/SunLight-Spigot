@@ -338,7 +338,7 @@ public class FriendsUserInterface {
         module.requestRepository().remove(request);
       }
       else {
-        module.sendPrefixed(CoreLang.ERROR_COMMAND_EXECUTION, player);
+        module.sendPrefixed(CoreLang.COMMAND_SYNTAX_GENERIC_ERROR, player);
         return false;
       }
     }
