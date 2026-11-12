@@ -6,11 +6,11 @@ SunLight combines a global admin command, module command providers, and permissi
 
 ### Root command
 - `/sunlight` (alias `/sl`) — plugin administration command
-  - **Base permission (this build):** `sunlight.admin`
-  - **Subcommands:** `help`, `reload`, `reloadmodule`, `dump`, `export`, `import`, `cleanup`
-  - **`cleanup` permission:** `sunlight.admin.cleanup`
+ - **Base permission (this build):** `sunlight.admin`
+ - **Subcommands:** `help`, `reload`, `reloadmodule`, `dump`, `export`, `import`, `cleanup`
+ - **`cleanup` permission:** `sunlight.admin.cleanup`
 
-> Some public documentation for other SunLight versions may reference different core permission nodes (for example `sunlight.command.reload`). Always use the permissions that match your build; in this source tree the root admin command is guarded by `sunlight.admin`.
+> Some public documentation for other SunLight versions may reference different core permission nodes (for example `sunlight.command.reload`). Always use the permissions that match your build.
 
 ### Common core/global permission patterns
 - `sunlight.admin` — access to SunLight root/admin command in this build
@@ -35,37 +35,37 @@ Most module commands are registered through command providers and can be configu
 A provider config can define **literal/standalone** command nodes and an optional **root** command that groups child subcommands. Exact key names and layout may vary by SunLight version/build, but the common structure is:
 
 - **`LiteralNodes`**: standalone command entries (direct commands like `/home`, `/sethome`, `/kit`, etc.)
-  - `Enabled` — enable/disable the standalone command
-  - `Aliases` — command name(s)/aliases
-  - `Cooldown` — cooldown in seconds
-  - `Cost` (where supported) — usage cost
+ - `Enabled` — enable/disable the standalone command
+ - `Aliases` — command name(s)/aliases
+ - `Cooldown` — cooldown in seconds
+ - `Cost` (where supported) — usage cost
 - **`RootNodes`** (optional): a parent command that exposes selected provider commands as children (e.g. `/homes set`, `/kits give`)
-  - `Enabled` — enable/disable the root command
-  - `Aliases` — root command aliases
-  - `Name` — display name (used in help/UI where applicable)
-  - `Childrens` / child mappings — maps provider command nodes to root subcommand aliases
+ - `Enabled` — enable/disable the root command
+ - `Aliases` — root command aliases
+ - `Name` — display name (used in help/UI where applicable)
+ - `Childrens` / child mappings — maps provider command nodes to root subcommand aliases
 
 #### Example (illustrative)
 
 ```yaml
 LiteralNodes:
-  preview:
-    Enabled: true
-    Aliases: viewkit
-    Cooldown: 0
-  give:
-    Enabled: true
-    Aliases: givekit
-    Cooldown: 0
+ preview:
+ Enabled: true
+ Aliases: viewkit
+ Cooldown: 0
+ give:
+ Enabled: true
+ Aliases: givekit
+ Cooldown: 0
 
 RootNodes:
-  kits:
-    Enabled: true
-    Aliases: kits
-    Name: Kits
-    Childrens:
-      preview: preview
-      give: grant
+ kits:
+ Enabled: true
+ Aliases: kits
+ Name: Kits
+ Childrens:
+ preview: preview
+ give: grant
 ```
 
 > This example shows the concept (standalone commands + grouped root command). Use the generated `commands/<providerId>.yml` in your server as the authoritative source for available nodes, keys, and defaults.
@@ -112,4 +112,4 @@ Common patterns you will see across modules:
 - **Command not found:** ensure the module is enabled in `modules.yml`, the command node is enabled in `commands/<providerId>.yml`, and the server was reloaded/restarted as needed.
 - **Permission denied:** verify the exact node from the module page and check inherited group permissions.
 - **Command conflicts:** SunLight's registry handles conflicts/unregistration in its command setup; check logs if aliases overlap with other plugins.
-- **Dependency-gated features:** some commands/features only register when required dependencies or NMS/hooks are available.
+- **Dependency-gated features:** some commands or features may only be available when required plugins/integrations are installed or when your server version supports them.

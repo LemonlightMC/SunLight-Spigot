@@ -4,7 +4,6 @@ Gives players a glowing outline with static or phased (animated) color effects, 
 
 - **Module ID:** `glow`
 - **Display name:** `Glow`
-- **Module directory:** `moduleImpl/glow/`
 - **Provider ID:** `glow`
 
 ## Commands
@@ -13,16 +12,16 @@ Gives players a glowing outline with static or phased (animated) color effects, 
 
 | Command | Permission | Description | Usage / notes |
 | --- | --- | --- | --- |
-| `/glow` (root) | `sunlight.glow.command.glow.root` | Glow command root. |  |
+| `/glow` (root) | `sunlight.glow.command.glow.root` | Glow command root. | |
 | `/glow color <color/effect> [target]` | `sunlight.glow.command.glow.color` | Set glow color/effect. | `.others` variant available for targeting others. |
 | `/glow clear [target]` (unglow) | `sunlight.glow.command.glow.clear` | Remove glow. | `.others` variant available. |
-| `/glow list` (glowlist) | `sunlight.glow.command.glow.list` | List available glow colors/effects. |  |
+| `/glow list` (glowlist) | `sunlight.glow.command.glow.list` | List available glow colors/effects. | |
 | `/glow on [target]` | `sunlight.glow.command.glow.on` | Enable glow state. | `.others` variant available. |
 | `/glow off [target]` | `sunlight.glow.command.glow.off` | Disable glow state. | `.others` variant available. |
-| `/glow phase ...` | `sunlight.glow.command.glow.phase` | Manage phased effects (`create`, `add`, `remove`, `duration`, `clear`, `list`). | Admin/management command group. |
-| `/glow preset ...` | `sunlight.glow.command.glow.preset` | Manage presets (`load`, `save`, `delete`, `list`). | Admin/management command group. |
+| `/glow phase...` | `sunlight.glow.command.glow.phase` | Manage phased effects (`create`, `add`, `remove`, `duration`, `clear`, `list`). | Admin/management command group. |
+| `/glow preset...` | `sunlight.glow.command.glow.preset` | Manage presets (`load`, `save`, `delete`, `list`). | Admin/management command group. |
 
-> Exact subcommand arguments for phase/preset operations are defined in `GlowCommandProvider`.
+> Check in-game help for the exact subcommand arguments in your build.
 
 ## Permissions
 
@@ -40,13 +39,11 @@ Gives players a glowing outline with static or phased (animated) color effects, 
 
 ## Configuration
 
-Source: `moduleImpl/glow/GlowSettings.java`
-
 - **Update interval:** controls how often phased/animated glow effects update.
 - **Restore on join:** restores previous glow state/effect on player join.
 - **Effects map:** defines configured effects, including:
-  - `STATIC` effects
-  - `PHASED` effects with phase sequences/timings
+ - `STATIC` effects
+ - `PHASED` effects with phase sequences/timings
 
 ## Placeholders
 
@@ -55,7 +52,7 @@ Source: `moduleImpl/glow/GlowSettings.java`
 
 ## GUI and implementation
 
-- GUI/menu: `GlowMenu`
+- GUI/menu:
 - Dialogs and handlers/listeners manage color selection, effect application, and state updates.
 - Nametag color rendering integration is handled through TAB-related nametag systems (Glow/Nametags ecosystem).
 

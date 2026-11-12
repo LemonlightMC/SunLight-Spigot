@@ -4,7 +4,6 @@ Allows staff to freeze players in place with configurable restrictions on moveme
 
 - **Module ID:** `freeze`
 - **Display name:** `Freeze`
-- **Module directory:** `moduleImpl/freeze/`
 - **Provider ID:** `freeze`
 
 ## Commands
@@ -28,8 +27,6 @@ Allows staff to freeze players in place with configurable restrictions on moveme
 
 ## Configuration
 
-Source: `moduleImpl/freeze/config/FreezeConfig.java`
-
 The Freeze module provides configurable restrictions applied while a player is frozen (as indicated by module behavior and settings class), such as:
 
 - Movement/teleport restrictions
@@ -47,4 +44,4 @@ The Freeze module provides configurable restrictions applied while a player is f
 
 - Targeting other players requires `sunlight.freeze.command.freeze.others`.
 - Players with `sunlight.freeze.bypass.immune` are protected from being frozen by non-immune senders (per command implementation).
-- Language/feedback messages are defined in `FreezeLang`.
+- Language/feedback messages are configured in the module language/messages.

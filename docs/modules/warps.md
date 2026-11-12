@@ -4,9 +4,7 @@ Server-wide public warps with permissions, costs, GUI management, and optional p
 
 - **Module ID:** `warps`
 - **Display name:** `Warps`
-- **Module directory:** `moduleImpl/warps/`
 - **Provider ID:** `warps`
-- **API/provider:** implements `WarpsProvider`
 
 ## Commands
 
@@ -14,10 +12,10 @@ Server-wide public warps with permissions, costs, GUI management, and optional p
 
 | Command | Permission | Description | Usage / notes |
 | --- | --- | --- | --- |
-| `/warps` (root, alias `warp`) | `sunlight.warps.command.warps.root` | Warps root command. |  |
-| `/warps create <name>` | `sunlight.warps.command.warps.create` | Create a warp. |  |
-| `/warps update <warp>` | `sunlight.warps.command.warps.update` | Update warp location/data as implemented. |  |
-| `/warps delete <warp>` | `sunlight.warps.command.warps.delete` | Delete a warp. |  |
+| `/warps` (root, alias `warp`) | `sunlight.warps.command.warps.root` | Warps root command. | |
+| `/warps create <name>` | `sunlight.warps.command.warps.create` | Create a warp. | |
+| `/warps update <warp>` | `sunlight.warps.command.warps.update` | Update warp location/data as implemented. | |
+| `/warps delete <warp>` | `sunlight.warps.command.warps.delete` | Delete a warp. | |
 | `/warps edit <warp>` | `sunlight.warps.command.warps.edit` | Open/edit warp options. | May require editor-related permissions. |
 | `/warps menu [target]` | `sunlight.warps.command.warps.list` / `...list.others` | Open warps list/menu. | Targeting others requires `list.others` (per provider logic). |
 | `/warps jump <warp> [target/-s/-force]` | `sunlight.warps.command.warps.teleport` | Teleport to a warp. | Others/silent/force flags depend on implementation and permissions (`...teleport.others`). |
@@ -49,8 +47,6 @@ When a warp has `commandEnabled=true` and a configured `commandLabel`, the modul
 | `sunlight.warps.bypass.cooldown` | Bypass warp cooldowns |
 
 ## Configuration
-
-Source: `moduleImpl/warps/core/WarpsSettings.java`
 
 | Key | Default | Description |
 | --- | --- | --- |

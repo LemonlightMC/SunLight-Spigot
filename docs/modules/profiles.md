@@ -4,23 +4,18 @@ Provides player profiles/scopes with profile switching, warmups/cooldowns, comba
 
 - **Module ID:** `profiles`
 - **Display name:** `Profiles`
-- **Module directory:** `moduleImpl/profiles/`
-- **API/provider:** implements `ProfilesProvider`
-
 ## Commands
 
-Implemented by `ProfilesCommandProvider`.
+Commands are provided by this module.
 
 Command functionality includes:
 - Listing/viewing profiles
 - Switching profiles
 - Profile management operations (admin/player flows as implemented)
 
-> See `moduleImpl/profiles/command/ProfilesCommandProvider.java` and generated command config for exact command syntax.
+>
 
 ## Permissions
-
-Defined in `moduleImpl/profiles/config/ProfilesPerms.java`.
 
 Permission areas typically include:
 - Profile command access (list/switch)
@@ -28,10 +23,6 @@ Permission areas typically include:
 - Bypass permissions for switch restrictions/cooldowns/costs/warmups/combat checks (as implemented)
 
 ## Configuration
-
-- **Settings:** `ProfilesSettings.java`
-- **Language:** `ProfilesLang.java`
-- **Placeholders:** `ProfilesPlaceholders.java`
 
 Configuration and behavior areas:
 - Profile scopes and profile definitions
@@ -42,12 +33,12 @@ Configuration and behavior areas:
 
 ## API behavior (high level)
 
-`ProfilesModule` exposes profile switching/request flows (e.g. `requestSwitch(Player, query)`):
+ exposes profile switching/request flows (e.g. `requestSwitch(Player, query)`):
 - Validates guards and affordability
 - Starts a warmup or executes immediately depending on rules/state
 
 Also provides menu entry points such as:
-- `openProfilesMenu`
+-
 - `openProfileOptions`
 
 ## Components

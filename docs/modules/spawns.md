@@ -4,9 +4,7 @@ Manages server spawn points with default/newbie/login/respawn rules, teleport co
 
 - **Module ID:** `spawns`
 - **Display name:** `Spawn`
-- **Module directory:** `moduleImpl/spawns/`
 - **Provider ID:** `spawn`
-- **API/provider:** implements `SpawnsProvider`
 
 ## Commands
 
@@ -14,10 +12,10 @@ Manages server spawn points with default/newbie/login/respawn rules, teleport co
 
 | Command | Aliases | Permission | Description | Usage / notes |
 | --- | --- | --- | --- | --- |
-| `/spawns` (root) | `spawn` | (root context) | Spawns command root. |  |
+| `/spawns` (root) | `spawn` | (root context) | Spawns command root. | |
 | `/spawns create [name]` | `spawn_create` | `sunlight.spawns.command.spawns.create` | Create a spawn. | Name optional depending on implementation/defaults. |
-| `/spawns delete <name>` | `spawn_delete` | `sunlight.spawns.command.spawns.delete` | Delete a spawn. |  |
-| `/spawns editor` | `spawn_editor`, `editspawn` | `sunlight.spawns.command.spawns.editor` | Open spawn editor. |  |
+| `/spawns delete <name>` | `spawn_delete` | `sunlight.spawns.command.spawns.delete` | Delete a spawn. | |
+| `/spawns editor` | `spawn_editor`, `editspawn` | `sunlight.spawns.command.spawns.editor` | Open spawn editor. | |
 | `/spawns teleport [name] [target/-s/-force]` | `spawn_teleport` | `sunlight.spawns.command.spawns.teleport` | Teleport to a spawn. | Others: `sunlight.spawns.command.spawns.teleport.others`; supports silent/force flags as implemented. |
 
 ## Permissions
@@ -34,8 +32,6 @@ Manages server spawn points with default/newbie/login/respawn rules, teleport co
 | `sunlight.spawns.spawn.<id>` | Access a specific spawn (checked via child permission access) |
 
 ## Configuration
-
-Source: `moduleImpl/spawns/config/SpawnsSettings.java`
 
 | Key | Default | Description |
 | --- | --- | --- |

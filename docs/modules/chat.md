@@ -4,8 +4,7 @@ Advanced chat management with channels, formatting, private messages/conversatio
 
 - **Module ID:** `chat`
 - **Display name:** `Chat`
-- **Module directory:** `moduleImpl/chat/`
-- **Provider IDs (key):** `chat-channel`, `chat-clearchat`, `chat-conversations`, `chat-mentions`, `chat-spy`, `chat-roleplay`, `chat-mail` (and related internal handlers)
+- **Command configuration:** `commands/chat-channel.yml`, `commands/chat-clearchat.yml`, `commands/chat-conversations.yml`, `commands/chat-mentions.yml`, `commands/chat-spy.yml`, `commands/chat-roleplay.yml`, `commands/chat-mail.yml` (where applicable)
 
 ## Main features
 
@@ -22,46 +21,46 @@ Advanced chat management with channels, formatting, private messages/conversatio
 
 ## Commands
 
-> Exact command roots/aliases/enabled states can vary by provider config in `commands/*.yml`. Below are key command groups from source providers.
+> Exact command names, aliases, and availability can vary based on your configuration in `commands/*.yml`. Below are the main command groups.
 
-### Channels (`ChannelCommandsProvider`, provider `chat-channel`)
+### Channels
 | Command | Permission | Description | Notes |
 | --- | --- | --- | --- |
-| `/channel` (root, alias `ch`) | `sunlight.chat.command.channel.root` | Channel command root. |  |
+| `/channel` (root, alias `ch`) | `sunlight.chat.command.channel.root` | Channel command root. | |
 | `/channel join <channel>` | `sunlight.chat.command.channel.join` | Join a chat channel. | Player-only; channel suggestions from registered channels. |
 | `/channel leave <channel>` | `sunlight.chat.command.channel.leave` | Leave a chat channel. | Player-only. |
 
-### Conversations / private messages (`ConversationCommandProvider`, provider `chat-conversations`)
+### Conversations / private messages
 | Command | Permission | Description | Notes |
 | --- | --- | --- | --- |
-| `/conversations` (root, alias `convos`) | `sunlight.chat.command.conversations.root` | Conversations command root. |  |
+| `/conversations` (root, alias `convos`) | `sunlight.chat.command.conversations.root` | Conversations command root. | |
 | `/conversations message <player> <text>` (aliases `msg`, `tell`) | `sunlight.chat.command.conversations.send` | Send a private message. | Player-only. |
 | `/conversations reply <text>` | `sunlight.chat.command.conversations.reply` | Reply to last conversation partner. | Player-only. |
 | `/conversations toggle [target]` | `sunlight.chat.command.conversations.toggle` | Toggle conversations on/off. | Others: `...toggle.others`; syncs with Settings module when enabled. |
 | `/conversations on [target]` | `sunlight.chat.command.conversations.toggle` | Enable conversations. | Others: `...toggle.others`. |
 | `/conversations off [target]` | `sunlight.chat.command.conversations.toggle` | Disable conversations. | Others: `...toggle.others`. |
 
-### Mentions (`MentionsCommandProvider`)
+### Mentions
 | Command group | Permissions | Purpose |
 | --- | --- | --- |
 | Mentions root/toggle controls | `sunlight.chat.command.mentions.root`, `sunlight.chat.command.mentions.toggle`, `sunlight.chat.command.mentions.toggle.others` | Enable/disable/manage mention behavior for self/others (see provider for exact nodes). |
 
-### Spy (`SpyCommandProvider`)
+### Spy
 | Command group | Permissions | Purpose |
 | --- | --- | --- |
 | Spy root/logger/chat/command/social controls | `sunlight.chat.command.spy.root`, `...spy.logger`, `...spy.chat` (+ `.others`), `...spy.command` (+ `.others`), `...spy.social` (+ `.others`) | Toggle/view spy modes and monitored streams. |
 
-### Clear chat (`ClearChatCommandProvider`)
+### Clear chat
 | Command | Permission | Purpose |
 | --- | --- | --- |
 | Clear chat command(s) | `sunlight.chat.command.clearchat` | Clear chat for players/server scope (implementation-specific). |
 
-### Roleplay (`RoleplayCommands`)
+### Roleplay
 | Command | Permission | Purpose |
 | --- | --- | --- |
 | `/me <message>` (when enabled) | `sunlight.chat.command.me` | Sends roleplay/action message using configured format. |
 
-### Mail (`MailCommandProvider` / chat mail subsystem)
+### Mail
 | Command group | Permissions | Purpose |
 | --- | --- | --- |
 | Mail root/send/read/clear | `sunlight.chat.command.mail.root`, `...mail.send`, `...mail.read`, `...mail.clear` | Send and manage offline mail messages. |
@@ -110,7 +109,7 @@ Advanced chat management with channels, formatting, private messages/conversatio
 
 ## Configuration (`settings.yml`)
 
-Source: `moduleImpl/chat/core/ChatSettings.java` (large configuration surface). Major sections:
+Main sections:
 
 ### Global
 - `Global.Chat-Event-Priority` (default `HIGH`) — chat event handler priority.
@@ -167,10 +166,10 @@ Source: `moduleImpl/chat/core/ChatSettings.java` (large configuration surface). 
 - `Spy.Enabled` (default `true`)
 - `Spy.Info-Format` — per spy type format (chat/command/social)
 
-## Placeholders and properties
+## Placeholders and player preferences
 
-- Chat placeholders are registered by `ChatPlaceholders`.
-- User chat properties (e.g. conversations/mentions/spy toggles) are managed via `ChatProperties` and integrated with the Settings module where applicable.
+- Chat placeholders are available for chat, conversations, mentions, and related features when the module is enabled.
+- Player preferences (such as conversation, mention, or spy toggles) may be integrated with the Settings module where available.
 - Format and message templates support built-in placeholders and PlaceholderAPI (where enabled).
 
 ## Notes

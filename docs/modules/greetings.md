@@ -4,8 +4,6 @@ Sends customizable join, first-join, and quit messages (and optional join comman
 
 - **Module ID:** `greetings`
 - **Display name:** `Greetings`
-- **Module directory:** `moduleImpl/greetings/`
-
 ## Commands
 
 This module does not register dedicated commands.
@@ -15,8 +13,6 @@ This module does not register dedicated commands.
 No dedicated command/permission classes were identified in the module package. Greeting selection and behavior are configuration-driven.
 
 ## Configuration
-
-Source: `moduleImpl/greetings/GreetingsSettings.java`
 
 The module supports rank/priority-based greeting configuration through `GreetingMessage` entries and settings, typically including:
 
@@ -29,6 +25,6 @@ The module supports rank/priority-based greeting configuration through `Greeting
 
 ## Behavior notes
 
-- `GreetingsListener` applies greeting behavior on player join/quit events.
+- applies greeting behavior on player join/quit events.
 - Greeting selection can use priority/rank-based matching (as described in project README and implemented in greeting models).
 - Integrates with other modules/features that respect greeting messages where applicable (e.g. vanish fake join/quit handling may interact with greeting behavior).

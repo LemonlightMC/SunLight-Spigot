@@ -3,9 +3,7 @@
 Provides a central player preferences GUI (`/settings`) with panels and toggles that integrate with other SunLight modules (chat, friends, PTP, vanish, essential, voting, etc.).
 
 - **Module ID:** `settings`
-- **Display name:** `Settings`
-- **Module directory:** `moduleImpl/settings/`
-
+- **Display name:**
 ## Commands
 
 | Command | Aliases | Permission | Description |
@@ -66,8 +64,6 @@ The module defines panel/menu types including:
 UI files are managed by the module (e.g. `settings.yml` and panel-specific menu files such as `settings-<panel>.yml`).
 
 ## Settings model
-
-Source classes: `SettingsProperties`, `SettingDefinition`, `SettingKind`, `SettingsPanel`, `AudienceMode`, `SettingsRegistry`.
 
 ### Audience modes
 Used by settings that control who can interact/see or receive requests:

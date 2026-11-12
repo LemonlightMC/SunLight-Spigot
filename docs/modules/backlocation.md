@@ -4,7 +4,6 @@ Stores previous teleport locations and death locations, allowing players to retu
 
 - **Module ID:** `back_location`
 - **Display name:** `Back`
-- **Module directory:** `moduleImpl/backlocation/`
 - **Provider IDs:** `back`, `deathback`
 
 ## Commands
@@ -31,8 +30,6 @@ Stores previous teleport locations and death locations, allowing players to retu
 | `sunlight.backlocation.bypass.cooldown` | Bypass teleport cooldown/restrictions where enforced |
 
 ## Configuration (`settings.yml`)
-
-Source: `moduleImpl/backlocation/config/BackLocationSettings.java`.
 
 ### Previous location (`/back`)
 | Key | Default | Description |
@@ -62,6 +59,6 @@ Source: `moduleImpl/backlocation/config/BackLocationSettings.java`.
 
 ## Notes
 
-- Feedback messages for success/failure/targeting are defined in `BackLocationLang`.
+- Feedback messages can be customized in the module language/messages.
 - Teleport costs use Vault economy integration when cost > 0.
 - Actual command cooldown behavior can also be controlled via command provider config (`commands/back.yml`, `commands/deathback.yml`).

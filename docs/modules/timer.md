@@ -4,15 +4,13 @@ Provides global and personal timers/stopwatches with schedules, visibility rules
 
 - **Module ID:** `timer`
 - **Display name:** `Timer`
-- **Module directory:** `moduleImpl/timer/`
 - **Provider IDs:** `timer`, `ptimer` (personal)
-- **API/provider:** implements `TimerProvider`
 
 ## Commands
 
 > Exact aliases/arguments may be customized in `commands/timer.yml` and `commands/ptimer.yml`.
 
-### Global timers (`/timer`, provider `TimerCommandProvider`)
+### Global timers (`/timer`, provider )
 - **Root:** `/timer`
 - **Permission:** `sunlight.timer.command.timer`
 - **Behavior:** root opens timer list for players (as implemented)
@@ -28,9 +26,9 @@ Common subcommands:
 - `delete <id> [confirm]`
 - `editor [id]`
 - `reload`
-- Nested `personal ...` subcommands (where exposed)
+- Nested `personal...` subcommands (where exposed)
 
-### Personal timers (`/ptimer`, provider `PersonalTimerCommandProvider`)
+### Personal timers (`/ptimer`, provider )
 - **Root:** `/ptimer`
 - **Permission:** `sunlight.timer.command.ptimer`
 - **Behavior:** root opens personal timer list for players
@@ -46,7 +44,7 @@ Common subcommands:
 
 ## Permissions
 
-Source: `moduleImpl/timer/config/TimerPerms.java` (namespace `sunlight.timer.*`)
+timer.*`)
 
 | Permission | Category | Description |
 | --- | --- | --- |

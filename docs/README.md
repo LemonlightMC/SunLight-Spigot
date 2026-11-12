@@ -1,8 +1,6 @@
 # Welcome to SunLight
 
-**SunLight** is a modern, lightweight, all-in-one core plugin for Minecraft servers. It provides the essential tools every server needs through a modular system, so you can enable only the features your server actually uses.
-
-This documentation is based on the **current source in this repository**. Public releases and the official project wiki may describe a different version or module set.
+**SunLight** is a modern, batteries-included, all-in-one core plugin with customizability and configurablity in mind. It provides the essential tools every server needs through a modular system, so you can enable only the features your server actually uses.
 
 ## Core features
 
@@ -15,33 +13,69 @@ This documentation is based on the **current source in this repository**. Public
 - **MiniMessage support** — rich text formatting where supported
 - **PlaceholderAPI support** — placeholders for modules and integrations where available
 
-## Included modules (this build)
-
-SunLight in this source tree registers **31 modules**:
-
-| Category | Modules |
-| --- | --- |
-| Moderation & safety | [Bans](modules/bans.md), [Reports](modules/reports.md), [Freeze](modules/freeze.md), [Vanish](modules/vanish.md) |
-| Chat & communication | [Chat](modules/chat.md), [Socials](modules/socials.md), [Links](modules/links.md), [Greetings](modules/greetings.md), [Texts](modules/texts.md) |
-| Teleportation & travel | [Homes](modules/homes.md), [Warps](modules/warps.md), [Player Warps](modules/playerwarps.md), [Spawns](modules/spawns.md), [RTP](modules/rtp.md), [Back Location](modules/backlocation.md), [PTP](modules/ptp.md), [Warmups](modules/warmups.md) |
-| Utilities & server tools | [Essential](modules/essential.md), [Inventories](modules/inventories.md), [Kits](modules/kits.md), [Scheduler](modules/scheduler.md), [Timer](modules/timer.md) |
-| Player customization & experience | [Nametags](modules/nametags.md), [Glow](modules/glow.md), [Nick](modules/nick.md), [Settings](modules/settings.md) |
-| Quality of life & systems | [AFK](modules/afk.md), [Playtime](modules/playtime.md), [Friends](modules/friends.md), [Profiles](modules/profiles.md), [Voting](modules/voting.md), [Nerf Phantoms](modules/nerfphantoms.md), [Death Messages](modules/deathmessages.md) |
-
-> Some modules have extra requirements or load conditions (for example, Nametags depends on TAB/TAB-Bridge). See [Requirements & Dependencies](getting-started/requirements.md) and [Modules Overview](modules/README.md).
-
-## Requirements (quick overview)
-
-- **Required dependency:** [NightCore](https://nightexpressdev.com/nightcore/)
-- **Supported platforms/versions:** see [Requirements & Dependencies](getting-started/requirements.md) for the compatibility table and notes
-- **Optional integrations:** PlaceholderAPI, LuckPerms, TAB/TAB-Bridge, ProtocolLib/packetevents, DiscordSRV, WorldGuard, GriefPrevention, and others depending on the module
-
 ## Get started
 
 - [Installation](getting-started/installation.md) — install NightCore, add SunLight, and enable modules
 - [Core Configuration](getting-started/core-configuration.md) — global settings, `/sunlight` admin command, and module management
 - [Commands & Permissions System](getting-started/commands-and-permissions.md) — provider configs, command flags, permissions, and bypasses
 - [Modules Overview](modules/README.md) — browse every module and its documentation
+
+## Included modules
+
+| Category | Modules |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Moderation | [Bans](modules/bans.md), [Reports](modules/reports.md), [Freeze](modules/freeze.md), [Vanish](modules/vanish.md) |
+| Chat & Communication | [Chat](modules/chat.md), [Socials](modules/socials.md), [Links](modules/links.md), [Greetings](modules/greetings.md), [Texts](modules/texts.md) |
+| Teleportation & Travel | [Homes](modules/homes.md), [Warps](modules/warps.md), [Player Warps](modules/playerwarps.md), [Spawns](modules/spawns.md), [RTP](modules/rtp.md), [Back Location](modules/backlocation.md), [PTP](modules/ptp.md) |
+| Utilities & Server tools | [Essential](modules/essential.md) (basic server commands), [Inventories](modules/inventories.md) (Invsee), [Kits](modules/kits.md), [Scheduler](modules/scheduler.md), [Timer](modules/timer.md) (Stopwatch, Countdown) |
+| Player Customization & Experience | [Nametags](modules/nametags.md), [Glow](modules/glow.md), [Nick](modules/nick.md), [Settings](modules/settings.md) |
+| Quality of life & Systems | [AFK](modules/afk.md), [Playtime](modules/playtime.md), [Friends](modules/friends.md), [Profiles](modules/profiles.md), [Voting](modules/voting.md), [Nerf Phantoms](modules/nerfphantoms.md), [Death Messages](modules/deathmessages.md) |
+
+> Some modules have extra requirements or load conditions (for example, Nametags depends on TAB/TAB-Bridge). See [Requirements & Dependencies](getting-started/requirements.md) and [Modules Overview](modules/README.md).
+
+<br>
+
+## Compatibility
+
+The following versions and platforms are supported:
+
+| Server Version | Paper | Spigot | Folia | Java |
+| -------------- | :---: | :----: | :---: | :--: |
+| 26.3 | ✔️ | ✔️ | ❌ | 25 |
+| 26.2 | ✔️ | ✔️ | ❌ | 25 |
+| 26.1.X | ✔️ | ✔️ | ❌ | 25 |
+| 1.21 - 1.21.11 | ✔️ | ✔️ | ❌ | 25 |
+
+Anything not listed in the compatibility table is NOT supported.
+Make sure to check out all known issues and incompatibilities [here](https://nightexpressdev.com/sunlight/faq/).
+
+## Required dependencies
+
+- [**NightCore**](https://nightexpressdev.com/nightcore/) — required framework for SunLight to run.
+
+## Optional / soft dependencies
+
+| Plugin | Purpose / related features |
+| ------------------- | -------------------------------------------------------------------------------------------------- |
+| **TAB** | Nametag rendering integration; required for Nametags/Glow-related rendering paths where applicable |
+| **TAB-Bridge** | Alternative/support integration for TAB-related nametag handling |
+| **UltimateTeams** | Can contribute team prefix/name color to nametags |
+| **LuckPerms** | Rank/group resolution and contexts (e.g. AFK/profile-related integrations) |
+| **PlaceholderAPI** | Placeholder support and expansion integration |
+| **ProtocolLib** | Packet-related features for some modules/features (alternative to PacketEvents) |
+| **packetevents** | Packet-related features for some modules/features (alternative to ProtocolLib) |
+| **DiscordSRV** | Discord relay/integration (e.g. Socials, AFK/chat-related hooks where configured) |
+| **WorldGuard** | Protection/region-aware behavior in modules that check protected areas |
+| **GriefPrevention** | Protection-aware behavior in modules that check claims |
+
+## Module-specific conditions
+
+Some modules have additional load/runtime requirements:
+
+- **Nametags** — requires TAB or TAB-Bridge to be installed. PlaceholderAPI may also be required in some setups.
+- **Inventories** — portable container commands may only be available on supported server versions.
+- **Socials** — Discord relay requires DiscordSRV to be installed.
+- **Timer** — scoreboard display features may require TAB support.
 
 ## Downloads & support
 

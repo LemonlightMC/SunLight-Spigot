@@ -4,9 +4,7 @@ Provides item kits with cooldowns, costs, previews, GUI editor/list menus, bind 
 
 - **Module ID:** `kits`
 - **Display name:** `Kits`
-- **Module directory:** `moduleImpl/kits/`
 - **Provider ID:** `kits`
-- **API/provider:** implements `KitsProvider`
 
 ## Commands
 
@@ -20,9 +18,9 @@ Root command: `/kits` (alias `kit`)
 | `get <kit>` | `sunlight.kits.command.kits.get` | Claims/receives a kit. | Cooldown/cost/permission checks apply. |
 | `give <kit> <player>` | `sunlight.kits.command.kits.give` | Gives a kit to a player. | Bypasses normal claim flow as implemented. |
 | `list` | `sunlight.kits.command.kits.list` | Opens/lists available kits. | GUI/list behavior depends on settings. |
-| `preview <kit>` | `sunlight.kits.command.kits.preview` | Previews kit contents. |  |
+| `preview <kit>` | `sunlight.kits.command.kits.preview` | Previews kit contents. | |
 | `reset_cooldown <kit> [player]` | `sunlight.kits.command.kits.resetcooldown` | Resets kit cooldown. | Target handling per implementation. |
-| `set_cooldown <kit> <time> [player]` | `sunlight.kits.command.kits.setcooldown` | Sets kit cooldown/time state. |  |
+| `set_cooldown <kit> <time> [player]` | `sunlight.kits.command.kits.setcooldown` | Sets kit cooldown/time state. | |
 
 ## Permissions
 
@@ -40,11 +38,9 @@ Root command: `/kits` (alias `kit`)
 | `sunlight.kits.bypass.cooldown` | Bypass | Bypass kit cooldown |
 | `sunlight.kits.kit.<id>` (namespace pattern) | Access | Access/use a specific kit (as enforced by kit permission checks) |
 
-> See `KitsPerms` for the exact node names present in your build.
+> Check your server command configuration and in-game help for the exact command tree and arguments.
 
 ## Configuration
-
-Source: `moduleImpl/kits/config/KitsSettings.java`
 
 | Key | Default | Description |
 | --- | --- | --- |
@@ -55,8 +51,6 @@ Source: `moduleImpl/kits/config/KitsSettings.java`
 Kit definitions include items, cooldowns, costs, display/icon settings, permissions, and other properties managed via editor/data files.
 
 ## Placeholders
-
-Source: `KitsPlaceholders`
 
 - `%kits_is_on_cooldown%`
 - `%kits_is_available%`

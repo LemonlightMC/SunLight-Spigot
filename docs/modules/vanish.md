@@ -4,7 +4,6 @@ Hides players from others with a persistent vanish state, boss bar indicator, me
 
 - **Module ID:** `vanish`
 - **Display name:** `Vanish`
-- **Module directory:** `moduleImpl/vanish/`
 - **Provider ID:** `vanish`
 
 ## Commands
@@ -13,7 +12,7 @@ Hides players from others with a persistent vanish state, boss bar indicator, me
 
 | Command | Permission | Description | Usage / notes |
 | --- | --- | --- | --- |
-| `/vanish` (root, alias `v`) | `sunlight.vanish.command.vanish` | Vanish command root / toggle behavior (provider-defined). |  |
+| `/vanish` (root, alias `v`) | `sunlight.vanish.command.vanish` | Vanish command root / toggle behavior (provider-defined). | |
 | `/vanish toggle [target]` | `sunlight.vanish.command.vanish` | Toggles vanish state. | Others: `sunlight.vanish.command.vanish.others` |
 
 ## Permissions
@@ -25,8 +24,6 @@ Hides players from others with a persistent vanish state, boss bar indicator, me
 | `sunlight.vanish.bypass.see` | See vanished players (bypass visibility hiding) |
 
 ## Configuration
-
-Source: `moduleImpl/vanish/config/VanishConfig.java`
 
 | Key | Default | Description |
 | --- | --- | --- |

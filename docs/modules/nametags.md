@@ -4,7 +4,6 @@ Provides customizable player nametags (prefix/suffix/tag/rank/profile display) r
 
 - **Module ID:** `nametags`
 - **Display name:** `Nametags`
-- **Module directory:** `moduleImpl/nametags/`
 - **Load condition:** `LoadCondition.tabOrBridge` (module is only registered/loaded when the condition is satisfied)
 
 ## Requirements
@@ -14,27 +13,21 @@ Provides customizable player nametags (prefix/suffix/tag/rank/profile display) r
 
 ## Commands
 
-Implemented by `NametagsCommandProvider`.
+Commands are provided by this module.
 
 - Provides nametag/tag/rank/profile management and UI commands (exact command tree, aliases, and arguments are defined in the provider).
 - Command configuration can be customized via the provider's `commands/<providerId>.yml` file.
 
 ## Permissions
 
-Defined in `moduleImpl/nametags/config/NametagsPerms.java`.
-
 Permission areas typically include:
 - Command access for nametag management/UI
 - Administrative editing/management permissions
 - Player-facing tag/profile selection permissions (as implemented)
 
-> Refer to `NametagsPerms` and `NametagsCommandProvider` for the exact permission nodes.
+> Check your server command configuration and permissions for the exact details in your build.
 
 ## Configuration
-
-- **Settings:** `NametagsSettings.java`
-- **Language:** `NametagsLang.java`
-- **Placeholders:** `NametagsPlaceholders.java`
 
 The module supports (as implemented by its subsystems):
 - Rank and team prefixes

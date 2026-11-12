@@ -4,9 +4,6 @@ Provides a friend system with requests, friend lists, favorites, blocking, priva
 
 - **Module ID:** `friends`
 - **Display name:** `Friends`
-- **Module directory:** `moduleImpl/friends/`
-- **Provider IDs:** `FriendCommonCommandProvider`, `FriendAdminCommandProvider`
-
 ## Commands
 
 > Command details are implemented in common/admin providers and configurable via `commands/<provider>.yml`.
@@ -34,11 +31,9 @@ Admin provider includes management operations such as:
 - `remove <player> <player>`
 - `unblock <player> <player>`
 
-> See `FriendCommonCommandProvider` and `FriendAdminCommandProvider` for exact command tree, aliases, and arguments.
+> Check your server command configuration and in-game help for the exact command tree and arguments.
 
 ## Permissions
-
-Defined in `moduleImpl/friends/config/FriendsPerms.java`.
 
 Common permission areas:
 - Friend command usage (requests, list, block, jump, message, toggles)
@@ -48,10 +43,7 @@ Common permission areas:
 
 ## Configuration
 
-- **Settings:** `FriendsSettings.java` (limits, cooldowns, caps, privacy defaults/behavior, GUI options, etc.)
-- **Language:** `FriendsLang.java`
-- **Placeholders:** `FriendsPlaceholders.java`
-- **Properties:** `FriendsProperties.java`
+Main settings are available in the module's `settings.yml`.
 
 Notable feature areas supported by the module:
 - Rank-based friend and pending-request limits
@@ -70,7 +62,7 @@ Notable feature areas supported by the module:
 
 ## Placeholders
 
-Registered by `FriendsPlaceholders` (friend counts/status/relationship-related placeholders as implemented).
+Placeholders are available for this module when it is enabled.
 
 ## Notes
 

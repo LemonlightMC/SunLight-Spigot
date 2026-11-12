@@ -4,8 +4,6 @@ Allows players to create and manage their own warps with categories/ranks, claim
 
 - **Module ID:** `playerwarps`
 - **Display name:** `Player Warps`
-- **Module directory:** `moduleImpl/playerwarps/`
-
 ## Commands
 
 Implemented by `PlayerWarpsCommands` (command provider).
@@ -17,11 +15,9 @@ The module provides a large command set for:
 - Claiming/owning and moderation/admin actions
 - Importing warps from supported sources (if configured)
 
-> See `moduleImpl/playerwarps/command/PlayerWarpsCommands.java` and generated `commands/<providerId>.yml` for the exact command tree, arguments, aliases, and cooldown/cost settings.
+>yml` for the exact command tree, arguments, aliases, and cooldown/cost settings.
 
 ## Permissions
-
-Defined in `moduleImpl/playerwarps/core/PlayerWarpsPerms.java`.
 
 Permission areas typically include:
 - Player warp command access (create/delete/teleport/list/manage)
@@ -30,10 +26,6 @@ Permission areas typically include:
 - Category/rank/feature access controls
 
 ## Configuration
-
-- **Settings:** `moduleImpl/playerwarps/core/PlayerWarpsSettings.java`
-- **Language:** `moduleImpl/playerwarps/core/PlayerWarpsLang.java`
-- **Placeholders:** `moduleImpl/playerwarps/PlayerWarpsPlaceholders.java`
 
 Configuration covers (module scope):
 - Warp limits and rank-based allowances

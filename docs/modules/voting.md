@@ -4,15 +4,13 @@ Advanced in-game voting/polling system with templates, wizard-based creation, we
 
 - **Module ID:** `voting`
 - **Display name:** `Voting`
-- **Module directory:** `moduleImpl/voting/`
-
 ## Commands
 
 Implemented by command providers:
-- `VotingCastCommandProvider` — player voting/casting commands (e.g. vote choices, shortcuts)
-- `VotingStaffCommandProvider` — staff/admin poll management
-- `VotingTemplateCommandProvider` — template-based poll operations
-- `VotingWizardCommandProvider` — wizard-driven creation/edit flows
+- — player voting/casting commands (e.g. vote choices, shortcuts)
+- — staff/admin poll management
+- — template-based poll operations
+- — wizard-driven creation/edit flows
 
 Capabilities include (as implemented):
 - Opening and managing polls
@@ -25,8 +23,6 @@ Capabilities include (as implemented):
 
 ## Permissions
 
-Defined in `moduleImpl/voting/config/VotingPerms.java`.
-
 Permission areas typically include:
 - Voting/casting permissions
 - Staff/admin poll management permissions
@@ -34,8 +30,6 @@ Permission areas typically include:
 - Exemptions, notifications, and vote multiplier-related permissions (referenced by settings/features)
 
 ## Configuration
-
-Source: `moduleImpl/voting/VotingSettings.java` (extensive configuration).
 
 Key areas:
 
@@ -73,7 +67,7 @@ Key areas:
 
 ## Placeholders
 
-Source: `VotingPlaceholders` and module registrations.
+and module registrations.
 
 Common placeholder areas:
 - Vote metadata: `%vote_name%`, `%vote_key%`, `%vote_status%`, times, outcome
@@ -85,7 +79,7 @@ Common placeholder areas:
 
 - Menus: votes menu, vote view menu, vote wizard menu
 - Wizard dialogs for poll creation/editing and rule configuration
-- Database-backed storage: `VotingDataManager`, `VoteRepository`, `BallotRepository`
+- Database-backed storage is used for votes and ballots.
 - Models/enums for rules, tallies, statuses, options, templates, and outcomes
 
 ## Notes

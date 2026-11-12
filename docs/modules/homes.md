@@ -4,7 +4,6 @@ Allows players to create and manage personal home locations with limits, costs, 
 
 - **Module ID:** `homes`
 - **Display name:** `Homes`
-- **Module directory:** `moduleImpl/homes/`
 - **Provider IDs:** common/admin command providers (`homes`, `homesadmin`)
 
 ## Commands
@@ -15,37 +14,33 @@ Allows players to create and manage personal home locations with limits, costs, 
 | Subcommand | Permission | Description | Notes |
 | --- | --- | --- | --- |
 | `set <home>` | `sunlight.homes.command.homes.set` | Create/set a home. | Subject to limits, world/protection checks, and cost. |
-| `delete <home>` | `sunlight.homes.command.homes.delete` | Delete own home. |  |
+| `delete <home>` | `sunlight.homes.command.homes.delete` | Delete own home. | |
 | `list` | `sunlight.homes.command.homes.list` | List/open homes. | GUI support available. |
 | `teleport <home>` (or home usage as implemented) | `sunlight.homes.command.homes.teleport` | Teleport to a home. | Warmups/cooldowns/costs may apply. |
-| `visit <player/home>` | `sunlight.homes.command.homes.visit` | Visit another player's home (invite/guest flow as supported). |  |
-| `invite <player> <home>` | `sunlight.homes.command.homes.invite` | Invite a player to a home. |  |
+| `visit <player/home>` | `sunlight.homes.command.homes.visit` | Visit another player's home (invite/guest flow as supported). | |
+| `invite <player> <home>` | `sunlight.homes.command.homes.invite` | Invite a player to a home. | |
 
 ### Admin commands (root `homesadmin`)
 | Subcommand | Permission | Description |
 | --- | --- | --- |
-| `create ...` | `sunlight.homes.command.homesadmin.create` (or equivalent in `HomesPerms`) | Create/manage homes administratively. |
-| `delete ...` | `sunlight.homes.command.homesadmin.delete` (or equivalent) | Delete homes administratively. |
+| `create...` | `sunlight.homes.command.homesadmin.create` (or equivalent in ) | Create/manage homes administratively. |
+| `delete...` | `sunlight.homes.command.homesadmin.delete` (or equivalent) | Delete homes administratively. |
 
-> Refer to `HomeCommonCommandProvider`, `HomeAdminCommandProvider`, and `HomesPerms` for exact argument names and full command tree.
+> Check your server command configuration and permissions for the exact details in your build.
 
 ## Permissions
-
-Source: `moduleImpl/homes/config/HomesPerms.java`
 
 Common areas include:
 - `sunlight.homes.command.homes.*` — player home commands (set/delete/list/teleport/visit/invite)
 - `sunlight.homes.command.homesadmin.*` — admin commands
 - Bypass permissions:
-  - unsafe location checks
-  - world blacklist restrictions
-  - protection/build checks (as applicable)
-  - teleport cost
-  - teleport cooldown
+ - unsafe location checks
+ - world blacklist restrictions
+ - protection/build checks (as applicable)
+ - teleport cost
+ - teleport cooldown
 
 ## Configuration
-
-Source: `moduleImpl/homes/config/HomesSettings.java`
 
 Key options include:
 - **Save interval** for home data persistence
@@ -64,7 +59,7 @@ Key options include:
 
 ## GUI and dialogs
 
-- `HomeListMenu`, `HomeSettingsMenu`
+- ,
 - Dialogs for home creation/management flows
 - Home model/data repositories for storage and player home state
 

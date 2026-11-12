@@ -4,14 +4,13 @@ Comprehensive punishment system for bans, temporary bans, IP bans, mutes, warns,
 
 - **Module ID:** `bans`
 - **Display name:** `Bans`
-- **Module directory:** `moduleImpl/bans/`
 - **Provider IDs:** `bans-punish`, `bans-pardon`, `bans-history`, `bans-list`, `bans-alts` (based on command provider classes)
 
 ## Commands
 
 > Exact aliases/enabled/cooldown/cost can be configured in the corresponding `commands/<providerId>.yml` files.
 
-### Punishment commands (`PunishmentCommandsProvider`)
+### Punishment commands
 
 | Command | Permission | Description | Usage |
 | --- | --- | --- | --- |
@@ -24,7 +23,7 @@ Comprehensive punishment system for bans, temporary bans, IP bans, mutes, warns,
 | `/banip <address> [reason]` | `sunlight.bans.command.banip` | Bans an IP address. | Permanent IP ban; address parsed with `InetAddress.getByName`. |
 | `/kick <player> [reason]` | `sunlight.bans.command.kick` | Kicks an online player. | Uses parsed reason/silent flags. |
 
-### Pardon commands (`PardonCommandsProvider`)
+### Pardon commands
 
 | Command | Permission | Description | Usage |
 | --- | --- | --- | --- |
@@ -35,7 +34,7 @@ Comprehensive punishment system for bans, temporary bans, IP bans, mutes, warns,
 
 ### History, lists, and alts
 
-Implemented by `HistoryCommandsProvider`, `ListCommandsProvider`, and `AltsCommandProvider` (see source for full argument details and GUI behavior):
+Available commands include:
 
 | Command group | Provider | Permission(s) | Purpose |
 | --- | --- | --- | --- |
@@ -70,8 +69,6 @@ Implemented by `HistoryCommandsProvider`, `ListCommandsProvider`, and `AltsComma
 | `sunlight.bans.bypass.alts.detection` | Bypass alt detection |
 
 ## Configuration (`settings.yml`)
-
-Source: `moduleImpl/bans/config/BansSettings.java`.
 
 ### Data and storage
 | Key | Default | Description |
@@ -127,11 +124,11 @@ Supports punishment placeholders in message content (reason, target, dates, expi
 
 ## Placeholders
 
-Bans module registers placeholders via `BansPlaceholders` (punishment-related values for active/history/list contexts). Refer to `moduleImpl/bans/BansPlaceholders.java` for the exact placeholder keys exposed by your build.
+Bans module registers placeholders (punishment-related values for active/history/list contexts).
 
 ## Menus / UI
 
-- `HistoryMenu`, `PunishmentsMenu`, and sorting modes are implemented for punishment browsing/management.
+- , , and sorting modes are implemented for punishment browsing/management.
 - GUI actions may require `sunlight.bans.punishment.delete` / `sunlight.bans.punishment.toggle`.
 
 ## Notes

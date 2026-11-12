@@ -4,7 +4,6 @@ Allows players to set custom nicknames with validation rules, color permissions,
 
 - **Module ID:** `nick`
 - **Display name:** `Nick`
-- **Module directory:** `moduleImpl/nick/`
 - **Provider ID:** `nickname`
 
 ## Commands
@@ -13,7 +12,7 @@ Allows players to set custom nicknames with validation rules, color permissions,
 
 | Command | Permission | Description | Usage / notes |
 | --- | --- | --- | --- |
-| `/nickname` (root, aliases `nick`) | `sunlight.nick.command.nick.root` | Nick command root. |  |
+| `/nickname` (root, aliases `nick`) | `sunlight.nick.command.nick.root` | Nick command root. | |
 | `/nickname change <name>` | `sunlight.nick.command.nick.change` | Set your own nickname. | Player-only; `<name>` is greedy (can include spaces as supported). |
 | `/nickname clear [target]` | `sunlight.nick.command.nick.clear` | Clear nickname. | Others: `sunlight.nick.command.nick.clear.others`. |
 | `/nickname set <player> <name>` | `sunlight.nick.command.nick.set` | Set another player's nickname. | Supports silent flag parsing in name/arguments as implemented. |
@@ -35,8 +34,6 @@ Allows players to set custom nicknames with validation rules, color permissions,
 | `sunlight.nick.bypass.change.cooldown` | Bypass | Bypass nickname change cooldown |
 
 ## Configuration
-
-Source: `moduleImpl/nick/config/NickConfig.java` (with legacy migration support).
 
 | Key | Default | Description |
 | --- | --- | --- |

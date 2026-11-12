@@ -4,9 +4,6 @@ Relays selected in-game events to Discord via DiscordSRV and provides compatibil
 
 - **Module ID:** `socials`
 - **Display name:** `Socials`
-- **Module directory:** `moduleImpl/socials/`
-- **API/provider:** implements `SocialsProvider`
-
 ## Commands
 
 This module does not register dedicated commands.
@@ -15,11 +12,9 @@ This module does not register dedicated commands.
 
 | Permission | Description |
 | --- | --- |
-| `sunlight.socials` | Module permission constant (defined in `SocialsPerms`) |
+| `sunlight.socials` | Module permission constant (defined in ) |
 
 ## Configuration
-
-Source: `moduleImpl/socials/config/SocialsConfig.java`
 
 ### Discord relay
 | Key | Default | Description |

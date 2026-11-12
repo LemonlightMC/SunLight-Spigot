@@ -4,14 +4,11 @@ Provides a player reporting system with submission flow, staff triage/management
 
 - **Module ID:** `reports`
 - **Display name:** `Reports`
-- **Module directory:** `moduleImpl/reports/`
-- **API/provider:** implements `ReportsProvider`
-
 ## Commands
 
 Implemented by multiple command providers:
-- `ReportsSubmitCommandProvider` — player report submission
-- `ReportsStaffCommandProvider` — staff/admin report management
+- — player report submission
+- — staff/admin report management
 
 Command capabilities typically include:
 - Creating/submitting reports
@@ -24,8 +21,6 @@ Command capabilities typically include:
 
 ## Permissions
 
-Defined in `moduleImpl/reports/command/ReportsPerms.java`.
-
 Permission areas typically include:
 - Report submission permissions
 - Staff viewing/management permissions (list, claim, release, resolve, delete)
@@ -34,9 +29,7 @@ Permission areas typically include:
 
 ## Configuration
 
-- **Config:** `ReportsConfig.java`
-- **Language:** `ReportsLang.java`
-- **Placeholders:** `ReportsPlaceholders.java`
+- **Config:**
 
 Configuration areas include:
 - Report categories and submission rules
@@ -66,7 +59,7 @@ Workflow features (from module implementation scope):
 
 ## Placeholders
 
-Registered by `ReportsPlaceholders` for report status/count/info values.
+Placeholders are available for this module when it is enabled.
 
 ## Notes
 

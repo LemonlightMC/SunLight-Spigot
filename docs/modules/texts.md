@@ -4,9 +4,7 @@ Maps configurable text files/pages to custom commands, allowing you to display f
 
 - **Module ID:** `custom_text`
 - **Display name:** `Custom Text`
-- **Module directory:** `moduleImpl/texts/`
 - **Provider ID:** `texts-text`
-- **API/provider:** implements `TextsProvider`
 
 ## Commands
 
@@ -35,10 +33,10 @@ Each loaded text registers its own dynamic command:
 ## Configuration / data files
 
 - Text files are stored under the module texts directory (e.g. `texts/*.yml`).
-- A default `rules` text may be generated when the directory is missing (`TextsDefaults`).
+- A default `rules` text may be generated when the directory is missing.
 - Text definition fields include:
-  - `Description` — command/text description
-  - `Text` — list of message lines/content
+ - `Description` — command/text description
+ - `Text` — list of message lines/content
 
 ### Formatting and placeholders
 
@@ -47,7 +45,7 @@ Each loaded text registers its own dynamic command:
 
 ## Language
 
-- `TextsLang` provides command description and invalid-text feedback messages.
+- Command descriptions and feedback messages can be customized in the module language/messages.
 
 ## Notes
 

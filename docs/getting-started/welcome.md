@@ -22,14 +22,14 @@
 
 ## Included modules
 
-| Category                          | Modules                                                                                                                                                                                                                                   |
+| Category | Modules |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Moderation                        | [Bans](modules/bans.md), [Reports](modules/reports.md), [Freeze](modules/freeze.md), [Vanish](modules/vanish.md)                                                                                                                          |
-| Chat & Communication              | [Chat](modules/chat.md), [Socials](modules/socials.md), [Links](modules/links.md), [Greetings](modules/greetings.md), [Texts](modules/texts.md)                                                                                           |
-| Teleportation & Travel            | [Homes](modules/homes.md), [Warps](modules/warps.md), [Player Warps](modules/playerwarps.md), [Spawns](modules/spawns.md), [RTP](modules/rtp.md), [Back Location](modules/backlocation.md), [PTP](modules/ptp.md)                         |
-| Utilities & Server tools          | [Essential](modules/essential.md) (basic server commands), [Inventories](modules/inventories.md) (Invsee), [Kits](modules/kits.md), [Scheduler](modules/scheduler.md), [Timer](modules/timer.md) (Stopwatch, Countdown)                   |
-| Player Customization & Experience | [Nametags](modules/nametags.md), [Glow](modules/glow.md), [Nick](modules/nick.md), [Settings](modules/settings.md)                                                                                                                        |
-| Quality of life & Systems         | [AFK](modules/afk.md), [Playtime](modules/playtime.md), [Friends](modules/friends.md), [Profiles](modules/profiles.md), [Voting](modules/voting.md), [Nerf Phantoms](modules/nerfphantoms.md), [Death Messages](modules/deathmessages.md) |
+| Moderation | [Bans](modules/bans.md), [Reports](modules/reports.md), [Freeze](modules/freeze.md), [Vanish](modules/vanish.md) |
+| Chat & Communication | [Chat](modules/chat.md), [Socials](modules/socials.md), [Links](modules/links.md), [Greetings](modules/greetings.md), [Texts](modules/texts.md) |
+| Teleportation & Travel | [Homes](modules/homes.md), [Warps](modules/warps.md), [Player Warps](modules/playerwarps.md), [Spawns](modules/spawns.md), [RTP](modules/rtp.md), [Back Location](modules/backlocation.md), [PTP](modules/ptp.md) |
+| Utilities & Server tools | [Essential](modules/essential.md) (basic server commands), [Inventories](modules/inventories.md) (Invsee), [Kits](modules/kits.md), [Scheduler](modules/scheduler.md), [Timer](modules/timer.md) (Stopwatch, Countdown) |
+| Player Customization & Experience | [Nametags](modules/nametags.md), [Glow](modules/glow.md), [Nick](modules/nick.md), [Settings](modules/settings.md) |
+| Quality of life & Systems | [AFK](modules/afk.md), [Playtime](modules/playtime.md), [Friends](modules/friends.md), [Profiles](modules/profiles.md), [Voting](modules/voting.md), [Nerf Phantoms](modules/nerfphantoms.md), [Death Messages](modules/deathmessages.md) |
 
 > Some modules have extra requirements or load conditions (for example, Nametags depends on TAB/TAB-Bridge). See [Requirements & Dependencies](getting-started/requirements.md) and [Modules Overview](modules/README.md).
 
@@ -41,10 +41,10 @@ The following versions and platforms are supported:
 
 | Server Version | Paper | Spigot | Folia | Java |
 | -------------- | :---: | :----: | :---: | :--: |
-| 26.3           |  ✔️   |   ✔️   |  ❌   |  25  |
-| 26.2           |  ✔️   |   ✔️   |  ❌   |  25  |
-| 26.1.X         |  ✔️   |   ✔️   |  ❌   |  25  |
-| 1.21 - 1.21.11 |  ✔️   |   ✔️   |  ❌   |  25  |
+| 26.3 | ✔️ | ✔️ | ❌ | 25 |
+| 26.2 | ✔️ | ✔️ | ❌ | 25 |
+| 26.1.X | ✔️ | ✔️ | ❌ | 25 |
+| 1.21 - 1.21.11 | ✔️ | ✔️ | ❌ | 25 |
 
 Anything not listed in the compatibility table is NOT supported.
 Make sure to check out all known issues and incompatibilities [here](https://nightexpressdev.com/sunlight/faq/).
@@ -55,27 +55,27 @@ Make sure to check out all known issues and incompatibilities [here](https://nig
 
 ## Optional / soft dependencies
 
-| Plugin              | Purpose / related features                                                                         |
+| Plugin | Purpose / related features |
 | ------------------- | -------------------------------------------------------------------------------------------------- |
-| **TAB**             | Nametag rendering integration; required for Nametags/Glow-related rendering paths where applicable |
-| **TAB-Bridge**      | Alternative/support integration for TAB-related nametag handling                                   |
-| **UltimateTeams**   | Can contribute team prefix/name color to nametags                                                  |
-| **LuckPerms**       | Rank/group resolution and contexts (e.g. AFK/profile-related integrations)                         |
-| **PlaceholderAPI**  | Placeholder support and expansion integration                                                      |
-| **ProtocolLib**     | Packet-related features for some modules/features (alternative to PacketEvents)                    |
-| **packetevents**    | Packet-related features for some modules/features (alternative to ProtocolLib)                     |
-| **DiscordSRV**      | Discord relay/integration (e.g. Socials, AFK/chat-related hooks where configured)                  |
-| **WorldGuard**      | Protection/region-aware behavior in modules that check protected areas                             |
-| **GriefPrevention** | Protection-aware behavior in modules that check claims                                             |
+| **TAB** | Nametag rendering integration; required for Nametags/Glow-related rendering paths where applicable |
+| **TAB-Bridge** | Alternative/support integration for TAB-related nametag handling |
+| **UltimateTeams** | Can contribute team prefix/name color to nametags |
+| **LuckPerms** | Rank/group resolution and contexts (e.g. AFK/profile-related integrations) |
+| **PlaceholderAPI** | Placeholder support and expansion integration |
+| **ProtocolLib** | Packet-related features for some modules/features (alternative to PacketEvents) |
+| **packetevents** | Packet-related features for some modules/features (alternative to ProtocolLib) |
+| **DiscordSRV** | Discord relay/integration (e.g. Socials, AFK/chat-related hooks where configured) |
+| **WorldGuard** | Protection/region-aware behavior in modules that check protected areas |
+| **GriefPrevention** | Protection-aware behavior in modules that check claims |
 
 ## Module-specific conditions
 
 Some modules have additional load/runtime requirements:
 
-- **Nametags** — registered with a TAB/TAB-Bridge load condition (`LoadCondition.tabOrBridge`). It may require PlaceholderAPI when TAB is absent but TAB-Bridge is present (per implementation).
-- **Inventories** — portable container commands/features are NMS-gated.
-- **Socials** — Discord relay requires DiscordSRV to be installed and hooked.
-- **Timer** — scoreboard display channel may require TAB backend support.
+- **Nametags** — requires TAB or TAB-Bridge to be installed. PlaceholderAPI may also be required in some setups.
+- **Inventories** — portable container commands may only be available on supported server versions.
+- **Socials** — Discord relay requires DiscordSRV to be installed.
+- **Timer** — scoreboard display features may require TAB support.
 
 ## Downloads & support
 

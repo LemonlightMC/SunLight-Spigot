@@ -1,42 +1,19 @@
-# Extras Module (Unregistered)
+# Extras Module (Not available in standard builds)
 
-`moduleImpl/extras/` contains an additional "Extras" module implementation in source, but it is **not registered** in `SunLightPlugin.registerModules()` and therefore is not loaded by the standard plugin build.
+This page describes a set of extra utility features that is **not available in standard SunLight builds**.
 
-> If you are using an unmodified SunLight build, treat this module as unavailable. Custom forks/builds may wire it manually.
+> If you are using an unmodified SunLight build, treat this module as unavailable.
 
 ## Status
 
-- **Source directory:** `moduleImpl/extras/`
-- **Registered in core:** No
-- **Effect:** No module enable entry/commands/features from this package unless explicitly integrated
+- **Available in standard builds:** No
+- **Effect:** No commands or features from this module are available unless you are using a custom build that includes it.
 
-## Implemented command providers (source)
+## Possible features (custom builds)
 
-The package includes providers such as:
-- `BroadcastCommandProvider`
-- `CondenseCommandProvider`
-- `DisposalCommandProvider`
-- `HatCommandProvider`
-- `SignsCommandProvider`
-- `SkullCommandProvider`
-- `SmiteCommandProvider`
-- `StaffCommandProvider`
-- `SudoCommandProvider`
-- `SuicideCommandProvider`
-
-## Source components
-
-- Module class: `ExtrasModule`
-- Permissions/settings/lang: `ExtrasPerms`, `ExtrasSettings`, `SignsLang`
-- Properties: `ExtrasProperties`
-- UI: `DisposalMenu`
-- Core/utility classes under `core/`
-
-## Permission namespace note
-
-`ExtrasPerms` uses `sunlight.essential...` namespaces for many command permissions (plus sign/anvil/starterkit/sign-bypass permissions), reflecting its utility/essential-like feature set in source.
+Custom builds that include this module may provide utilities such as broadcasting messages, condensing items, a disposal menu, hat/skull/smite/sudo/suicide commands, and sign-related tools.
 
 ## Recommendation
 
-- Do not document this as an active default module in server admin workflows unless you have confirmed it is registered/enabled in your build.
-- If you need these features, check your SunLight version/build or consider equivalent functionality in enabled modules (e.g. Essential/Inventories/Chat-related tools where applicable).
+- Do not rely on this module for server setup unless you have confirmed your build includes it.
+- For similar functionality, check the enabled modules in your build (for example Essential, Inventories, or Chat-related tools).

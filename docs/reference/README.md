@@ -4,8 +4,8 @@ SunLight provides PlaceholderAPI placeholders through core and module placeholde
 
 ## General notes
 
-- Placeholder identifiers and outputs are based on source registrations (`*Placeholders` classes, module `registerPlaceholders`, and provider-specific handlers).
-- Some placeholders accept dynamic payloads/suffixes (e.g. per-kit, per-vote, per-warp, per-player-warp, profile/tag/rank payloads). Check the module implementation/config if you need a specific dynamic form.
+- Placeholder availability depends on which modules are enabled and which integrations are active.
+- Some placeholders accept dynamic values (for example per-kit, per-vote, per-warp, per-player-warp, or profile/tag/rank values). Check the relevant module's configuration and in-game behavior for the exact format in your setup.
 - Boolean-like placeholders commonly render as localized yes/no or state text depending on language/config.
 
 ## Core / global placeholders
@@ -14,12 +14,12 @@ Core placeholders are registered by SunLight's core placeholder/hook integration
 
 ## Module placeholders (by module)
 
-### AFK (`AfkPlaceholders`)
+### AFK
 - `%afk_state%` — AFK state (yes/no)
 - `%afk_mode%` — formatted AFK mode text
 - `%afk_idle_time%` — idle time in seconds
 - `%afk_idle_time_formatted%` — formatted idle time
-- `%afk_total_time%` — total AFK time (raw value from handler)
+- `%afk_total_time%` — total AFK time
 - `%afk_total_time_formatted%` — formatted total AFK time
 - `%afk_count%` — AFK count
 - `%afk_enter_timestamp%` — AFK enter timestamp
@@ -36,22 +36,22 @@ Core placeholders are registered by SunLight's core placeholder/hook integration
 - `%afk_stats_average_time%` — statistics average AFK time
 - `%afk_stats_average_time_formatted%` — formatted statistics average AFK time
 
-### Back Location (`BackLocationPlaceholders`)
+### Back Location
 - `%backlocation_has_previous%`
 - `%backlocation_has_death%`
 - `%backlocation_previous_expire_in%`
 - `%backlocation_death_expire_in%`
 
-### Bans (`BansPlaceholders`)
-- Punishment/history/list-related placeholders are registered by the Bans module (see `moduleImpl/bans/BansPlaceholders.java` for exact keys and payloads).
+### Bans
+- Punishment/history/list-related placeholders are registered by the Bans module.
 
-### Chat (`ChatPlaceholders`)
-- Chat/channel/conversation/spy/mail/mention-related placeholders are registered by the Chat module (see `moduleImpl/chat/ChatPlaceholders.java` and chat properties).
+### Chat
+- Chat/channel/conversation/spy/mail/mention-related placeholders are registered by the Chat module.
 
-### Essential (`EssentialPlaceholders`)
-- Essential utility placeholders are registered by the Essential module (see `moduleImpl/essential/EssentialPlaceholders.java`).
+### Essential
+- Essential utility placeholders are registered by the Essential module.
 
-### Glow (`GlowPlaceholders`)
+### Glow
 - `%glow_state%`
 - `%glow_color%`
 
@@ -60,17 +60,17 @@ Core placeholders are registered by SunLight's core placeholder/hook integration
 - `%homes_amount%`
 - `%homes_favorite_home%`
 
-### Kits (`KitsPlaceholders`)
+### Kits
 - `%kits_is_on_cooldown%` (kit context/payload)
 - `%kits_is_available%`
 - `%kits_cooldown_raw%`
 - `%kits_cooldown%`
-- Additional per-kit placeholders may be available (see `KitsPlaceholders`).
+- Additional per-kit placeholders may be available.
 
-### Links (`LinksPlaceholders`)
+### Links
 - Link-specific placeholders registered by module (IDs/links data; legacy `socials_<id>` placeholders are also re-registered by Socials when applicable).
 
-### Nametags (`NametagsPlaceholders`)
+### Nametags
 - `%nametags_prefix%`
 - `%nametags_suffix%`
 - Additional tag/rank/profile placeholders with payload-aware resolution (see Nametags placeholder registration).
@@ -82,25 +82,25 @@ Core placeholders are registered by SunLight's core placeholder/hook integration
 - `%nick_name%`
 - `%essential_custom_name%` (legacy compatibility placeholder registered by Nick module)
 
-### Player Warps (`PlayerWarpsPlaceholders`)
-- Player warp placeholders (warp info/status/listing-related); see `PlayerWarpsPlaceholders` for exact keys and payload forms.
+### Player Warps
+- Player warp placeholders (warp info/status/listing-related); check your server/build for the exact keys.
 
-### Playtime (`PlaytimePlaceholders`)
-- Playtime tracking, goal, period, and calendar-related placeholders (see `PlaytimePlaceholders`).
+### Playtime
+- Playtime tracking, goal, period, and calendar-related placeholders.
 
-### Profiles (`ProfilesPlaceholders`)
-- Profile/scope-related placeholders (see `ProfilesPlaceholders`).
+### Profiles
+- Profile/scope-related placeholders.
 
 ### PTP
 - `%ptp_requests_enabled%`
 
-### Reports (`ReportsPlaceholders`)
-- Report status/count/info placeholders (see `ReportsPlaceholders`).
+### Reports
+- Report status/count/info placeholders.
 
-### RTP (`RTPPlaceholders`)
-- RTP-related placeholders (see `RTPPlaceholders`).
+### RTP
+- RTP-related placeholders.
 
-### Spawns (`SpawnsPlaceholders`)
+### Spawns
 - `%spawn_id%`
 - `%spawn_name%`
 - `%spawn_location_world%`
@@ -115,11 +115,11 @@ Core placeholders are registered by SunLight's core placeholder/hook integration
 ### Vanish
 - `%vanish_state%`
 
-### Voting (`VotingPlaceholders`)
+### Voting
 - Vote placeholders (examples/areas): `%vote_name%`, `%vote_key%`, `%vote_status%`, times, outcome, options, secret/silent/recurring flags, totals/participants/score/percent/count (context-dependent)
-- Additional dynamic vote/option placeholders are registered in `VotingModule`.
+- Additional dynamic vote/option placeholders are registered in.
 
-### Warps (`WarpsPlaceholders`)
+### Warps
 - `%warp_id%`
 - `%warp_name%`
 - `%warp_description%`
@@ -128,10 +128,8 @@ Core placeholders are registered by SunLight's core placeholder/hook integration
 - `%warp_location_y%`
 - `%warp_location_z%`
 
-## Where to find exact keys
+## Finding placeholders on your server
 
-For the most precise and up-to-date placeholder list in your build:
-
-1. Check the module's `*Placeholders.java` class in source.
-2. Search for `register("...")` or placeholder registration calls in the module package.
-3. Verify with PlaceholderAPI in-game (e.g. `/papi ecloud ...` not required for internal placeholders; use parse commands/listing methods available on your server) and enabled modules.
+- Enable the relevant module and, if needed, install PlaceholderAPI to use placeholders in other plugins.
+- Check the module page in this documentation for the most common placeholders and any supported dynamic forms.
+- If a placeholder is not listed here, test it in-game with your placeholder parsing tools to confirm it is available in your build.

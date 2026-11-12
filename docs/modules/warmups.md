@@ -4,16 +4,11 @@ Adds configurable warmup delays before actions (primarily teleports), with cance
 
 - **Module ID:** `warmups`
 - **Display name:** `Warmups`
-- **Module directory:** `moduleImpl/warmups/`
-- **API/provider:** implements `WarmupsProvider`
-
 ## Commands
 
 This module does not register dedicated player commands. It hooks into teleport/warmup flows used by other modules.
 
 ## Permissions
-
-Source: `moduleImpl/warmups/config/WarmupsPerms.java`
 
 | Permission | Description |
 | --- | --- |
@@ -21,8 +16,6 @@ Source: `moduleImpl/warmups/config/WarmupsPerms.java`
 | `sunlight.warmups.bypass.command` | Bypass command-related warmups (where applicable) |
 
 ## Configuration
-
-Source: `moduleImpl/warmups/config/WarmupsConfig.java`
 
 | Key | Default | Description |
 | --- | --- | --- |

@@ -4,8 +4,7 @@ Controls phantom behavior by disabling spawns, modifying damage/health, and allo
 
 - **Module ID:** `nerf_phantoms`
 - **Display name:** `Nerf Phantoms`
-- **Module directory:** `moduleImpl/nerfphantoms/`
-- **Implementation:** `PhantomsModule`
+- **Implementation:**
 - **Provider ID:** `nophantom`
 
 ## Commands
@@ -14,7 +13,7 @@ Controls phantom behavior by disabling spawns, modifying damage/health, and allo
 
 | Command | Aliases | Permission | Description | Usage |
 | --- | --- | --- | --- | --- |
-| `/phantoms` (root) | `nophantom`, `phantom` | `sunlight.nerfphantoms.command.phantoms.root` | Phantoms command root. |  |
+| `/phantoms` (root) | `nophantom`, `phantom` | `sunlight.nerfphantoms.command.phantoms.root` | Phantoms command root. | |
 | `/phantoms toggle [target]` | (under root) | `sunlight.nerfphantoms.command.phantoms.toggle` | Toggle anti-phantom mode for self/target. | `[target]` requires `sunlight.nerfphantoms.command.phantoms.toggle.others` |
 
 ## Permissions
@@ -26,8 +25,6 @@ Controls phantom behavior by disabling spawns, modifying damage/health, and allo
 | `sunlight.nerfphantoms.command.phantoms.toggle.others` | Toggle anti-phantom mode for other players |
 
 ## Configuration
-
-Source: `moduleImpl/nerfphantoms/config/PhantomsConfig.java`
 
 | Key | Default | Description |
 | --- | --- | --- |

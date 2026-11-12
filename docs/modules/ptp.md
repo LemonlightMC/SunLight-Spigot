@@ -4,9 +4,8 @@ Player-to-player teleport request and invite system with accept/decline flow, to
 
 - **Module ID:** `ptp`
 - **Display name:** `PTP`
-- **Module directory:** `moduleImpl/ptp/`
 - **Provider ID:** `ptp`
-- **Implementation:** `PTPCommands`, `PTPModule`, `TeleportRequest`
+- **Implementation:** `PTPCommands`, , `TeleportRequest`
 
 ## Commands
 
@@ -14,11 +13,11 @@ Player-to-player teleport request and invite system with accept/decline flow, to
 
 | Command | Aliases | Permission | Description | Usage / notes |
 | --- | --- | --- | --- | --- |
-| `/ptp` (root) | — | `sunlight.ptp.command.root` | PTP command root. |  |
+| `/ptp` (root) | — | `sunlight.ptp.command.root` | PTP command root. | |
 | `/ptp accept [player]` | standalone `tpyes` | `sunlight.ptp.command.accept` | Accept a pending teleport request/invite. | `[player]` suggests pending request senders. |
 | `/ptp decline [player]` | standalone `tpno` | `sunlight.ptp.command.decline` | Decline a pending teleport request/invite. | `[player]` suggests pending request senders. |
 | `/ptp request <player>` | — | `sunlight.ptp.command.request` | Send a teleport-to-player request. | Target must be online/valid per checks. |
-| `/ptp invite <player>` | — | `sunlight.ptp.command.invite` | Invite a player to teleport to you. |  |
+| `/ptp invite <player>` | — | `sunlight.ptp.command.invite` | Invite a player to teleport to you. | |
 | `/ptp toggle [target]` | — | `sunlight.ptp.command.toggle` | Toggle receiving PTP requests. | Others: `sunlight.ptp.command.toggle.others`. |
 | `/ptp on [target]` | — | `sunlight.ptp.command.toggle` | Enable receiving PTP requests. | Others: `sunlight.ptp.command.toggle.others`. |
 | `/ptp off [target]` | — | `sunlight.ptp.command.toggle` | Disable receiving PTP requests. | Others: `sunlight.ptp.command.toggle.others`. |
@@ -39,8 +38,6 @@ Player-to-player teleport request and invite system with accept/decline flow, to
 | `sunlight.ptp.bypass.cooldown` | Bypass cooldown restrictions |
 
 ## Configuration
-
-Source: `moduleImpl/ptp/config/PTPSettings.java`
 
 | Key | Default | Description |
 | --- | --- | --- |

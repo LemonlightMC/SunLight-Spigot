@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="https://nightexpressdev.com/sunlight/logo.png">
+ <img src="https://nightexpressdev.com/sunlight/logo.png">
 </p>
 
-**SunLight** is a modern, lightweight, all-in-one core solution featuring the essential tools every server needs. 
+**SunLight** is a modern, lightweight, all-in-one core solution featuring the essential tools every server needs.
 
 It includes **31** fully optional and customizable modules, allowing you to select only what your server actually requires!
 
@@ -62,9 +62,9 @@ It includes **31** fully optional and customizable modules, allowing you to sele
 
 ## ☑️ Requirements
 
-The following versions and platforms are supported: 
+The following versions and platforms are supported:
 
-| **Server Version**  | **Paper** | **Spigot** | **Folia** | **Java Version**
+| **Server Version** | **Paper** | **Spigot** | **Folia** | **Java Version**
 | :---: | :---: | :---: | :--: | :---: |
 | 26.3 | ✔️ | ✔️ | ❌ | 25 |
 | 26.2 | ✔️ | ✔️ | ❌ | 25 |
@@ -89,5 +89,5 @@ The following versions and platforms are supported:
 
 ## ❤️ Donate
 
-Everything here is created and maintained by a single person. If you enjoy my work or find my plugins useful, feel free to [Buy me a coffee](https://ko-fi.com/nightexpress) :)  
+Everything here is created and maintained by a single person. If you enjoy my work or find my plugins useful, feel free to [Buy me a coffee](https://ko-fi.com/nightexpress) :)
 Thank you!

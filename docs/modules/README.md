@@ -4,7 +4,7 @@ SunLight's functionality is split into modules. Each module can be enabled/disab
 
 ## How modules work
 
-- **Module registry:** modules are registered in `SunLightPlugin`.
+- **Module system:** each feature is provided by a module.
 - **Enable/disable:** `Modules.<id>.Enabled` in `modules.yml`.
 - **Display metadata:** `Modules.<id>.Name` and `Modules.<id>.Prefix`.
 - **Settings:** each module stores settings in its own `settings.yml` (path managed by the module).
@@ -26,7 +26,7 @@ SunLight's functionality is split into modules. Each module can be enabled/disab
 | Glow | `glow` | `glow` | Glow colors/effects |
 | Greetings | `greetings` | `greetings` | Join/quit/first-join messages |
 | Homes | `homes` | `homes` | Player homes, limits, GUI |
-| Inventories | `inventories` | `inventories` | Inventory/enderchest/container tools; some features NMS-gated |
+| Inventories | `inventories` | `inventories` | Inventory/enderchest/container tools; some features depend on server support |
 | Kits | `kits` | `kits` | Kits with GUI/editor/cooldowns/costs |
 | Links | `links` | `links` | Server links with commands/editor |
 | Nametags | `nametags` | `nametags` | Requires TAB/TAB-Bridge load condition |
@@ -49,23 +49,17 @@ SunLight's functionality is split into modules. Each module can be enabled/disab
 | Warmups | `warmups` | `warmups` | Warmup delays/cancellation for teleports |
 | Warps | `warps` | `warps` | Server warps with GUI and permissions |
 
-## Version differences (official wiki vs this source)
+## Version differences
 
-The official SunLight wiki/downloads may document a different release than this repository. For example, public docs for some versions list modules such as **Scoreboard**, **TAB**, **Worlds**, and **Items**, or describe **Extras** as an active module with different features. In this source tree:
+The official SunLight wiki or downloads for other versions may list different modules or features (for example Scoreboard, TAB, Worlds, or Items). The modules listed above are the ones documented for this build.
 
-- **Registered modules** are the ones listed above.
-- **Extras** code exists in `moduleImpl/extras/` but is not registered by default (see [Extras (Unregistered)](extras.md)).
-- If a module appears on the public wiki but not in this list, it is not part of this build unless added/registered in source.
-
-## Unregistered module code
-
-- **Extras** (`moduleImpl/extras/`) exists in source but is **not registered** in `SunLightPlugin.registerModules()`. See [Extras (Unregistered)](extras.md).
+- **Extras** is not available in standard builds (see [Extras (Not available in standard builds)](extras.md)).
+- If a module appears on another wiki page but not in this list, it may not be available in your build.
 
 ## Documentation notes
 
-- **Commands:** documented from command providers/source where available. Exact runtime aliases/labels may be overridden in `commands/<providerId>.yml`.
-- **Permissions:** listed from permission classes and/or command registration code.
-- **Configuration:** key options and defaults are documented from settings/config classes; generated files may include additional comments or migrated keys.
-- **Placeholders:** module placeholders and dynamic patterns are documented where discoverable in source.
-- **Core behavior:** SunLight core provides minimal commands/placeholders by itself; most functionality comes from modules.
-- Some modules are large (Chat, Essential, Reports, Voting, etc.). This wiki aims to cover all primary commands, permission namespaces/nodes, config areas, and important behavior.
+- **Commands:** exact command names, aliases, cooldowns, and costs can be customized in `commands/<providerId>.yml`.
+- **Permissions:** refer to each module page for the most relevant permission nodes.
+- **Configuration:** generated config files may include additional options or comments beyond what is summarized here.
+- **Placeholders:** placeholder availability depends on enabled modules and integrations.
+- Some modules are large (Chat, Essential, Reports, Voting, etc.). This documentation focuses on the main commands, permissions, settings, and behavior that admins and players need.

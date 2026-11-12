@@ -4,8 +4,6 @@ Runs periodic broadcaster/announcer messages from YAML announcer files.
 
 - **Module ID:** `scheduler`
 - **Display name:** `Scheduler`
-- **Module directory:** `moduleImpl/scheduler/`
-
 ## Commands
 
 This module does not register dedicated commands.
@@ -21,8 +19,6 @@ No dedicated command/permission classes were identified for this module.
 - A default `global` announcer is created automatically when the announcers directory is missing.
 
 ## Announcer schema
-
-Source: `moduleImpl/scheduler/announcer/AnnouncerSchema.java`
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -40,8 +36,6 @@ Announcer messages can use placeholders such as:
 - PlaceholderAPI placeholders (if available)
 
 ## Default announcer
-
-Source: `moduleImpl/scheduler/SchedulerDefaults.java`
 
 - **ID:** `global`
 - **Interval:** `120`
