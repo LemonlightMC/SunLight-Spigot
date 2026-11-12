@@ -49,6 +49,14 @@ SunLight's functionality is split into modules. Each module can be enabled/disab
 | Warmups | `warmups` | `warmups` | Warmup delays/cancellation for teleports |
 | Warps | `warps` | `warps` | Server warps with GUI and permissions |
 
+## Version differences (official wiki vs this source)
+
+The official SunLight wiki/downloads may document a different release than this repository. For example, public docs for some versions list modules such as **Scoreboard**, **TAB**, **Worlds**, and **Items**, or describe **Extras** as an active module with different features. In this source tree:
+
+- **Registered modules** are the ones listed above.
+- **Extras** code exists in `moduleImpl/extras/` but is not registered by default (see [Extras (Unregistered)](extras.md)).
+- If a module appears on the public wiki but not in this list, it is not part of this build unless added/registered in source.
+
 ## Unregistered module code
 
 - **Extras** (`moduleImpl/extras/`) exists in source but is **not registered** in `SunLightPlugin.registerModules()`. See [Extras (Unregistered)](extras.md).
@@ -59,4 +67,5 @@ SunLight's functionality is split into modules. Each module can be enabled/disab
 - **Permissions:** listed from permission classes and/or command registration code.
 - **Configuration:** key options and defaults are documented from settings/config classes; generated files may include additional comments or migrated keys.
 - **Placeholders:** module placeholders and dynamic patterns are documented where discoverable in source.
+- **Core behavior:** SunLight core provides minimal commands/placeholders by itself; most functionality comes from modules.
 - Some modules are large (Chat, Essential, Reports, Voting, etc.). This wiki aims to cover all primary commands, permission namespaces/nodes, config areas, and important behavior.

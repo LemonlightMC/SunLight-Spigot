@@ -2,40 +2,82 @@
 
 SunLight combines a global admin command, module command providers, and permission nodes for access control, bypasses, and feature toggles.
 
-## Root command
+## Core command and permissions
 
+### Root command
 - `/sunlight` (alias `/sl`) — plugin administration command
-  - Base permission: `sunlight.admin`
-  - Subcommands include `help`, `reload`, `reloadmodule`, `dump`, `export`, `import`, `cleanup`
-  - `cleanup` requires `sunlight.admin.cleanup`
+  - **Base permission (this build):** `sunlight.admin`
+  - **Subcommands:** `help`, `reload`, `reloadmodule`, `dump`, `export`, `import`, `cleanup`
+  - **`cleanup` permission:** `sunlight.admin.cleanup`
 
-See [Core Configuration](core-configuration.md#root-admin-command-sunlight).
+> Some public documentation for other SunLight versions may reference different core permission nodes (for example `sunlight.command.reload`). Always use the permissions that match your build; in this source tree the root admin command is guarded by `sunlight.admin`.
+
+### Common core/global permission patterns
+- `sunlight.admin` — access to SunLight root/admin command in this build
+- `sunlight.admin.cleanup` — access to `/sunlight cleanup`
+- Module/provider commands may additionally use command-system cooldown/cost bypass checks where implemented
+
+## Command flags
+
+SunLight commands commonly support flags (availability depends on the specific command/provider):
+
+| Flag | Meaning |
+| --- | --- |
+| `-s` | Silent execution (target player is not notified, when supported) |
+| `-f` | Force execution / bypass certain restrictions (when supported by the command) |
 
 ## Module/provider command configuration
 
-Most module commands are registered through command providers and can be configured in:
+Most module commands are registered through command providers and can be configured in `commands/<providerId>.yml`.
 
-- `commands/<providerId>.yml`
+### Provider structure (guide)
 
-Typical configurable fields per command node:
+A provider config can define **literal/standalone** command nodes and an optional **root** command that groups child subcommands. Exact key names and layout may vary by SunLight version/build, but the common structure is:
 
-| Field | Description |
-| --- | --- |
-| `enabled` | Enables/disables the command node |
-| `aliases` | Command aliases for the node/root |
-| `cooldown` | Cooldown applied by SunLight's command system (provider/node-specific behavior) |
-| `cost` | Command usage cost (economy integration/handling depends on module/command implementation) |
+- **`LiteralNodes`**: standalone command entries (direct commands like `/home`, `/sethome`, `/kit`, etc.)
+  - `Enabled` — enable/disable the standalone command
+  - `Aliases` — command name(s)/aliases
+  - `Cooldown` — cooldown in seconds
+  - `Cost` (where supported) — usage cost
+- **`RootNodes`** (optional): a parent command that exposes selected provider commands as children (e.g. `/homes set`, `/kits give`)
+  - `Enabled` — enable/disable the root command
+  - `Aliases` — root command aliases
+  - `Name` — display name (used in help/UI where applicable)
+  - `Childrens` / child mappings — maps provider command nodes to root subcommand aliases
 
-> The exact node names and available entries depend on each provider/module. Check the generated file for that provider after startup/reload.
+#### Example (illustrative)
+
+```yaml
+LiteralNodes:
+  preview:
+    Enabled: true
+    Aliases: viewkit
+    Cooldown: 0
+  give:
+    Enabled: true
+    Aliases: givekit
+    Cooldown: 0
+
+RootNodes:
+  kits:
+    Enabled: true
+    Aliases: kits
+    Name: Kits
+    Childrens:
+      preview: preview
+      give: grant
+```
+
+> This example shows the concept (standalone commands + grouped root command). Use the generated `commands/<providerId>.yml` in your server as the authoritative source for available nodes, keys, and defaults.
 
 ## Permission conventions
 
 Permissions are module/feature-specific and usually follow namespaces such as:
 
-- `sunlight.command.*` or `sunlight.admin*` for core/admin features
-- `sunlight.<module>.command.*` for module command access
-- `sunlight.<module>.bypass.*` for cooldown/cost/restriction bypasses
-- `sunlight.<feature>.*` for feature access, panel/settings toggles, or per-object access (e.g. per-warp/per-spawn/per-text)
+- `sunlight.admin`, `sunlight.admin.*` — core/admin features (build-dependent)
+- `sunlight.<module>.command.*` — module command access
+- `sunlight.<module>.bypass.*` — cooldown/cost/restriction bypasses
+- `sunlight.<feature>.*` — feature access, panel/settings toggles, or per-object access (e.g. per-warp/per-spawn/per-text)
 
 Always refer to the module's page for the authoritative list.
 

@@ -50,6 +50,8 @@ Implemented in `SunlightCommandProvider` (`su.nightexpress.sunlight.SunlightComm
 - **Base permission:** `sunlight.admin`
 - **Default behavior:** shows plugin help/subcommand list
 
+> **Note:** SunLight core provides minimal functionality by itself; most user-facing commands come from enabled modules and their command providers.
+
 ### Subcommands
 
 | Subcommand | Description | Notes / Usage |
@@ -62,7 +64,7 @@ Implemented in `SunlightCommandProvider` (`su.nightexpress.sunlight.SunlightComm
 | `import [name]` | Imports plugin data from a zip and reloads | Async extract from `exports/`, path-safety checks, then reloads plugin |
 | `cleanup [--dry-run --include-safe]` | Cleans stale user properties from stored user data | Permission: `sunlight.admin.cleanup`; player-only confirmation dialog flow; async cleanup/prune |
 
-> **Permission note:** `cleanup` explicitly requires `sunlight.admin.cleanup`. Other subcommands are under the `/sunlight` admin command context.
+> **Permission note:** `cleanup` explicitly requires `sunlight.admin.cleanup`. Other subcommands are under the `/sunlight` admin command context in this build. Public docs for other versions may list different core permission names.
 
 ## Module system
 

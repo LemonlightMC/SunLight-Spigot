@@ -5,7 +5,10 @@
 1. Download and install **NightCore** (required).
 2. Install any optional plugins you need for integrations (e.g. PlaceholderAPI, LuckPerms, TAB, DiscordSRV, packet library).
 
-## 2. Install SunLight
+## 2. Download and install SunLight
+
+- **Official project downloads:** [SpigotMC](https://www.spigotmc.org/resources/67733/), [BuiltByBit](https://builtbybit.com/resources/89968/), [Modrinth](https://modrinth.com/plugin/sunlightcore/), [Hangar](https://hangar.papermc.io/NightExpress/SunLight/)
+- **This repository:** contains the current source/build artifacts for this codebase version; release channels may differ from the source state.
 
 1. Place the SunLight `.jar` into your server's `plugins/` folder.
 2. Start (or restart) the server to generate configuration files.
