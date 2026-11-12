@@ -1,3 +1,6 @@
+---
+description: "Configure SunLight core settings on Minecraft servers: global config.yml options, language files, /sunlight admin commands, module enablement, and command configuration files."
+---
 # Core Configuration
 
 This page documents SunLight's global/core behavior: plugin metadata, root admin command, global config, language, module system, and command configuration.

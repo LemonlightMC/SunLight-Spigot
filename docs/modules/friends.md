@@ -1,3 +1,7 @@
+---
+description: "Guide to the Friends module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Friends
 
 Provides a friend system with requests, friend lists, favorites, blocking, private messaging shortcuts, teleport/jump features, admin tools, GUIs, and placeholders.
@@ -78,7 +82,7 @@ Notable feature areas supported by the module:
 
 Registered by `FriendsPlaceholders` (friend counts/status/relationship-related placeholders as implemented).
 
-## Notes
+## Important notes and limitations
 
 * Friends data is persisted via module data/repository classes.
 * Some friend preferences can be managed through the Settings module UI when enabled.

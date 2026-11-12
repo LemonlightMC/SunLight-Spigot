@@ -1,3 +1,7 @@
+---
+description: "Guide to the Glow module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Glow
 
 Gives players a glowing outline with static or phased (animated) color effects, GUI controls, presets/phases management, and nametag integration via TAB.
@@ -59,7 +63,11 @@ Source: `moduleImpl/glow/GlowSettings.java`
 * Dialogs and handlers/listeners manage color selection, effect application, and state updates.
 * Nametag color rendering integration is handled through TAB-related nametag systems (Glow/Nametags ecosystem).
 
-## Notes
+## Important notes and limitations
 
 * Glow appearance in nametags depends on TAB/Nametags integration being present and configured.
 * Presets/phases allow reusable and animated glow styles for ranks, events, or cosmetics.
+
+## Related documentation
+
+- [Nametags module](../modules/nametags.md)

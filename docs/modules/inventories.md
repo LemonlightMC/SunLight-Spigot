@@ -1,3 +1,7 @@
+---
+description: "Guide to the Inventories module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Inventories
 
 Provides inventory and ender chest management tools for online/offline players, plus portable container/workstation access (NMS-gated where applicable).
@@ -66,7 +70,7 @@ Source: `moduleImpl/inventories/config/InventoriesSettings.java`
 * Listener/handler classes manage inventory operations and container interactions.
 * Supports operations on online players and, where implemented, offline player data.
 
-## Notes
+## Important notes and limitations
 
 * Portable containers require compatible NMS/internals support and are gated accordingly.
 * Use inventory/ender chest management permissions carefully; these are powerful moderation/admin tools.

@@ -1,3 +1,7 @@
+---
+description: "Guide to the Socials module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Socials
 
 Relays selected in-game events to Discord via DiscordSRV and provides compatibility placeholders for legacy socials link data.
@@ -62,7 +66,12 @@ Source: `moduleImpl/socials/config/SocialsConfig.java`
 
 * Re-registers legacy `socials_<id>` placeholders by delegating to the **Links** module (resolved dynamically when Links data is available).
 
-## Notes
+## Important notes and limitations
 
 * This module is a Discord bridge/relay, not the primary place to manage server links (use the Links module for link content/commands/editor).
 * Enable chat relay carefully if DiscordSRV already handles chat to avoid duplicate messages.
+
+## Related documentation
+
+- [Links module](../modules/links.md)
+- [Chat module](../modules/chat.md)

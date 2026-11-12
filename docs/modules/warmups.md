@@ -1,3 +1,7 @@
+---
+description: "Guide to the Warmups module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Warmups
 
 Adds configurable warmup delays before actions (primarily teleports), with cancellation conditions and progress indicators.
@@ -36,8 +40,15 @@ Source: `moduleImpl/warmups/config/WarmupsConfig.java`
 | `Teleport.Warmups_By_Rank`  | default `5`, `vip=4`, `admin=0`                             | Warmup duration (seconds) by rank.                       |
 | Boss bar indicator settings | enabled, teleport title/color/style (`GREEN`, `NOTCHED_10`) | Progress indicator for warmups.                          |
 
-## Behavior notes
+## Behavior, compatibility, and integration notes
 
 * Intercepts SunLight teleport events for handled teleport types (non-forced and when not bypassed), starts warmups, and cancels on configured triggers.
 * Warmup ticking/processing is handled by module services/listeners and implementation classes (`Warmup`, `TeleportWarmup`, `WarmupType`).
 * Rank-based warmup durations use the configured rank map; `0` effectively means no delay for matching ranks.
+
+## Related documentation
+
+- [Homes module](../modules/homes.md)
+- [Warps module](../modules/warps.md)
+- [Spawns module](../modules/spawns.md)
+- [RTP module](../modules/rtp.md)

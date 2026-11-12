@@ -1,3 +1,7 @@
+---
+description: "Get started with SunLight for Minecraft servers: requirements, installation, core configuration, and command and permission basics."
+---
+
 # Welcome to SunLight
 
 **SunLight** is a modern, batteries-included, all-in-one core plugin with customizability and configurablity in mind. It provides the essential tools every server needs through a modular system, so you can enable only the features your server actually uses.

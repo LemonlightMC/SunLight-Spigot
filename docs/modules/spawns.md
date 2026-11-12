@@ -1,3 +1,7 @@
+---
+description: "Guide to the Spawns module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Spawns
 
 Manages server spawn points with default/newbie/login/respawn rules, teleport commands, and editor UIs.
@@ -63,8 +67,12 @@ Spawn definitions are stored as YAML files in the `spawns/` directory and edited
 * Spawn rules model supports rank/wildcard matching (see `SpawnRule` and rule editors)
 * Event: `PlayerSpawnTeleportEvent`
 
-## Notes
+## Important notes and limitations
 
 * Spawn access can be restricted per spawn with `sunlight.spawns.spawn.<id>` permissions.
 * Login/respawn/new-player behavior depends on configured rules and settings.
 * Teleport costs/cooldowns may also be affected by command/provider configuration.
+
+## Related documentation
+
+- [Warmups module](../modules/warmups.md)

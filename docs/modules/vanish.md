@@ -1,3 +1,7 @@
+---
+description: "Guide to the Vanish module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Vanish
 
 Hides players from others with a persistent vanish state, boss bar indicator, metadata flag support, and optional fake join/quit messages.
@@ -46,9 +50,13 @@ Source: `moduleImpl/vanish/config/VanishConfig.java`
 
 * `%vanish_state%`
 
-## Behavior notes
+## Behavior, compatibility, and integration notes
 
 * Vanished players are hidden from viewers who do not have bypass permission.
 * Boss bar and metadata are applied/removed with vanish state.
 * Fake join/leave broadcasts can be emitted on toggle and may interact with Greetings module behavior.
 * Integrates with other modules/systems that check vanish state (e.g. AFK, Settings).
+
+## Related documentation
+
+- [Greetings module](../modules/greetings.md)

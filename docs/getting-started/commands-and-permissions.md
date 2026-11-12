@@ -1,3 +1,6 @@
+---
+description: "Guide to SunLight commands and permissions for Minecraft servers, covering command flags, provider configs, permission nodes, bypass permissions, and common troubleshooting."
+---
 # Commands & Permissions System
 
 SunLight combines a global admin command, module command providers, and permission nodes for access control, bypasses, and feature toggles.

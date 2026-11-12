@@ -1,3 +1,7 @@
+---
+description: "Guide to the RTP module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # RTP (Random Teleport)
 
 Teleports players to random locations with world/region/safety handling, cooldowns, and costs.
@@ -35,8 +39,12 @@ Common permission areas:
 
 > Inspect generated `rtp/settings.yml` for exact keys, defaults, and world-specific options.
 
-## Notes
+## Important notes and limitations
 
 * RTP safety and validity checks are performed before teleporting (chunk/location safety as implemented by engine/settings).
 * Cooldowns/costs may be enforced by module logic and/or command provider configuration.
 * World-specific rules and redirections depend on your configured RTP settings.
+
+## Related documentation
+
+- [Warmups module](../modules/warmups.md)

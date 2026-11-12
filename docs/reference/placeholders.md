@@ -1,3 +1,6 @@
+---
+description: "SunLight PlaceholderAPI placeholders reference for Minecraft servers, listing global and module placeholders for AFK, homes, warps, chat, voting, and more."
+---
 # Placeholder Reference
 
 SunLight provides PlaceholderAPI placeholders through core and module placeholder registrations. Exact availability depends on which modules are enabled and which integrations are active.

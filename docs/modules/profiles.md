@@ -1,3 +1,7 @@
+---
+description: "Guide to the Profiles module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Profiles
 
 Provides player profiles/scopes with profile switching, warmups/cooldowns, combat restrictions, synchronization, LuckPerms context hooks, and GUI management.
@@ -61,7 +65,7 @@ Also provides menu entry points such as:
 * Menus/UI for profile selection and options
 * Scope/switch/sync subsystems
 
-## Notes
+## Important notes and limitations
 
 * Profile switching can interact with Warmups, combat hooks, economy/cost checks, and permission systems.
 * Exact scope definitions and synced data depend on generated module configuration.

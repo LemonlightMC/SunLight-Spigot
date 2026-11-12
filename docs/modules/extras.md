@@ -1,3 +1,7 @@
+---
+description: "Information about the Extras module in SunLight, including its availability in standard builds and guidance for server admins."
+---
+
 # Extras (Unregistered)
 
 `moduleImpl/extras/` contains an additional "Extras" module implementation in source, but it is **not registered** in `SunLightPlugin.registerModules()` and therefore is not loaded by the standard plugin build.

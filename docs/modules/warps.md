@@ -1,3 +1,7 @@
+---
+description: "Guide to the Warps module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Warps
 
 Server-wide public warps with permissions, costs, GUI management, and optional per-warp shortcut commands.
@@ -77,8 +81,13 @@ Warp data is stored in module warp files (e.g. `warps/*.yml`) and includes prope
 * Dialogs: warp name/description/command/slots and related editor flows
 * Event: `WarpTeleportEvent`
 
-## Notes
+## Important notes and limitations
 
 * Per-warp permissions allow fine-grained access control.
 * Costs/cooldowns may be enforced via module settings and command/provider config.
 * World activation tracking and save-dirty tasks are handled by the module implementation.
+
+## Related documentation
+
+- [Warmups module](../modules/warmups.md)
+- [Player Warps module](../modules/playerwarps.md)

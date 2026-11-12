@@ -1,3 +1,7 @@
+---
+description: "Navigation summary for SunLight documentation sections and pages."
+---
+
 # Table of contents
 
 * [Welcome](README.md)

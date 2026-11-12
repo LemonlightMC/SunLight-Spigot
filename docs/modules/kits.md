@@ -1,3 +1,7 @@
+---
+description: "Guide to the Kits module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Kits
 
 Provides item kits with cooldowns, costs, previews, GUI editor/list menus, bind items, and admin/player commands.
@@ -69,7 +73,7 @@ Source: `KitsPlaceholders`
 * Menus: kit list menu, kit preview menu, kit editor flows/dialogs
 * Data: kit definitions and user cooldown/claim data managed by kit data classes/repositories
 
-## Notes
+## Important notes and limitations
 
 * Use per-kit permissions to control rank-based access.
 * Costs use economy integration when configured.

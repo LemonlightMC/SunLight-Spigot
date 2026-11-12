@@ -1,3 +1,7 @@
+---
+description: "Guide to the Timer module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Timer
 
 Provides global and personal timers/stopwatches with schedules, visibility rules, display channels, actions, persistence, and editor GUIs.
@@ -110,7 +114,7 @@ The timer module is feature-rich and includes:
 * **Global:** `timer_*` placeholders (state, name, kind, formatted time, remaining, elapsed, seconds, progress, duration, count, etc.)
 * **Personal:** `timer_personal_*` placeholders with similar fields for personal timers
 
-## Notes
+## Important notes and limitations
 
 * Scoreboard display channel may require TAB integration/backend support.
 * Personal timers are stored per-user (service/properties-based implementation).

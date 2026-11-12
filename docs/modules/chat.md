@@ -1,3 +1,7 @@
+---
+description: "Guide to the Chat module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Chat
 
 Advanced chat management with channels, formatting, private messages/conversations, mail, mentions, spy, roleplay, item display, moderation (anti-caps/flood/profanity), and optional Discord relay integration.
@@ -190,9 +194,13 @@ Source: `moduleImpl/chat/core/ChatSettings.java` (large configuration surface). 
 * User chat properties (e.g. conversations/mentions/spy toggles) are managed via `ChatProperties` and integrated with the Settings module where applicable.
 * Format and message templates support built-in placeholders and PlaceholderAPI (where enabled).
 
-## Notes
+## Important notes and limitations
 
 * Chat is one of the largest modules; generated config files may include additional comments/options beyond this summary.
 * Channel/message permissions and moderation bypasses should be configured carefully for staff vs players.
 * Discord integration behavior depends on DiscordSRV availability and module settings.
 * Mail is database-backed; table prefix can be used for isolation or cross-server sync.
+
+## Related documentation
+
+- [Socials module](../modules/socials.md)

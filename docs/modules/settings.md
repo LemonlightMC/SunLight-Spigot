@@ -1,3 +1,7 @@
+---
+description: "Guide to the Settings module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Settings
 
 Provides a central player preferences GUI (`/settings`) with panels and toggles that integrate with other SunLight modules (chat, friends, PTP, vanish, essential, voting, etc.).
@@ -102,7 +106,7 @@ Used by settings that control who can interact/see or receive requests:
 * Can open or control related module features (e.g. glow, nametag, profile, spy actions).
 * Applies effects (e.g. speed/potion/night vision-related behavior) on setting changes and player join as implemented.
 
-## Notes
+## Important notes and limitations
 
 * Available panels/settings depend on which modules are installed/enabled and which permissions the player has.
 * Settings acts as a unified interface; authoritative behavior and data for each feature remain in the owning module.

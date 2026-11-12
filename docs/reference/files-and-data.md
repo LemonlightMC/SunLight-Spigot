@@ -1,3 +1,6 @@
+---
+description: "SunLight file and data layout reference for Minecraft servers, explaining core config files, module folders, command configs, exports, backups, and database storage."
+---
 # File & Data Layout
 
 This page summarizes important SunLight files and where module data/configuration is typically stored. Paths are relative to `plugins/SunLight/` unless noted.

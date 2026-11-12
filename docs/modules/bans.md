@@ -1,3 +1,7 @@
+---
+description: "Guide to the Bans module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Bans
 
 Comprehensive punishment system for bans, temporary bans, IP bans, mutes, warns, kicks, pardons, punishment history/lists, and alt detection.
@@ -142,8 +146,12 @@ Bans module registers placeholders via `BansPlaceholders` (punishment-related va
 * `HistoryMenu`, `PunishmentsMenu`, and sorting modes are implemented for punishment browsing/management.
 * GUI actions may require `sunlight.bans.punishment.delete` / `sunlight.bans.punishment.toggle`.
 
-## Notes
+## Important notes and limitations
 
 * Punishment commands support configured reason IDs and silent flags (`-s` / `--silent`) in reason parsing.
 * Temporary punishment commands require amount + time unit; time unit aliases are configurable.
 * Data is persisted via the bans data manager/repositories/queries; cross-server sync is possible with shared DB/prefix strategy.
+
+## Related documentation
+
+- [Reports module](../modules/reports.md)

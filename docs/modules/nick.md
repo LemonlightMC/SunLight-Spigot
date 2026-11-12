@@ -1,3 +1,7 @@
+---
+description: "Guide to the Nick module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Nick
 
 Allows players to set custom nicknames with validation rules, color permissions, cooldown/cost controls, and optional tablist/display application.
@@ -58,7 +62,7 @@ Source: `moduleImpl/nick/config/NickConfig.java` (with legacy migration support)
 
 * `PlayerNickChangeEvent` (fired on nickname changes)
 
-## Notes
+## Important notes and limitations
 
 * Nick validation includes length, banned words, regex, and permission checks.
 * Cooldown/cost can be bypassed with dedicated permissions.

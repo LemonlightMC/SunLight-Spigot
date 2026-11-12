@@ -1,3 +1,7 @@
+---
+description: "Guide to the Texts module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Texts (Custom Text)
 
 Maps configurable text files/pages to custom commands, allowing you to display formatted information (rules, help pages, announcements, etc.) to players.
@@ -51,7 +55,7 @@ Each loaded text registers its own dynamic command:
 
 * `TextsLang` provides command description and invalid-text feedback messages.
 
-## Notes
+## Important notes and limitations
 
 * Custom texts are a simple way to publish server information pages without creating separate plugins/commands.
 * Restrict sensitive texts using per-text permissions.

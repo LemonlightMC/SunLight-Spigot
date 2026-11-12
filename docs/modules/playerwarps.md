@@ -1,3 +1,7 @@
+---
+description: "Guide to the Player Warps module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Player Warps
 
 Allows players to create and manage their own warps with categories/ranks, claims, moderation tools, safety checks, economy integration, and rich GUI/dialog workflows.
@@ -61,8 +65,13 @@ Configuration covers (module scope):
 * Dialogs/menus under `dialog/**` and `menu/**`
 * Importer, validation, listeners, and visit/object models in module subpackages
 
-## Notes
+## Important notes and limitations
 
 * Player Warps is highly configurable; review generated settings and menus after first load.
 * Economy/protection/plugin integrations may affect creation and teleport behavior.
 * For exact command usage on your server, rely on generated command config and in-game help in addition to this overview.
+
+## Related documentation
+
+- [Warps module](../modules/warps.md)
+- [Warmups module](../modules/warmups.md)

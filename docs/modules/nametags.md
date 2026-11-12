@@ -1,3 +1,7 @@
+---
+description: "Guide to the Nametags module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Nametags
 
 Provides customizable player nametags (prefix/suffix/tag/rank/profile display) rendered through TAB/TAB-Bridge, with GUI/dialog management and dynamic placeholder support.
@@ -59,7 +63,11 @@ The module supports (as implemented by its subsystems):
 * UI: menus and dialogs for editing/selection (`menu/*`, `dialog/*`)
 * Sources/listeners/events: data sources, updates, and `NametagUpdateEvent`
 
-## Notes
+## Important notes and limitations
 
 * Nametags rendering ownership depends on TAB integration; if required dependencies are missing, the module will not load due to its load condition.
 * If nametags do not update as expected, verify TAB/TAB-Bridge compatibility, PlaceholderAPI availability (if needed), and module/profile configuration.
+
+## Related documentation
+
+- [Glow module](../modules/glow.md)

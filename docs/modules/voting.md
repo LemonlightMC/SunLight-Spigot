@@ -1,3 +1,7 @@
+---
+description: "Guide to the Voting module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Voting
 
 Advanced in-game voting/polling system with templates, wizard-based creation, weighted voting, paid/gated choices, schedules/recurrence, runoff handling, history, and rich GUIs.
@@ -97,7 +101,7 @@ Common placeholder areas:
 * Database-backed storage: `VotingDataManager`, `VoteRepository`, `BallotRepository`
 * Models/enums for rules, tallies, statuses, options, templates, and outcomes
 
-## Notes
+## Important notes and limitations
 
 * Voting supports complex governance/event polling scenarios; start with templates or simple polls before enabling advanced rules (weighting, runoff, recurrence, paid choices).
 * Payment/refund behavior for gated choices is handled by module logic according to configured rules and vote outcomes.

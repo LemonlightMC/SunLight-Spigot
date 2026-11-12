@@ -1,3 +1,7 @@
+---
+description: "Guide to the Scheduler module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Scheduler
 
 Runs periodic broadcaster/announcer messages from YAML announcer files.
@@ -51,7 +55,7 @@ Source: `moduleImpl/scheduler/SchedulerDefaults.java`
 * **Ranks:** `*`
 * **Sample message keys:** `discord`, `vote`, `store`
 
-## Behavior notes
+## Behavior, compatibility, and integration notes
 
 * Broadcast tasks are handled by the module's announcer scheduler logic (main-thread-safe message dispatch as implemented).
 * Rank visibility checks use player groups/inheritance and wildcard matching.

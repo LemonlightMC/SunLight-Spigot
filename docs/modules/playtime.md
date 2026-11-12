@@ -1,3 +1,7 @@
+---
+description: "Guide to the Playtime module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Playtime
 
 Tracks player playtime, supports goals/rewards/reminders, period-based progress, calendar UI, and placeholders.
@@ -57,7 +61,7 @@ Registered by `PlaytimePlaceholders` for playtime totals, periods, goals/progres
 * Menus/dialogs for playtime viewing, goal/calendar UI, and editor flows
 * Data repositories/classes for tracking and persisting playtime and goal progress
 
-## Notes
+## Important notes and limitations
 
 * Playtime rewards/reminders can be integrated with player notification preferences (including Settings module reminder toggles where supported).
 * Exact placeholder keys and goal config structure should be verified against `PlaytimePlaceholders` and generated `playtime/settings.yml`.

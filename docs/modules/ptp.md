@@ -1,3 +1,7 @@
+---
+description: "Guide to the PTP module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # PTP (Player Teleports)
 
 Player-to-player teleport request and invite system with accept/decline flow, toggles, timeout handling, and optional costs/auto-accept integration.
@@ -51,9 +55,13 @@ Source: `moduleImpl/ptp/config/PTPSettings.java`
 
 * `%ptp_requests_enabled%`
 
-## Behavior notes
+## Behavior, compatibility, and integration notes
 
 * Stores pending requests per target UUID and expires them based on timeout.
 * Supports accept/decline events and integrates with Settings module audience/auto-accept behavior where available.
 * Requests are cleared on player quit.
 * Costs/cooldowns can be bypassed with permissions.
+
+## Related documentation
+
+- [Warmups module](../modules/warmups.md)

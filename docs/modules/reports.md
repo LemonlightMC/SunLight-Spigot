@@ -1,3 +1,7 @@
+---
+description: "Guide to the Reports module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Reports
 
 Provides a player reporting system with submission flow, staff triage/management, claim/release/resolve workflows, notifications, cooldowns, and data persistence.
@@ -74,8 +78,12 @@ Workflow features (from module implementation scope):
 
 Registered by `ReportsPlaceholders` for report status/count/info values.
 
-## Notes
+## Important notes and limitations
 
 * Reports can integrate with Bans/Socials/notification flows depending on configuration.
 * Database-backed storage enables cross-server/report persistence scenarios when configured appropriately.
 * Review staff permissions carefully to separate report submission from moderation actions.
+
+## Related documentation
+
+- [Bans module](../modules/bans.md)

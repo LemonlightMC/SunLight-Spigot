@@ -1,3 +1,7 @@
+---
+description: "Guide to the Greetings module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Greetings
 
 Sends customizable join, first-join, and quit messages (and optional join commands) based on configured greeting rules.
@@ -27,8 +31,12 @@ The module supports rank/priority-based greeting configuration through `Greeting
 
 > See the generated `greetings/settings.yml` for the exact structure, keys, placeholders, and defaults.
 
-## Behavior notes
+## Behavior, compatibility, and integration notes
 
 * `GreetingsListener` applies greeting behavior on player join/quit events.
 * Greeting selection can use priority/rank-based matching (as described in project README and implemented in greeting models).
 * Integrates with other modules/features that respect greeting messages where applicable (e.g. vanish fake join/quit handling may interact with greeting behavior).
+
+## Related documentation
+
+- [Vanish module](../modules/vanish.md)

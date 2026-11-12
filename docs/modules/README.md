@@ -1,3 +1,6 @@
+---
+description: "Overview of all SunLight modules for Minecraft servers, including module IDs, configuration locations, command setup, and links to detailed module documentation."
+---
 # Modules Overview
 
 SunLight's functionality is split into modules. Each module can be enabled/disabled independently in `modules.yml`.

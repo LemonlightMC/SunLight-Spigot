@@ -1,3 +1,7 @@
+---
+description: "Guide to the Freeze module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Freeze
 
 Allows staff to freeze players in place with configurable restrictions on movement, interaction, combat, inventory, chat, commands, and more.
@@ -43,7 +47,7 @@ The Freeze module provides configurable restrictions applied while a player is f
 
 > Check the generated `freeze/settings.yml` for exact keys, defaults, and any additional options in your build.
 
-## Notes
+## Important notes and limitations
 
 * Targeting other players requires `sunlight.freeze.command.freeze.others`.
 * Players with `sunlight.freeze.bypass.immune` are protected from being frozen by non-immune senders (per command implementation).

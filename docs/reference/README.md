@@ -1,3 +1,7 @@
+---
+description: "Reference guide to SunLight PlaceholderAPI placeholders for Minecraft servers, including global and module-specific placeholders and usage guidance."
+---
+
 # Placeholders
 
 SunLight provides PlaceholderAPI placeholders through core and module placeholder registrations. Exact availability depends on which modules are enabled and which integrations are active.

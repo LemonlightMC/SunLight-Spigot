@@ -1,3 +1,7 @@
+---
+description: "Guide to the Death Messages module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Death Messages
 
 Customizes player death messages based on damage/entity context.
@@ -22,7 +26,7 @@ The module defines configurable death message mappings for different contexts (d
 
 > Inspect the generated module `settings.yml` for the full list of message keys, contexts, and defaults in your build.
 
-## Behavior notes
+## Behavior, compatibility, and integration notes
 
 * Listens to death events and replaces/handles death message output according to configured rules.
 * Supports context-aware message selection (e.g. by killer/damage type as implemented in source classes).

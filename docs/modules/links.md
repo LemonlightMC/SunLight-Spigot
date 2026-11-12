@@ -1,3 +1,7 @@
+---
+description: "Guide to the Links module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Links
 
 Manages server links (website, Discord, store, map, etc.) with player commands, an admin editor, optional click commands, and click tracking.
@@ -67,8 +71,12 @@ Link entries are stored in module configuration/data managed by `LinksModule`/`L
 * `LinkEditorMenu` provides in-game editing/management workflow for admins.
 * Player list/menu shows enabled, actionable links sorted by ID (misconfigured links may be hidden until repaired).
 
-## Notes
+## Important notes and limitations
 
 * Use per-link commands/actions carefully, especially if commands run as console.
 * Click counters can be reviewed/reset through editor/management features where available.
 * After structural/config changes, use `/linksadmin reload` or module reload.
+
+## Related documentation
+
+- [Socials module](../modules/socials.md)

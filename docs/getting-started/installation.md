@@ -1,3 +1,6 @@
+---
+description: "How to install the SunLight plugin on Minecraft Paper or Spigot servers, including NightCore dependency setup, first startup steps, and initial module configuration."
+---
 # Installation
 
 ## 1. Install dependencies

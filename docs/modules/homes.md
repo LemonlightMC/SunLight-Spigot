@@ -1,3 +1,7 @@
+---
+description: "Guide to the Homes module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Homes
 
 Allows players to create and manage personal home locations with limits, costs, cooldowns, permissions, invites/visits, and GUI support.
@@ -72,8 +76,12 @@ Key options include:
 * Dialogs for home creation/management flows
 * Home model/data repositories for storage and player home state
 
-## Notes
+## Important notes and limitations
 
 * Home limits are typically rank/permission based.
 * Teleport warmups/cooldowns/costs may be influenced by Homes settings, Warmups module, and command provider configs.
 * Protection plugin hooks (WorldGuard/GriefPrevention) may affect where homes can be set.
+
+## Related documentation
+
+- [Warmups module](../modules/warmups.md)

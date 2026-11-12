@@ -1,3 +1,7 @@
+---
+description: "Guide to the Nerf Phantoms module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Nerf Phantoms
 
 Controls phantom behavior by disabling spawns, modifying damage/health, and allowing players to reset insomnia (anti-phantom) individually.
@@ -42,7 +46,7 @@ Source: `moduleImpl/nerfphantoms/config/PhantomsConfig.java`
 
 * `%phantoms_antiphantom_state%` — yes/no state for anti-phantom mode.
 
-## Behavior notes
+## Behavior, compatibility, and integration notes
 
 * When anti-phantom is enabled for a player, the module periodically resets `Statistic.TIME_SINCE_REST` (task runs on main thread as implemented) to prevent phantom spawning due to insomnia.
 * Spawn/damage/health modifications apply according to configured toggles and values.

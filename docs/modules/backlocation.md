@@ -1,3 +1,7 @@
+---
+description: "Guide to the Back Location module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Back Location
 
 Stores previous teleport locations and death locations, allowing players to return with `/back` and `/deathback`.
@@ -62,8 +66,12 @@ Source: `moduleImpl/backlocation/config/BackLocationSettings.java`.
 * `%backlocation_previous_expire_in%`
 * `%backlocation_death_expire_in%`
 
-## Notes
+## Important notes and limitations
 
 * Feedback messages for success/failure/targeting are defined in `BackLocationLang`.
 * Teleport costs use Vault economy integration when cost > 0.
 * Actual command cooldown behavior can also be controlled via command provider config (`commands/back.yml`, `commands/deathback.yml`).
+
+## Related documentation
+
+- [Warmups module](../modules/warmups.md)

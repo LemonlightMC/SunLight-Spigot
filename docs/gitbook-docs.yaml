@@ -2,40 +2,22 @@ $schema: https://api.gitbook.com/gitbook-docs.yaml
 site:
   title: SunLight
   structure:
-    - type: section
-      key: section-getting-started
-      title: Getting Started
-      path: getting-started
-      default: true
-      children: []
     - type: space
       key: space-getting-started
       title: Getting Started
-      path: undefined
+      path: /
       default: true
       content:
         directory: ./getting-started
-    - type: section
-      key: section-modules
+    - type: space
+      key: space-modules
       title: Modules
-      path: modules
-      children:
-        - type: space
-          key: space-modules
-          title: Modules
-          path: modules
-          default: true
-          content:
-            directory: ./modules
-    - type: section
-      key: section-reference
+      path: /modules
+      content:
+        directory: ./modules
+    - type: space
+      key: space-reference
       title: Reference
-      path: reference
-      children:
-        - type: space
-          key: space-reference
-          title: Reference
-          path: reference
-          default: true
-          content:
-            directory: ./reference
+      path: /reference
+      content:
+        directory: ./reference

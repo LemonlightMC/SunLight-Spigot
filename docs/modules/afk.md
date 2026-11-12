@@ -1,3 +1,7 @@
+---
+description: "Guide to the AFK module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # AFK
 
 Tracks player inactivity, places players into AFK mode, and can run actions such as warnings, kicks, commands, sounds, particles, status bars, and integrations.
@@ -125,7 +129,7 @@ Source: `moduleImpl/afk/config/AfkSettings.java`. Key options:
 
 Registered in `AfkPlaceholders`: `%afk_state%`, `%afk_mode%`, `%afk_idle_time%`, `%afk_idle_time_formatted%`, `%afk_total_time%`, `%afk_total_time_formatted%`, `%afk_count%`, `%afk_enter_timestamp%`, `%afk_enter_time%`, `%afk_duration%`, `%afk_duration_formatted%`, `%afk_time_until_afk%`, `%afk_time_until_kick%`, `%afk_online_count%`, `%afk_online%`, `%afk_stats_sessions%`, `%afk_stats_total_time%`, `%afk_stats_total_time_formatted%`, `%afk_stats_average_time%`, `%afk_stats_average_time_formatted%`.
 
-## Notes
+## Important notes and limitations
 
 * Rank-based timing/settings use SunLight's rank/permission table mechanism.
 * Some behavior depends on optional integrations (LuckPerms, DiscordSRV, WorldGuard regions for exemptions, vanish integration).

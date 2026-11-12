@@ -1,3 +1,6 @@
+---
+description: "Introduction to SunLight, a modular all-in-one core plugin for Minecraft Paper and Spigot servers, with features, module categories, compatibility, dependencies, and setup links."
+---
 # Welcome to SunLight
 
 **SunLight** is a modern, batteries-included, all-in-one core plugin with customizability and configurablity in mind. It provides the essential tools every server needs through a modular system, so you can enable only the features your server actually uses.

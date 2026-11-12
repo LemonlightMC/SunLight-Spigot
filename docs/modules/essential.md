@@ -1,3 +1,7 @@
+---
+description: "Guide to the Essential module in SunLight for Minecraft servers, covering commands, permissions, configuration, features, and usage for admins and players."
+---
+
 # Essential
 
 A large utility module providing core server/player commands such as teleportation, gamemode, healing/feeding, flight/speed, time, XP, renaming/enchanting, player info, and more.
@@ -54,7 +58,7 @@ Common patterns include:
 
 The Essential module may also include listeners/core helpers (e.g. invulnerability handling) and additional behavior controlled by settings.
 
-## Notes
+## Important notes and limitations
 
 * Because Essential contains many commands, this wiki documents it as a command-bundle module. Your generated `commands/*.yml` files and in-game help are the best runtime reference for the final enabled command set on your server.
 * Some commands may depend on NMS/internals, permissions plugins, or optional integrations.
