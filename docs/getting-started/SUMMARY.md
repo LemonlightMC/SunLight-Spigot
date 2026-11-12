@@ -1,4 +1,4 @@
-# Summary
+# Table of contents
 
 - [Welcome](README.md)
 - [Requirements & Dependencies](requirements.md)
