@@ -7,7 +7,7 @@
 - [Chat](chat.md)
 - [Death Messages](deathmessages.md)
 - [Essential](essential.md)
-- [Extras (Unregistered)](extras.md)
+- [Extras](extras.md)
 - [Freeze](freeze.md)
 - [Friends](friends.md)
 - [Glow](glow.md)

@@ -20,7 +20,7 @@
 - [Chat](modules/chat.md)
 - [Death Messages](modules/deathmessages.md)
 - [Essential](modules/essential.md)
-- [Extras (Unregistered)](modules/extras.md)
+- [Extras](modules/extras.md)
 - [Freeze](modules/freeze.md)
 - [Friends](modules/friends.md)
 - [Glow](modules/glow.md)
