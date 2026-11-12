@@ -1,28 +1,19 @@
 # Core Configuration
 
-This page documents SunLight's global/core behavior: plugin metadata, root admin command, global config, language, module system, and command configuration.
-
-## Plugin metadata
-
-- **Name:** `SunLight`
-- **Description:** Advanced, light & modern all-in-one server management plugin.
-- **Required dependency:** `NightCore`
-- **Optional integrations:** `TAB`, `TAB-Bridge`, `UltimateTeams`, , `PlaceholderAPI`, `ProtocolLib`, `packetevents`, `DiscordSRV`, `WorldGuard`, `GriefPrevention`
-
 ## Global config (`config.yml`)
 
 Main global options:
 
-| Path | Type | Default | Description |
-| --- | --- | --- | --- |
-| `General.Time_Zone` | String | `system` | Global timezone for dates/times and day/week/month rollovers. Use `system` or an IANA ID (e.g. `Europe/Berlin`, `America/New_York`). |
-| `General.Date_Format` | String | `dd/MM/yyyy HH:mm:ss` | Global date format used by plugin modules. |
-| `General.Time_Format` | String | `HH:mm:ss` | Global time format used by plugin modules. |
-| `General.ConsoleName` | String | `Console` | Name used for console sender in relevant messages (e.g. private messages, punishments/actions). |
-| `Combat.Hook` | String | `auto` | Shared combat-tag source for modules: `auto`, `pvpmanager`, `combatlogx`, or `none`. `auto` prefers PvPManager, otherwise CombatLogX. |
+| Path                  | Type   | Default               | Description                                                                                                                          |
+| --------------------- | ------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `General.Time_Zone`   | String | `system`              | Global timezone for dates/times and day/week/month rollovers. Use `system` or an IANA ID (e.g. `Europe/Berlin`, `America/New_York`). |
+| `General.Date_Format` | String | `dd/MM/yyyy HH:mm:ss` | Global date format used by plugin modules.                                                                                           |
+| `General.Time_Format` | String | `HH:mm:ss`            | Global time format used by plugin modules.                                                                                           |
+| `General.ConsoleName` | String | `Console`             | Name used for console sender in relevant messages (e.g. private messages, punishments/actions).                                      |
+| `Combat.Hook`         | String | `auto`                | Shared combat-tag source for modules: `auto`, `pvpmanager`, `combatlogx`, or `none`. `auto` prefers PvPManager                       |
 
 ## Global language
-   
+
 SunLight provides language/message files for core text such as:
 
 - **Command argument labels** (slot, enchant, level, target, type, time, mode, state, position, and more)
@@ -43,21 +34,19 @@ Language files may be provided for multiple locales depending on your build. You
 - **Base permission:** `sunlight.admin`
 - **Default behavior:** shows plugin help/subcommand list
 
-> **Note:** Most user-facing commands come from enabled modules. The core `/sunlight` command is mainly for administration.
+> **Note:** Most user-facing commands come from enabled modules. The `/sunlight` command is mainly for administration.
 
 ### Subcommands
 
-| Subcommand | Description | Notes / Usage |
-| --- | --- | --- |
-| `help` | Lists available subcommands | `/sunlight help` |
-| `reload` | Reloads the plugin | `/sunlight reload` |
-| `reloadmodule <name>` | Reloads a single module | `/sunlight reloadmodule <id>`; module id/name suggestions provided by provider logic |
-| `dump` | Prints diagnostics for support | Outputs plugin, server, Java, and module information to the sender and server logs |
-| `export [name]` | Exports plugin data to a zip file | Async; writes to `exports/<name>.zip` (safe name handling; defaults to timestamped backup name if omitted/unsafe) |
-| `import [name]` | Imports plugin data from a zip and reloads | Async extract from `exports/`, path-safety checks, then reloads plugin |
-| `cleanup [--dry-run --include-safe]` | Cleans stale user properties from stored user data | Permission: `sunlight.admin.cleanup`; player-only confirmation dialog flow; async cleanup/prune |
-
-> **Permission note:** `cleanup` explicitly requires `sunlight.admin.cleanup`. Other subcommands are under the `/sunlight` admin command context in this build. Public docs for other versions may list different core permission names.
+| Subcommand                           | Description                                        | Notes / Usage                                                                                                     |
+| ------------------------------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `help`                               | Lists available subcommands                        | `/sunlight help`                                                                                                  |
+| `reload`                             | Reloads the plugin                                 | `/sunlight reload`                                                                                                |
+| `reloadmodule <name>`                | Reloads a single module                            | `/sunlight reloadmodule <id>`; module id/name suggestions provided by provider logic                              |
+| `dump`                               | Prints diagnostics for support                     | Outputs plugin, server, Java, and module information to the sender and server logs                                |
+| `export [name]`                      | Exports plugin data to a zip file                  | Async; writes to `exports/<name>.zip` (safe name handling; defaults to timestamped backup name if omitted/unsafe) |
+| `import [name]`                      | Imports plugin data from a zip and reloads         | Async extract from `exports/`, path-safety checks, then reloads plugin                                            |
+| `cleanup [--dry-run --include-safe]` | Cleans stale user properties from stored user data | Permission: `sunlight.admin.cleanup`; player-only confirmation dialog flow; async cleanup/prune                   |
 
 ## Module system
 
