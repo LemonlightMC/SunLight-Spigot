@@ -1,4 +1,4 @@
-# Summary
+# Table of contents
 
-- [Placeholders](placeholders.md)
-- [File & Data Layout](files-and-data.md)
+* [Placeholders](README.md)
+* [File & Data Layout](files-and-data.md)
