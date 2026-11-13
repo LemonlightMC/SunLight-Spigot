@@ -287,11 +287,13 @@ public class NameplateService {
         this.lastComposed.remove(playerId);
         this.lastTeam.remove(playerId);
         this.backend.remove(playerId);
+        this.access.invalidate(playerId);
     }
 
     public void clear() {
         this.lastComposed.clear();
         this.lastTeam.clear();
         this.backend.clearCache();
+        this.access.clearCache();
     }
 }

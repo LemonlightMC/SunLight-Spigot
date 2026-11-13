@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Decides whether a player may use a tag, and owns every mutation of a tag
@@ -27,7 +29,13 @@ import java.util.Set;
  */
 public class AccessService {
 
+    private static final long ACCESS_CACHE_TTL_MILLIS = 5_000L;
+
+    private static final String GLOBAL_ACCESS_KEY = "__global__";
+    private static final String TAG_PERMISSION_KEY_PREFIX = "tag:";
+
     private final UserManager userManager;
+    private final Map<UUID, Map<String, CachedAccess>> accessCache = new ConcurrentHashMap<>();
 
     public AccessService(@NotNull UserManager userManager) {
         this.userManager = userManager;
@@ -49,10 +57,7 @@ public class AccessService {
             @NotNull SunUser user,
             @NotNull TagDefinition tag,
             long nowMillis) {
-        if (EconomyUtils.hasBypass(player, NametagsPerms.BYPASS_ACCESS))
-            return true;
-        if (player.hasPermission(NametagsPerms.ADMIN))
-            return true;
+        if (this.hasGlobalTagAccess(player)) return true;
 
         return switch (tag.getAccessMode()) {
             case FREE -> true;
@@ -61,10 +66,33 @@ public class AccessService {
         };
     }
 
+    private boolean hasGlobalTagAccess(@NotNull Player player) {
+        long now = System.currentTimeMillis();
+        Map<String, CachedAccess> cache = this.accessCache.computeIfAbsent(player.getUniqueId(), id -> new ConcurrentHashMap<>());
+        CachedAccess cached = cache.get(GLOBAL_ACCESS_KEY);
+        if (cached != null && !cached.isExpired(now)) {
+            return cached.allowed();
+        }
+
+        boolean allowed = EconomyUtils.hasBypass(player, NametagsPerms.BYPASS_ACCESS)
+                || player.hasPermission(NametagsPerms.ADMIN);
+        cache.put(GLOBAL_ACCESS_KEY, new CachedAccess(allowed, now + ACCESS_CACHE_TTL_MILLIS));
+        return allowed;
+    }
+
     public boolean hasTagPermission(@NotNull Player player, @NotNull TagDefinition tag) {
-        if (tag.hasExtraPermission() && !player.hasPermission(tag.getPermission()))
-            return false;
-        return NametagsPerms.hasTagAccess(player, tag.getId());
+        long now = System.currentTimeMillis();
+        String key = TAG_PERMISSION_KEY_PREFIX + tag.getId();
+        Map<String, CachedAccess> cache = this.accessCache.computeIfAbsent(player.getUniqueId(), id -> new ConcurrentHashMap<>());
+        CachedAccess cached = cache.get(key);
+        if (cached != null && !cached.isExpired(now)) {
+            return cached.allowed();
+        }
+
+        boolean allowed = (!tag.hasExtraPermission() || player.hasPermission(tag.getPermission()))
+                && NametagsPerms.hasTagAccess(player, tag.getId());
+        cache.put(key, new CachedAccess(allowed, now + ACCESS_CACHE_TTL_MILLIS));
+        return allowed;
     }
 
     public boolean hasValidGrant(@NotNull SunUser user, @NotNull String tagId, long nowMillis) {
@@ -178,5 +206,20 @@ public class AccessService {
         expired.forEach(grants::remove);
         user.setProperty(NametagsProperties.GRANTS, grants);
         return expired;
+    }
+
+    public void invalidate(@NotNull UUID playerId) {
+        this.accessCache.remove(playerId);
+    }
+
+    public void clearCache() {
+        this.accessCache.clear();
+    }
+
+    private record CachedAccess(boolean allowed, long expiresAt) {
+
+        private boolean isExpired(long nowMillis) {
+            return nowMillis >= this.expiresAt;
+        }
     }
 }

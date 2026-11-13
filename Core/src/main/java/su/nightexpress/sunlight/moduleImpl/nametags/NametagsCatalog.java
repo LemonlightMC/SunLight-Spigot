@@ -247,18 +247,31 @@ public class NametagsCatalog {
      * Falls back to the default rank when the player matches nothing.
      */
     public @Nullable RankDefinition resolveRank(@NotNull Player player, @NotNull Set<String> groups) {
-        RankDefinition best = null;
-        for (String group : groups) {
-            for (RankDefinition rank : this.ranksByGroup.getOrDefault(group, List.of())) {
-                if (!rank.isAvailable(player))
-                    continue;
-                if (best == null || rank.getPriority() > best.getPriority())
-                    best = rank;
-            }
+        for (RankDefinition rank : this.ranks) {
+            if (this.matchesRank(player, groups, rank)) return rank;
         }
-        if (best != null)
-            return best;
         return this.getDefaultRank();
+    }
+
+    private boolean matchesRank(@NotNull Player player, @NotNull Set<String> groups, @NotNull RankDefinition rank) {
+        Set<String> rankGroups = rank.getRanks();
+        if (rankGroups.isEmpty()) return false;
+
+        boolean needsPermissionCheck = false;
+        for (String group : rankGroups) {
+            if (group.equals(su.nightexpress.sunlight.SLPlaceholders.WILDCARD)) return true;
+            if (groups.contains(group)) return true;
+            needsPermissionCheck = true;
+        }
+
+        if (!needsPermissionCheck) return false;
+
+        for (String group : rankGroups) {
+            if (group.equals(su.nightexpress.sunlight.SLPlaceholders.WILDCARD)) continue;
+            if (groups.contains(group)) continue;
+            if (NametagsPerms.hasRankAccess(player, group)) return true;
+        }
+        return false;
     }
 
     public @Nullable RankDefinition getDefaultRank() {

@@ -93,9 +93,16 @@ public class RankDefinition implements Writeable {
      * through the {@code sunlight.nametags.rank.<group>} permission.
      */
     public boolean isAvailable(@NotNull Player player) {
+        return this.isAvailable(player, Players.getInheritanceGroups(player));
+    }
+
+    /**
+     * Same as {@link #isAvailable(Player)} but reuses already resolved group names to
+     * avoid repeated inheritance lookups during nameplate recomputation.
+     */
+    public boolean isAvailable(@NotNull Player player, @NotNull Set<String> playerRanks) {
         if (this.ranks.isEmpty()) return false;
 
-        Set<String> playerRanks = Players.getInheritanceGroups(player);
         for (String rank : this.ranks) {
             if (rank.equals(SLPlaceholders.WILDCARD)) return true;
             if (playerRanks.contains(rank)) return true;
