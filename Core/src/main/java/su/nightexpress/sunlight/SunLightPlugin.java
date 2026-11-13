@@ -108,10 +108,17 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
 
     @Override
     protected void onStartup() {
-        CommandAPI.onEnable();
-
         this.commandRegistry = new CommandRegistry(this);
         this.moduleManager = new ModuleManager(this);
+    }
+
+    private void ensureCommandApiEnabled() {
+        try {
+            CommandAPI.onEnable();
+        }
+        catch (Exception | NoClassDefFoundError ignored) {
+            // May already be enabled or unavailable; registration will report real issues.
+        }
     }
 
     @Override
@@ -159,6 +166,7 @@ public class SunLightPlugin extends NightPlugin implements SunlightAPI {
 
         try {
             // Registered before the registry is set up, like the module providers.
+            this.ensureCommandApiEnabled();
             this.commandRegistry.addProvider(new SunlightCommandProvider(this));
             this.commandRegistry.setup();
         } catch (Exception exception) {

@@ -59,17 +59,20 @@ public class CommandRegistry extends SimpleManager<SunLightPlugin> {
   protected void onLoad() {
     this.settings.load(this.plugin.getConfig());
 
+    // Build all hub roots first so subcommands from any provider can attach to any root
+    // before registration.
+    final Map<String, CommandAPICommand> roots = new LinkedHashMap<>();
+    final List<FileConfig> configs = new ArrayList<>();
+
     for (final AbstractCommandProvider provider : providers) {
       final String providerId = provider.getId();
       final FileConfig config = FileConfig.load(this.plugin.getDataFolder() + "/commands/",
           FileConfig.withExtension(providerId));
+      configs.add(config);
 
       this.plugin.injectLang(provider);
       provider.setup();
 
-      // Hub roots first, so their subcommands can be attached before anything is
-      // registered.
-      final Map<String, CommandAPICommand> roots = new LinkedHashMap<>();
       for (final CommandProvider.Node node : provider.getNodes()) {
         if (!node.isRoot()) {
           continue;
@@ -77,9 +80,20 @@ public class CommandRegistry extends SimpleManager<SunLightPlugin> {
 
         final CommandAPICommand root = this.buildStandalone(provider, node, config);
         if (root != null) {
-          roots.put(node.id(), root);
+          final CommandAPICommand previous = roots.put(node.id(), root);
+          if (previous != null) {
+            this.plugin.warn("Root command '%s' is declared more than once; the last declaration wins."
+                .formatted(node.id()));
+          }
         }
       }
+    }
+
+    int configIndex = 0;
+    for (final AbstractCommandProvider provider : providers) {
+      final String providerId = provider.getId();
+      final FileConfig config = configs.get(configIndex++);
+
       for (final CommandProvider.Node node : provider.getNodes()) {
         if (node.isRoot()) {
           continue;
@@ -106,14 +120,22 @@ public class CommandRegistry extends SimpleManager<SunLightPlugin> {
           }
         }
       }
-      roots.values().forEach(this::register);
-      config.saveChanges();
     }
+
+    roots.values().forEach(this::register);
+    configs.forEach(FileConfig::saveChanges);
   }
 
   @Override
   protected void onShutdown() {
-    this.commands.forEach((id, cmd) -> CommandAPI.unregister(id, true));
+    this.commands.forEach((id, cmd) -> {
+      try {
+        CommandAPI.unregister(id, true);
+      }
+      catch (Exception | NoClassDefFoundError ignored) {
+        // CommandAPI may already be shut down during reload/disable.
+      }
+    });
     this.commands.clear();
     this.providers.clear();
   }
@@ -215,7 +237,12 @@ public class CommandRegistry extends SimpleManager<SunLightPlugin> {
       this.unregisterConflict(name, false);
     }
     try {
-      CommandAPI.unregister(name, true);
+      try {
+        CommandAPI.unregister(name, true);
+      }
+      catch (Exception | NoClassDefFoundError ignored) {
+        // Best-effort cleanup; registration below will validate CommandAPI state.
+      }
       command.register("sunlight");
     } catch (final Exception e) {
       this.plugin.warn("Failed to register command '/%s': %s".formatted(name, e.getMessage()));
