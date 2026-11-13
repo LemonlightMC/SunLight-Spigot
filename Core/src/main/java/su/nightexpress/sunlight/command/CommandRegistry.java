@@ -415,6 +415,11 @@ public class CommandRegistry extends SimpleManager<SunLightPlugin> {
         return;
       }
 
+      // Never unregister explicitly namespaced commands (e.g. minecraft:tp).
+      if (alias.contains(":") || other.getName().contains(":") || other.getLabel().contains(":")) {
+        return;
+      }
+
       final String owner = getCommandOwner(other);
       final boolean isVanilla = owner.equalsIgnoreCase("Vanilla") || owner.equalsIgnoreCase("Bukkit")
           || owner.equalsIgnoreCase("Unknown") || owner.equalsIgnoreCase("Minecraft");
