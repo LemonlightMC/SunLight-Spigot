@@ -26,21 +26,6 @@ public class NametagsLang implements LangContainer {
     public static final TextLocale COMMAND_PROFILES_DESC = LangEntry.builder("Command.Nametags.Profiles.Desc")
         .text("Open the profile selection menu.");
 
-    public static final TextLocale COMMAND_RANK_DESC = LangEntry.builder("Command.Nametags.Rank.Desc")
-        .text("Enable or disable the rank part of your nametag.");
-
-    public static final TextLocale COMMAND_TAG_TOGGLE_DESC = LangEntry.builder("Command.Nametags.TagToggle.Desc")
-        .text("Enable or disable the selected tag on your nametag.");
-
-    public static final TextLocale COMMAND_TEAM_TOGGLE_DESC = LangEntry.builder("Command.Nametags.TeamToggle.Desc")
-        .text("Enable or disable your team prefix on your nametag.");
-
-    public static final TextLocale COMMAND_HIDE_DESC = LangEntry.builder("Command.Nametags.Hide.Desc")
-        .text("Show only your name, with no prefix, suffix or colour.");
-
-    public static final TextLocale COMMAND_SHOW_DESC = LangEntry.builder("Command.Nametags.Show.Desc")
-        .text("Restore your full nametag.");
-
     public static final TextLocale COMMAND_SET_DESC = LangEntry.builder("Command.Nametags.Set.Desc")
         .text("Set or clear a player's tag.");
 
@@ -53,20 +38,7 @@ public class NametagsLang implements LangContainer {
     public static final TextLocale COMMAND_RELOAD_DESC = LangEntry.builder("Command.Nametags.Reload.Desc")
         .text("Reload the nametags module.");
 
-    public static final MessageLocale NAMETAG_RANK_CHANGED = LangEntry.builder("Command.Nametags.Rank.Changed")
-        .chatMessage(GREEN.wrap("Rank part of the nametag is now ") + GENERIC_STATE + GREEN.wrap("."));
 
-    public static final MessageLocale NAMETAG_TAG_CHANGED = LangEntry.builder("Command.Nametags.TagToggle.Changed")
-        .chatMessage(GREEN.wrap("Selected tag is now ") + GENERIC_STATE + GREEN.wrap("."));
-
-    public static final MessageLocale NAMETAG_TEAM_CHANGED = LangEntry.builder("Command.Nametags.TeamToggle.Changed")
-        .chatMessage(GREEN.wrap("Team prefix is now ") + GENERIC_STATE + GREEN.wrap("."));
-
-    public static final MessageLocale NAMETAG_HIDE_CHANGED = LangEntry.builder("Command.Nametags.Hide.Changed")
-        .chatMessage(GREEN.wrap("Nametag hidden, only your name is shown."));
-
-    public static final MessageLocale NAMETAG_SHOW_DONE = LangEntry.builder("Command.Nametags.Show.Done")
-        .chatMessage(GREEN.wrap("Your full nametag is back."));
 
     public static final MessageLocale COMMAND_TAG_SELECTED = LangEntry.builder("Command.Nametags.Tag.Selected")
         .chatMessage(GREEN.wrap("Tag ") + GENERIC_NAME + GREEN.wrap(" has been selected."));

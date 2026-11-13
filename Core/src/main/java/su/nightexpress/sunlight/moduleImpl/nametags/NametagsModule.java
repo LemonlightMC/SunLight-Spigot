@@ -26,7 +26,6 @@ import su.nightexpress.sunlight.moduleImpl.nametags.hook.UltimateTeamsSource;
 import su.nightexpress.sunlight.moduleImpl.nametags.menu.AdminMainMenu;
 import su.nightexpress.sunlight.moduleImpl.nametags.menu.ProfilesMenu;
 import su.nightexpress.sunlight.moduleImpl.nametags.menu.TagsMenu;
-import su.nightexpress.sunlight.moduleImpl.nametags.model.NameplateVisibility;
 import su.nightexpress.sunlight.moduleImpl.nametags.model.Profile;
 import su.nightexpress.sunlight.moduleImpl.nametags.model.PurchaseResult;
 import su.nightexpress.sunlight.moduleImpl.nametags.model.RankDefinition;
@@ -39,7 +38,6 @@ import su.nightexpress.sunlight.utils.EconomyUtils;
 import su.nightexpress.sunlight.utils.Utils;
 
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * Owns the nametag feature and wires its collaborators together.
@@ -80,7 +78,6 @@ public class NametagsModule extends Module implements NametagsProvider {
         UserPropertyRegistry.register(NametagsProperties.RANK);
         UserPropertyRegistry.register(NametagsProperties.TAG);
         UserPropertyRegistry.register(NametagsProperties.GRANTS);
-        UserPropertyRegistry.register(NametagsProperties.VISIBILITY);
 
         this.catalog = new NametagsCatalog(this.settings);
         this.catalog.reload();
@@ -206,15 +203,14 @@ public class NametagsModule extends Module implements NametagsProvider {
             return PAYLOAD_ID.equals(payload) ? profile.getId() : profile.getDisplay();
         });
 
-        registry.register("nametags_show_all", (player, payload) -> String.valueOf(this.isNameplateVisible(player)));
-        registry.register("nametags_show_rank", (player, payload) -> String.valueOf(this.isRankVisible(player)));
-        registry.register("nametags_show_tag", (player, payload) -> String.valueOf(this.isTagVisible(player)));
-        registry.register("nametags_show_team", (player, payload) -> String.valueOf(this.isTeamVisible(player)));
-        // A profile is a source rather than a rendered part, so this reports the
-        // explicit
-        // choice and whether it is currently being rendered at all.
-        registry.register("nametags_show_profile", (player, payload) -> String
-                .valueOf(this.isNameplateVisible(player) && this.getSelectedProfile(player) != null));
+        // Per-player visibility was removed: every player sees the same nameplate.
+        registry.register("nametags_show_all", (player, payload) -> "true");
+        registry.register("nametags_show_rank", (player, payload) -> "true");
+        registry.register("nametags_show_tag", (player, payload) -> "true");
+        registry.register("nametags_show_team", (player, payload) -> "true");
+        // A profile is a source rather than a rendered part; report the explicit choice.
+        registry.register("nametags_show_profile",
+                (player, payload) -> String.valueOf(this.getSelectedProfile(player) != null));
     }
 
     /**
@@ -602,74 +598,4 @@ public class NametagsModule extends Module implements NametagsProvider {
             this.nameplates.recomputeAll();
     }
 
-    // -----------------------------------------------------
-    // Visibility
-    // -----------------------------------------------------
 
-    public @NotNull NameplateVisibility getVisibility(@NotNull Player player) {
-        return this.getVisibility(this.userManager.getOrFetch(player));
-    }
-
-    public @NotNull NameplateVisibility getVisibility(@NotNull SunUser user) {
-        NameplateVisibility visibility = user.getPropertyOrDefault(NametagsProperties.VISIBILITY);
-        return visibility == null ? NameplateVisibility.DEFAULT : visibility.normalize();
-    }
-
-    @Override
-    public boolean isRankVisible(@NotNull Player player) {
-        return this.getVisibility(player).wantsRank();
-    }
-
-    @Override
-    public boolean isTagVisible(@NotNull Player player) {
-        return this.getVisibility(player).wantsTag();
-    }
-
-    @Override
-    public boolean isTeamVisible(@NotNull Player player) {
-        return this.getVisibility(player).wantsTeam();
-    }
-
-    @Override
-    public boolean isNameplateVisible(@NotNull Player player) {
-        return this.getVisibility(player).showAll();
-    }
-
-    public void setVisibility(@NotNull Player player, @NotNull NameplateVisibility visibility) {
-        this.setVisibility(this.userManager.getOrFetch(player), visibility);
-    }
-
-    public void setVisibility(@NotNull SunUser user, @NotNull NameplateVisibility visibility) {
-        user.setProperty(NametagsProperties.VISIBILITY, visibility);
-        user.player().ifPresent(this.nameplates::recompute);
-    }
-
-    public @NotNull NameplateVisibility toggleRank(@NotNull Player player) {
-        return this.mutateVisibility(player, NameplateVisibility::toggleRank);
-    }
-
-    public @NotNull NameplateVisibility toggleTag(@NotNull Player player) {
-        return this.mutateVisibility(player, NameplateVisibility::toggleTag);
-    }
-
-    public @NotNull NameplateVisibility toggleTeam(@NotNull Player player) {
-        return this.mutateVisibility(player, NameplateVisibility::toggleTeam);
-    }
-
-    public @NotNull NameplateVisibility toggleAll(@NotNull Player player) {
-        return this.mutateVisibility(player, NameplateVisibility::toggleAll);
-    }
-
-    @Override
-    public void setNameplateVisible(@NotNull Player player, boolean visible) {
-        this.setVisibility(player, this.getVisibility(player).withAll(visible));
-    }
-
-    private @NotNull NameplateVisibility mutateVisibility(@NotNull Player player,
-            @NotNull Function<NameplateVisibility, NameplateVisibility> mutator) {
-        SunUser user = this.userManager.getOrFetch(player);
-        NameplateVisibility updated = mutator.apply(this.getVisibility(user));
-        this.setVisibility(user, updated);
-        return updated;
-    }
-}

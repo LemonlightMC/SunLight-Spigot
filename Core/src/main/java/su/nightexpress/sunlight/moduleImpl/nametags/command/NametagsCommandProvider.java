@@ -14,7 +14,6 @@ import su.nightexpress.sunlight.command.CommandProvider;
 import su.nightexpress.sunlight.moduleImpl.nametags.NametagsModule;
 import su.nightexpress.sunlight.moduleImpl.nametags.config.NametagsLang;
 import su.nightexpress.sunlight.moduleImpl.nametags.config.NametagsPerms;
-import su.nightexpress.sunlight.moduleImpl.nametags.model.NameplateVisibility;
 import su.nightexpress.sunlight.moduleImpl.nametags.model.Profile;
 import su.nightexpress.sunlight.moduleImpl.nametags.model.TagDefinition;
 import su.nightexpress.sunlight.user.SunUser;
@@ -26,11 +25,6 @@ public class NametagsCommandProvider extends CommandProvider<NametagsModule> {
     private static final String COMMAND_TAG = "tag";
     private static final String COMMAND_PROFILE = "profile";
     private static final String COMMAND_PROFILES = "profiles";
-    private static final String COMMAND_RANK_TOGGLE = "rank";
-    private static final String COMMAND_TAG_TOGGLE = "tagtoggle";
-    private static final String COMMAND_TEAM_TOGGLE = "team";
-    private static final String COMMAND_HIDE = "hide";
-    private static final String COMMAND_SHOW = "show";
     private static final String COMMAND_SET = "set";
     private static final String COMMAND_GRANT = "grant";
     private static final String COMMAND_ADMIN = "admin";
@@ -73,41 +67,6 @@ public class NametagsCommandProvider extends CommandProvider<NametagsModule> {
                 .withArguments(CommandArgumentConstants.string(CommandArgumentConstants.NAME,
                         info -> this.profileSuggestions()))
                 .executes(this::selectProfile))
-            .under("nametag");
-
-        this.register(COMMAND_RANK_TOGGLE, builder -> builder
-                .withFullDescription(NametagsLang.COMMAND_RANK_DESC.text())
-                .withPermission(NametagsPerms.COMMAND_NAMETAG_TOGGLE)
-                .withRequirement(sender -> sender instanceof Player)
-                .executes(this::toggleRank))
-            .under("nametag");
-
-        this.register(COMMAND_TAG_TOGGLE, builder -> builder
-                .withFullDescription(NametagsLang.COMMAND_TAG_TOGGLE_DESC.text())
-                .withPermission(NametagsPerms.COMMAND_TAG_TOGGLE)
-                .withRequirement(sender -> sender instanceof Player)
-                .executes(this::toggleTag))
-            .under("nametag");
-
-        this.register(COMMAND_TEAM_TOGGLE, builder -> builder
-                .withFullDescription(NametagsLang.COMMAND_TEAM_TOGGLE_DESC.text())
-                .withPermission(NametagsPerms.COMMAND_TEAM_TOGGLE)
-                .withRequirement(sender -> sender instanceof Player)
-                .executes(this::toggleTeam))
-            .under("nametag");
-
-        this.register(COMMAND_HIDE, builder -> builder
-                .withFullDescription(NametagsLang.COMMAND_HIDE_DESC.text())
-                .withPermission(NametagsPerms.COMMAND_HIDE)
-                .withRequirement(sender -> sender instanceof Player)
-                .executes(this::hideNameplate))
-            .under("nametag");
-
-        this.register(COMMAND_SHOW, builder -> builder
-                .withFullDescription(NametagsLang.COMMAND_SHOW_DESC.text())
-                .withPermission(NametagsPerms.COMMAND_HIDE)
-                .withRequirement(sender -> sender instanceof Player)
-                .executes(this::showNameplate))
             .under("nametag");
 
         this.register(COMMAND_SET, builder -> builder
@@ -248,62 +207,6 @@ public class NametagsCommandProvider extends CommandProvider<NametagsModule> {
         this.module.sendPrefixed(NametagsLang.COMMAND_PROFILE_SELECTED, sender,
                 replacer -> replacer.with(SLPlaceholders.GENERIC_NAME,
                         () -> profile == null ? raw : profile.getDisplay()));
-        return 1;
-    }
-
-    private int toggleRank(final CommandSender sender, final CommandArguments arguments) {
-        if (!(sender instanceof final Player player)) {
-            return 0;
-        }
-
-        NameplateVisibility visibility = this.module.toggleRank(player);
-        this.module.sendPrefixed(NametagsLang.NAMETAG_RANK_CHANGED, player,
-                replacer -> replacer.with(SLPlaceholders.GENERIC_STATE,
-                        () -> NametagsLang.COMMAND_TAG_ENABLED.get(visibility.wantsRank())));
-        return 1;
-    }
-
-    private int toggleTag(final CommandSender sender, final CommandArguments arguments) {
-        if (!(sender instanceof final Player player)) {
-            return 0;
-        }
-
-        NameplateVisibility visibility = this.module.toggleTag(player);
-        this.module.sendPrefixed(NametagsLang.NAMETAG_TAG_CHANGED, player,
-                replacer -> replacer.with(SLPlaceholders.GENERIC_STATE,
-                        () -> NametagsLang.COMMAND_TAG_ENABLED.get(visibility.wantsTag())));
-        return 1;
-    }
-
-    private int toggleTeam(final CommandSender sender, final CommandArguments arguments) {
-        if (!(sender instanceof final Player player)) {
-            return 0;
-        }
-
-        NameplateVisibility visibility = this.module.toggleTeam(player);
-        this.module.sendPrefixed(NametagsLang.NAMETAG_TEAM_CHANGED, player,
-                replacer -> replacer.with(SLPlaceholders.GENERIC_STATE,
-                        () -> NametagsLang.COMMAND_TAG_ENABLED.get(visibility.wantsTeam())));
-        return 1;
-    }
-
-    private int hideNameplate(final CommandSender sender, final CommandArguments arguments) {
-        if (!(sender instanceof final Player player)) {
-            return 0;
-        }
-
-        this.module.setVisibility(player, this.module.getVisibility(player).withAll(false));
-        this.module.sendPrefixed(NametagsLang.NAMETAG_HIDE_CHANGED, player);
-        return 1;
-    }
-
-    private int showNameplate(final CommandSender sender, final CommandArguments arguments) {
-        if (!(sender instanceof final Player player)) {
-            return 0;
-        }
-
-        this.module.setVisibility(player, this.module.getVisibility(player).withAll(true));
-        this.module.sendPrefixed(NametagsLang.NAMETAG_SHOW_DONE, player);
         return 1;
     }
 

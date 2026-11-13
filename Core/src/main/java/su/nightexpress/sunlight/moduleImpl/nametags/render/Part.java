@@ -1,14 +1,12 @@
 package su.nightexpress.sunlight.moduleImpl.nametags.render;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 /**
- * One contributor to a nameplate (team, rank, tag or glow). Holds raw configured
+ * One contributor to a nameplate (team, rank, tag or glow). Holds raw
+ * configured
  * text and a raw colour name; conversion to legacy codes happens in
  * {@link PrefixComposer} so composition stays a pure, testable function.
  */
-public record Part(@NotNull String prefix, @NotNull String suffix, @NotNull String color) {
+public record Part(String prefix, String suffix, String color) {
 
     public static final Part EMPTY = new Part("", "", "");
 
@@ -18,7 +16,7 @@ public record Part(@NotNull String prefix, @NotNull String suffix, @NotNull Stri
         color = color == null ? "" : color;
     }
 
-    public static @NotNull Part of(@Nullable String prefix, @Nullable String suffix, @Nullable String color) {
+    public static Part of(String prefix, String suffix, String color) {
         return new Part(nullToEmpty(prefix), nullToEmpty(suffix), nullToEmpty(color));
     }
 
@@ -38,7 +36,7 @@ public record Part(@NotNull String prefix, @NotNull String suffix, @NotNull Stri
         return !this.hasPrefix() && !this.hasSuffix() && !this.hasColor();
     }
 
-    private static @NotNull String nullToEmpty(@Nullable String value) {
+    private static String nullToEmpty(String value) {
         return value == null ? "" : value;
     }
 }

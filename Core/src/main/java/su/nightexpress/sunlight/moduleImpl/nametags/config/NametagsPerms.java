@@ -17,10 +17,6 @@ public class NametagsPerms {
     public static final String COMMAND_TAG_SELECT     = COMMAND + ".tag.select";
     public static final String COMMAND_PROFILE_SELECT = COMMAND + ".profile.select";
     public static final String COMMAND_PROFILES       = COMMAND + ".profiles";
-    public static final String COMMAND_NAMETAG_TOGGLE = COMMAND + ".rank.toggle";
-    public static final String COMMAND_TAG_TOGGLE     = COMMAND + ".tag.toggle";
-    public static final String COMMAND_TEAM_TOGGLE    = COMMAND + ".team.toggle";
-    public static final String COMMAND_HIDE           = COMMAND + ".hide";
     public static final String COMMAND_NAMETAG_SET    = COMMAND + ".set";
     public static final String COMMAND_GRANT          = COMMAND + ".grant";
     public static final String COMMAND_RELOAD         = COMMAND + ".reload";

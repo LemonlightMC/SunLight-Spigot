@@ -72,7 +72,6 @@ public class ProfileScopeRegistry {
         this.setPropertyDefault("nametagrank", ProfileScope.PER_PROFILE);
         this.setPropertyDefault("nametagtag", ProfileScope.PER_PROFILE);
         this.setPropertyDefault("nametaggrants", ProfileScope.PER_PROFILE);
-        this.setPropertyDefault("nametagvisibility", ProfileScope.PER_PROFILE);
         this.setPropertyDefault("teleport_requests", ProfileScope.PER_PROFILE);
         this.setPropertyDefault("accept_pm", ProfileScope.PER_PROFILE);
         this.setPropertyDefault("mentions", ProfileScope.PER_PROFILE);
